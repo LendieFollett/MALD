@@ -19,11 +19,11 @@ R <- 5000 #how many draws to keep after burn in
 for (s in 1:100){
   source("sim_data_alt_param_2d.R") #simulate data based on simulation id s
   Y = y
-  source("starting_values_2d.R") #initialize values
+  #source("starting_values_2d.R") #initialize values
   source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
   #save results! not sure how to do this... 
   #maybe save each keeps object as separate RDS file?
-  #saveRDS(keeps,paste0("keeps/keeps",s,".rds"))
+  saveRDS(keeps,paste0("keeps/keeps",s,".rds"))
 }
 
 
