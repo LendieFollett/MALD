@@ -69,12 +69,10 @@ keeps <- list(
   theta = array(NA, dim = c(R,2)),
   
   mu = array(NA, dim = c(R,2)),
-  rho = array(NA, dim = c(R,4)),
+  rho = array(NA, dim = c(R,4))
   
-  xi_c =array(NA, dim = c(R, T,2)),
-  xi_cs =array(NA, dim = c(R, T,2)),
-  xi_ys=array(NA, dim = c(R, T,2)),
-  xi_y=array(NA, dim = c(R, T,2))
+  #xi_c =array(NA, dim = c(R, T,2)),
+  #xi_y=array(NA, dim = c(R, T,2))
   
   #xi_cv =array(NA, dim = c(R, T)),
   #delta =array(NA, dim = c(R, T))

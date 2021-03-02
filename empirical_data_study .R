@@ -9,18 +9,17 @@ library(Rcpp)
 library(MCMCpack)
 library(quantmod)
 library(RcppTN)
-#setwd("/Users/000766412/Box Sync/ALD_Codes/mstuart/Empirical Study")
+
 #################################################### 
 # SAMPLE ALL PARAMETERS - FIXED AND LATENT ----------
 #################################################### 
 #set fix = FALSE to let theta parameters be sampled
 fix <- FALSE
 
-#sourceCpp("pgas_mstuart_2d.cpp") #C++ updates
-#source("pgas_mstuart_2d.R") #R updates
+sourceCpp("pgas_2d.cpp") #C++ updates
 #initialize values, create space to save draws
-B <- 10000 #how many burn in draws to throw away
-R <- 10000 #how many draws to keep after burn in
+B <- 50000 #how many burn in draws to throw away
+R <- 50000 #how many draws to keep after burn in
 n_chns <- 1 #how many chains to run
 
 getSymbols("BTC-USD",from = "2014-09-15",to = "2020-09-30")
@@ -39,8 +38,7 @@ S <- merge(BTC,SP500)
 # x <- array(0,dim=dim(y))
 # #source("starting_values_2d.R") #initialize values
 # source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-# #save results! not sure how to do this... 
-# #maybe save each keeps object as separate RDS file?
+
 # saveRDS(keeps,paste0("keeps/keepsBTCSP.rds"))
 
 #-----1 D MODEL MCMC------
