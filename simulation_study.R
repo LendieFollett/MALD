@@ -9,12 +9,14 @@ library(RcppTN)
 library(MCMCpack)
 
 sourceCpp("pgas_mstuart.cpp") #C++ updates
-source("pgas_mstuart.R") #R updates
+#source("pgas_mstuart.R") #R updates
 #initialize values, create space to save draws
+n_chns <- 1
+fix <- FALSE
 B <- 5000 #how many burn in draws to throw away
 R <- 5000 #how many draws to keep after burn in
 
-for (s in 57:57){
+for (s in 1:100){
   source("sim_data_alt_param.R") #simulate data based on simulation id s
   Y = y
   source("starting_values.R") #initialize values
