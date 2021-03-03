@@ -1,33 +1,33 @@
 
 #keeps is a list that stores kept draws (everything after burnin B)
 keeps <- list(
-  chain = rep(0,n_chns*R),
-  v = array(NA, dim = c(R*n_chns, T+1, 2)),
-  delta =  array(NA, dim = c(R*n_chns, T)),
-  lambda = array(0, dim = c(R*n_chns,4)),
-  J = array(NA, dim = c(R*n_chns, T, 2)),
-  sigma_v = array(NA, dim=c(R*n_chns,2)),
+  chain = rep(0,n_chns*R/k),
+  v = array(NA, dim = c(R*n_chns/k, T+1, 2)),
+  delta =  array(NA, dim = c(R*n_chns/k, T)),
+  lambda = array(0, dim = c(R*n_chns/k,4)),
+  J = array(NA, dim = c(R*n_chns/k, T, 2)),
+  sigma_v = array(NA, dim=c(R*n_chns/k,2)),
   
-  sigma_c = array(NA, dim = c(R*n_chns,2)),
-  rhoc = rep(NA, R*n_chns),
-  xi_cw = array(NA, dim = c(R*n_chns, 2)),
+  sigma_c = array(NA, dim = c(R*n_chns/k,2)),
+  rhoc = rep(NA, R*n_chns/k),
+  xi_cw = array(NA, dim = c(R*n_chns/k, 2)),
   
-  xi_y1eta = rep(NA, R*n_chns),
-  xi_y1w = rep(NA, R*n_chns),
+  xi_y1eta = rep(NA, R*n_chns/k),
+  xi_y1w = rep(NA, R*n_chns/k),
   
-  xi_y2eta = rep(NA, R*n_chns),
-  xi_y2w = rep(NA, R*n_chns),
+  xi_y2eta = rep(NA, R*n_chns/k),
+  xi_y2w = rep(NA, R*n_chns/k),
   
-  phi = array(NA, dim = c(R*n_chns,2)),
-  theta = array(NA, dim = c(R*n_chns,2)),
+  phi = array(NA, dim = c(R*n_chns/k,2)),
+  theta = array(NA, dim = c(R*n_chns/k,2)),
   
-  mu = array(NA, dim = c(R*n_chns,2)),
-  rho = array(NA, dim = c(R*n_chns,4)),
+  mu = array(NA, dim = c(R*n_chns/k,2)),
+  rho = array(NA, dim = c(R*n_chns/k,4)),
   
-  xi_y1 =array(NA, dim = c(R*n_chns, T)),
-  xi_y2 =array(NA, dim = c(R*n_chns, T)),
-  xi_y1c =array(NA, dim = c(R*n_chns, T)),
-  xi_y2c =array(NA, dim = c(R*n_chns, T))
+  xi_y1 =array(NA, dim = c(R*n_chns/k, T)),
+  xi_y2 =array(NA, dim = c(R*n_chns/k, T)),
+  xi_y1c =array(NA, dim = c(R*n_chns/k, T)),
+  xi_y2c =array(NA, dim = c(R*n_chns/k, T))
   
 )
 
@@ -103,33 +103,34 @@ for (i in 1:(R + B)){
   
   #store after burn in
   if (i > B) {
-    
-    #mean jump sizes (incorporates binary indicator delta draws)
-    J_mean <- J_mean + J/R
-    #mean stochastic volatility
-    v_mean <- v_mean + v/R
-    
-    j = R*(chn - 1) + i - B
-    keeps$sigma_v[j,] <- sigma_v
-    keeps$v[j,,] <- v
-    keeps$J[j,,] <- J
-    keeps$lambda[j,] <- lambda
-    keeps$mu[j,] <- mu
-    keeps$phi[j,] <- phi
-    keeps$theta[j,] <- theta
-    keeps$rho[j,] <- rho
-    keeps$xi_y1eta[j] <- xi_y1eta
-    keeps$xi_y1w[j] <- xi_y1w
-    keeps$xi_y2eta[j] <- xi_y2eta
-    keeps$xi_y2w[j] <- xi_y2w
-    keeps$xi_cw[j,] <- xi_cw
-    keeps$sigma_c[j,] <- sigma_c
-    keeps$rhoc[j] <- rhoc
-    keeps$delta[j,] <- delta
-    #keeps$xi_y1[j,] <- xi_y1
-    #keeps$xi_y2[j,] <- xi_y2
-    #keeps$xi_y1c[j,] <- xi_c[,1]
-    #keeps$xi_y2c[j,] <- xi_c[,2]
+    if (i %% k == 0){
+      #mean jump sizes (incorporates binary indicator delta draws)
+      J_mean <- J_mean + J/R
+      #mean stochastic volatility
+      v_mean <- v_mean + v/R
+      
+      j = (R*(chn - 1) + i - B)/k
+      keeps$sigma_v[j,] <- sigma_v
+      keeps$v[j,,] <- v
+      keeps$J[j,,] <- J
+      keeps$lambda[j,] <- lambda
+      keeps$mu[j,] <- mu
+      keeps$phi[j,] <- phi
+      keeps$theta[j,] <- theta
+      keeps$rho[j,] <- rho
+      keeps$xi_y1eta[j] <- xi_y1eta
+      keeps$xi_y1w[j] <- xi_y1w
+      keeps$xi_y2eta[j] <- xi_y2eta
+      keeps$xi_y2w[j] <- xi_y2w
+      keeps$xi_cw[j,] <- xi_cw
+      keeps$sigma_c[j,] <- sigma_c
+      keeps$rhoc[j] <- rhoc
+      keeps$delta[j,] <- delta
+      #keeps$xi_y1[j,] <- xi_y1
+      #keeps$xi_y2[j,] <- xi_y2
+      #keeps$xi_y1c[j,] <- xi_c[,1]
+      #keeps$xi_y2c[j,] <- xi_c[,2]
+    }
   }
 }
 }
