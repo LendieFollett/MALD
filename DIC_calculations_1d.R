@@ -1,3 +1,5 @@
+
+rm(list = ls())
 library(ggplot2)
 library(grid)
 library(gridExtra)
@@ -36,7 +38,7 @@ keepsSP <- readRDS("/Users/000766412/Box Sync/ALD_Codes/keepsSP.rds")
 
 
 #DIC7 = -4E(ln(p(y|z,theta))) + 2ln(p(y|z-hat, theta-hat))
-partial_likelihood <-  function(k, y){ #k for keeps, y for correct vector
+partial_likelihood1 <-  function(k, y){ #k for keeps, y for correct vector
   R <- dim(k$v[complete.cases(k$v),])[1]
   total = 0
   for (r in 1:R){
@@ -47,15 +49,19 @@ partial_likelihood <-  function(k, y){ #k for keeps, y for correct vector
   return(total)
 }
 
-pl <- partial_likelihood(keepsBTC, y[,1]) + partial_likelihood(keepsSP, y[,2])
+#use plug-in posterior means of z, theta
+partial_likelihood2 <-  function(k, y){ #k for keeps, y for correct vector
+ dnorm(y, 
+       mean(k$mu) + apply(k$J,2, mean),
+       sqrt(apply(k$v[,-1], 2, mean)), log = TRUE) %>%sum
+
+}
 
 
-lnpy_mid_zhatthetahat <- sapply(1:2,function(i){
-  dnorm(y[],
-        x+mu+J+rho/sigma_v*c(v[-1]-theta-phi*(v[-(T+1)]-theta),0),
-        sqrt(v*c(rep(1-rho^2,T-1),1)),log=TRUE) %>% sum
-}) %>% sum
+#E(ln(p(y|z,theta)))
+Elnpy_mid_ztheta <- partial_likelihood1(keepsBTC, y[,1]) + partial_likelihood1(keepsSP, y[,2])
 
+lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTC, y[,1]) + partial_likelihood2(keepsSP, y[,2])
 
 
 DIC7_1d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
