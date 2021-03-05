@@ -1,5 +1,5 @@
 
-#information criterion calculations FOR 1 D ONLY
+#information criterion calculations FOR 2 D ONLY
 ##---> RDIC and DIC
 #where RDIC = D(theta-hat) + 2tr(I(theta-hat)*VCOV(theta-hat))
 #and   DIC = -4E(ln(p(y|z,theta))) + 2ln(p(y|z-hat, theta-hat))

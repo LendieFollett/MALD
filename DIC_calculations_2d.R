@@ -1,0 +1,18 @@
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(MASS)
+library(tmvtnorm)
+library(ald)
+library(ggplot2)
+library(dplyr)
+library(truncnorm)
+library(mvtnorm)
+library(tmvtnorm)
+library(Rcpp)
+library(MCMCpack)
+library(quantmod)
+library(RcppTN)
+
+#DIC7 = -4E(ln(p(y|z,theta))) + 2ln(p(y|z-hat, theta-hat))
+
