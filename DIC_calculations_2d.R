@@ -37,29 +37,45 @@ keepsBTCSP <- readRDS("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP.rds")
 
 #DIC7 = -4E(ln(p(y|z,theta))) + 2ln(p(y|z-hat, theta-hat))
 partial_likelihood1 <-  function(k, y){ #k for keeps, y for correct vector
-  R <- dim(k$v[complete.cases(k$v),])[1]
+  R <- dim(k$v[complete.cases(k$v[,1,1]),,])[1]
   total = 0
   for (r in 1:R){
-    total = total + (dnorm(y, 
-                           k$mu[r] + k$J[r,],
-                           sqrt(k$v[r,-1]), log = TRUE) %>%sum)/R #average over R draws
+    print(r)
+    total_sub = 0
+    for (t in 1:nrow(y)){
+    total_sub = total_sub + (dmvnorm(y[t,], 
+                           k$mu[r,] + k$J[r,t,],
+                           diag(sqrt(k$v[r,t+1,]))%*%(k$rho[r]*(1-diag(2)) + diag(2))%*%diag(sqrt(k$v[r,t+1,])), 
+                           log = TRUE)) 
+    }
+    total = total + total_sub/R #average over R draws
+    
   }
   return(total)
 }
 
 #use plug-in posterior means of z, theta
 partial_likelihood2 <-  function(k, y){ #k for keeps, y for correct vector
-  dnorm(y, 
-        mean(k$mu) + apply(k$J,2, mean),
-        sqrt(apply(k$v[,-1], 2, mean)), log = TRUE) %>%sum
-  
+
+  mu_mean =  apply(k$mu, 2, mean, na.rm=TRUE)
+  J_mean = apply(k$J,2:3, mean,na.rm=TRUE)
+  v_mean = apply(k$v,2:3, mean,na.rm=TRUE)
+  rho_mean = mean(k$rho, na.rm=TRUE)
+  total_sub = 0
+  for (t in 1:nrow(y)){
+    total_sub = total_sub + (dmvnorm(y[t,], 
+                                     mu_mean+ J_mean[t,],
+                                     diag(sqrt(v_mean[r,t+1,]))%*%(rho_mean[2]*(1-diag(2)) + diag(2))%*%diag(sqrt(v_mean[r,t+1,])), 
+                                     log = TRUE)) 
+  }
+  return(total_sub)
 }
 
 
 #E(ln(p(y|z,theta)))
-Elnpy_mid_ztheta <- partial_likelihood1(keepsBTC, y[,1]) + partial_likelihood1(keepsSP, y[,2])
+Elnpy_mid_ztheta <- partial_likelihood1(keepsBTCSP, y) 
 
-lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTC, y[,1]) + partial_likelihood2(keepsSP, y[,2])
+lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP, y) 
 
 
 DIC7_1d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
