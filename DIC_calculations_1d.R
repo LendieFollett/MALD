@@ -43,17 +43,23 @@ partial_likelihood1 <-  function(k, y){ #k for keeps, y for correct vector
   total = 0
   for (r in 1:R){
   total = total + (dnorm(y, 
-        k$mu[r] + k$J[r,],
-        sqrt(k$v[r,-1]), log = TRUE) %>%sum)/R #average over R draws
+        k$mu[r] + k$J[r,]+
+          (k$rho[r]/k$sigma_v[r])*(k$v[r,-1]-k$theta[r]-k$phi[r]*(k$v[r,-(T+1)]-k$theta[r])),
+        sqrt(k$v[r,-1]*(1-k$rho[r]^2)), log = TRUE) %>%sum)/R #average over R draws
   }
   return(total)
 }
 
 #use plug-in posterior means of z, theta
 partial_likelihood2 <-  function(k, y){ #k for keeps, y for correct vector
+  v_mean = apply(k$v, 2, mean)
+  theta_mean <- mean(k$theta)
+  phi_mean <- mean(k$phi)
+  T <- nrow(y)
  dnorm(y, 
-       mean(k$mu) + apply(k$J,2, mean),
-       sqrt(apply(k$v[,-1], 2, mean)), log = TRUE) %>%sum
+       mean(k$mu) + apply(k$J,2, mean) + 
+         (mean(k$rho)/mean(k$sigma_v))*(v_mean[-1]-theta_mean-phi_mean*(v_mean[-(T+1)]-theta_mean)),
+       sqrt(v_mean[-1]*(1-mean(k$rho)^2)), log = TRUE) %>%sum
 
 }
 
@@ -67,6 +73,6 @@ lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTC, y[,1]) + partial_likeliho
 
 DIC7_1d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
 DIC7_1d
-#12294.43
+#17878.61
 
 
