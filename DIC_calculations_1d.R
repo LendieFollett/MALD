@@ -64,8 +64,9 @@ Elnpy_mid_ztheta <- partial_likelihood1(keepsBTC, y[,1]) + partial_likelihood1(k
 lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTC, y[,1]) + partial_likelihood2(keepsSP, y[,2])
 
 
+
 DIC7_1d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
 DIC7_1d
-
+#12294.43
 
 

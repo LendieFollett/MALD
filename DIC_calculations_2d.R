@@ -45,7 +45,7 @@ partial_likelihood1 <-  function(k, y){ #k for keeps, y for correct vector
     for (t in 1:nrow(y)){
     total_sub = total_sub + (dmvnorm(y[t,], 
                            k$mu[r,] + k$J[r,t,],
-                           diag(sqrt(k$v[r,t+1,]))%*%(k$rho[r]*(1-diag(2)) + diag(2))%*%diag(sqrt(k$v[r,t+1,])), 
+                           diag(sqrt(k$v[r,t+1,]))%*%(k$rho[r,2]*(1-diag(2)) + diag(2))%*%diag(sqrt(k$v[r,t+1,])), 
                            log = TRUE)) 
     }
     total = total + total_sub/R #average over R draws
@@ -60,12 +60,13 @@ partial_likelihood2 <-  function(k, y){ #k for keeps, y for correct vector
   mu_mean =  apply(k$mu, 2, mean, na.rm=TRUE)
   J_mean = apply(k$J,2:3, mean,na.rm=TRUE)
   v_mean = apply(k$v,2:3, mean,na.rm=TRUE)
-  rho_mean = mean(k$rho, na.rm=TRUE)
+  rho_mean = mean(k$rho[,2], na.rm=TRUE)
   total_sub = 0
   for (t in 1:nrow(y)){
+    print(t)
     total_sub = total_sub + (dmvnorm(y[t,], 
                                      mu_mean+ J_mean[t,],
-                                     diag(sqrt(v_mean[r,t+1,]))%*%(rho_mean[2]*(1-diag(2)) + diag(2))%*%diag(sqrt(v_mean[r,t+1,])), 
+                                     diag(sqrt(v_mean[t+1,]))%*%(rho_mean*(1-diag(2)) + diag(2))%*%diag(sqrt(v_mean[t+1,])), 
                                      log = TRUE)) 
   }
   return(total_sub)
@@ -74,12 +75,13 @@ partial_likelihood2 <-  function(k, y){ #k for keeps, y for correct vector
 
 #E(ln(p(y|z,theta)))
 Elnpy_mid_ztheta <- partial_likelihood1(keepsBTCSP, y) 
-
+#[1] -5583.962
 lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP, y) 
-
+#[1] -4874.593
 
 DIC7_1d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
 DIC7_1d
-
+#[1] 12586.66
+#compare to 12294.43 from the 1d model
 
 
