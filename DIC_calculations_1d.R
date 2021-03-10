@@ -45,7 +45,7 @@ partial_likelihood1 <-  function(k, y){ #k for keeps, y for correct vector
   total = total + (dnorm(y, 
         k$mu[r] + k$J[r,]+
           (k$rho[r]/k$sigma_v[r])*(k$v[r,-1]-k$theta[r]-k$phi[r]*(k$v[r,-(T+1)]-k$theta[r])),
-        sqrt(k$v[r,-1]*(1-k$rho[r]^2)), log = TRUE) %>%sum)/R #average over R draws
+        sqrt(k$v[r,-(T+1)]*(1-k$rho[r]^2)), log = TRUE) %>%sum)/R #average over R draws
   }
   return(total)
 }
@@ -59,7 +59,7 @@ partial_likelihood2 <-  function(k, y){ #k for keeps, y for correct vector
  dnorm(y, 
        mean(k$mu) + apply(k$J,2, mean) + 
          (mean(k$rho)/mean(k$sigma_v))*(v_mean[-1]-theta_mean-phi_mean*(v_mean[-(T+1)]-theta_mean)),
-       sqrt(v_mean[-1]*(1-mean(k$rho)^2)), log = TRUE) %>%sum
+       sqrt(v_mean[-(T+1)]*(1-mean(k$rho)^2)), log = TRUE) %>%sum
 
 }
 

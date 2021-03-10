@@ -43,10 +43,20 @@ partial_likelihood1 <-  function(k, y){ #k for keeps, y for correct vector
     print(r)
     total_sub = 0
     for (t in 1:nrow(y)){
+      Sigma11 <- matrix(c(k$v[r,t,1],
+                          k$rho[r,1]*sqrt(prod(k$v[r,t,])),
+                          k$rho[r,1]*sqrt(prod(k$v[r,t,])),
+                          k$v[r,t,2]),nrow=2)
+      Sigma22 <- matrix(c(k$sigma_v[r,1]^2*k$v[r,t,1],
+                          k$rho[r,1]*prod(k$sigma_v[r,])*sqrt(prod(k$v[r,t,])),
+                          k$rho[r,1]*prod(k$sigma_v[r,])*sqrt(prod(k$v[r,t,])),
+                          k$sigma_v[r,2]^2*k$v[r,t,2]),nrow=2)
+      Sigma12 <- diag(c(k$rho[r,3:4]*k$sigma_v[r,]*k$v[r,t,]))
+      eps <- k$v[r,t+1,] - k$theta[r,] - k$phi[r,] * (k$v[r,t,] - k$theta[r,])
     total_sub = total_sub + (dmvnorm(y[t,], 
-                           k$mu[r,] + k$J[r,t,],
-                           diag(sqrt(k$v[r,t+1,]))%*%(k$rho[r,2]*(1-diag(2)) + diag(2))%*%diag(sqrt(k$v[r,t+1,])), 
-                           log = TRUE)) 
+                                     k$mu[r,] + k$J[r,t,] + Sigma12 %*% solve(Sigma22) %*% eps,
+                                     Sigma11 - Sigma12 %*% solve(Sigma22) %*% Sigma12, 
+                                     log = TRUE)) 
     }
     total = total + total_sub/R #average over R draws
     
@@ -58,15 +68,28 @@ partial_likelihood1 <-  function(k, y){ #k for keeps, y for correct vector
 partial_likelihood2 <-  function(k, y){ #k for keeps, y for correct vector
 
   mu_mean =  apply(k$mu, 2, mean, na.rm=TRUE)
+  theta_mean = apply(k$theta, 2, mean, na.rm=TRUE)
+  phi_mean = apply(k$phi, 2, mean, na.rm=TRUE)
+  sigma_v_mean = apply(k$sigma_v, 2, mean, na.rm=TRUE)
+  rho_mean = apply(k$rho, 2, mean, na.rm=TRUE)
   J_mean = apply(k$J,2:3, mean,na.rm=TRUE)
   v_mean = apply(k$v,2:3, mean,na.rm=TRUE)
-  rho_mean = mean(k$rho[,2], na.rm=TRUE)
   total_sub = 0
   for (t in 1:nrow(y)){
     print(t)
+    Sigma11 <- matrix(c(v_mean[t,1],
+                        rho_mean[1]*sqrt(prod(v_mean[t,])),
+                        rho_mean[1]*sqrt(prod(v_mean[t,])),
+                        v_mean[t,2]),nrow=2)
+    Sigma22 <- matrix(c(sigma_v_mean[1]^2*v_mean[t,1],
+                        rho_mean[2]*prod(sigma_v_mean)*sqrt(prod(v_mean[t,])),
+                        rho_mean[2]*prod(sigma_v_mean)*sqrt(prod(v_mean[t,])),
+                        sigma_v_mean[2]^2*v_mean[t,2]),nrow=2)
+    Sigma12 <- diag(c(rho_mean[3:4]*sigma_v_mean*v_mean[t,]))
+    eps <- v_mean[t+1,] - theta_mean - phi_mean * (v_mean[t,] - theta_mean)
     total_sub = total_sub + (dmvnorm(y[t,], 
-                                     mu_mean+ J_mean[t,],
-                                     diag(sqrt(v_mean[t+1,]))%*%(rho_mean*(1-diag(2)) + diag(2))%*%diag(sqrt(v_mean[t+1,])), 
+                                     mu_mean + J_mean[t,] + Sigma12 %*% solve(Sigma22) %*% eps,
+                                     Sigma11 - Sigma12 %*% solve(Sigma22) %*% Sigma12, 
                                      log = TRUE)) 
   }
   return(total_sub)
