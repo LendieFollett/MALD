@@ -32,7 +32,7 @@ S <- merge(BTC,SP500)
 T <- nrow(S) - 1
 S <- merge(BTC,SP500)
 y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
-#download full MCMC results (obtained from run_mcmc.R with fix = FALSE)
+#download full MCMC results 
 keepsBTC <- readRDS("/Users/000766412/Box Sync/ALD_Codes/keepsBTC.rds")
 keepsSP <- readRDS("/Users/000766412/Box Sync/ALD_Codes/keepsSP.rds")
 

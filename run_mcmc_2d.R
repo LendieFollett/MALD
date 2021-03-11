@@ -1,3 +1,7 @@
+#PARAMETERS
+#
+
+
 
 #keeps is a list that stores kept draws (everything after burnin B)
 keeps <- list(
@@ -34,27 +38,7 @@ keeps <- list(
 
 
 for (chn in 1:n_chns){
-  source("starting_values_2d.R") #initialize values
-  if(fix == TRUE){
-    sigma_c <- MAPs$sigma_c
-    rhoc <- MAPs$rhoc
-    Sigma_c <- matrix(c(sigma_c[1]^2,rhoc*prod(sigma_c),rhoc*prod(sigma_c),sigma_c[2]^2),nrow=2)
-    # #update lambda (R)
-    lambda <- MAPs$lambda
-    mu <- MAPs$mu
-    #update theta
-    theta <- MAPs$theta
-    phi <- MAPs$phi
-    #update sigma_v and rho
-    sigma_v <- MAPs$sigma_v
-    rho <- MAPs$rho
-    
-    xi_y1eta <- MAPs$xi_yeta[1]
-    xi_y1w <- MAPs$xi_yw[1]
-    xi_y2eta <- MAPs$xi_yeta[2]
-    xi_y2w <- MAPs$xi_yw[2]
-    
-  }
+source("starting_values_2d.R") #initialize values
 #(in total, we're running R + B iterations)
 for (i in 1:(R + B)){
   print(i)
@@ -82,8 +66,6 @@ for (i in 1:(R + B)){
   N_y2 <- as.numeric(delta == 1)
   N_c <- as.numeric(delta == 2)
     J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-  
-  if (fix == FALSE){
   # #update lambda (R)
   lambda <- update_lambda(c(sum(N_y1),sum(N_y2),sum(N_c),T-sum(c(N_y1,N_y2,N_c))),c(10,10,10,170))
   xi_y1eta <- update_eta(xi_y1,xi_y1w,xi_y1eta,xi_y1s,0.25)
@@ -99,7 +81,7 @@ for (i in 1:(R + B)){
   phi <- update_phi(y,x,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
   sigma_v <- update_sigma_v(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_sigmasq = 0.05) %>% as.vector
   rho <- update_rho(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_sigmasq = 0.04) %>% as.vector
-  }
+
   
   #store after burn in
   if (i > B) {
