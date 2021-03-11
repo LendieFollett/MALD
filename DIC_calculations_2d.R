@@ -19,6 +19,8 @@ library(RcppTN)
 #DIC7 = -4E(ln(p(y|z,theta))) + 2ln(p(y|z-hat, theta-hat))
 
 # DATA AND MCMC SAMPLES ------------
+#download full MCMC results (obtained from run_mcmc.R with fix = FALSE)
+keepsBTCSP <- readRDS("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP.rds")
 
 getSymbols("BTC-USD",from = "2014-09-15",to = "2020-09-30")
 BTC <- as.data.frame(`BTC-USD`)
@@ -27,13 +29,11 @@ BTC$`BTC-USD.Close`[BTC$Date=="2020-04-17"] <- 7096.18
 getSymbols("^GSPC",from = "2014-09-15",to = "2020-09-30")
 SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
-Rsequence <- seq(1,nrow(keepsBTC$v), by = 100)
+
 S <- merge(BTC,SP500)
 T <- nrow(S) - 1
 S <- merge(BTC,SP500)
 y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
-#download full MCMC results (obtained from run_mcmc.R with fix = FALSE)
-keepsBTCSP <- readRDS("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP.rds")
 
 #DIC7 = -4E(ln(p(y|z,theta))) + 2ln(p(y|z-hat, theta-hat))
 partial_likelihood1 <-  function(k, y){ #k for keeps, y for correct vector
@@ -44,8 +44,8 @@ partial_likelihood1 <-  function(k, y){ #k for keeps, y for correct vector
     total_sub = 0
     for (t in 1:nrow(y)){
       Sigma11 <- matrix(c(k$v[r,t,1],
-                          k$rho[r,1]*sqrt(prod(k$v[r,t,])),
-                          k$rho[r,1]*sqrt(prod(k$v[r,t,])),
+                          k$rho[r,2]*sqrt(prod(k$v[r,t,])),
+                          k$rho[r,2]*sqrt(prod(k$v[r,t,])),
                           k$v[r,t,2]),nrow=2)
       Sigma22 <- matrix(c(k$sigma_v[r,1]^2*k$v[r,t,1],
                           k$rho[r,1]*prod(k$sigma_v[r,])*sqrt(prod(k$v[r,t,])),
@@ -98,13 +98,13 @@ partial_likelihood2 <-  function(k, y){ #k for keeps, y for correct vector
 
 #E(ln(p(y|z,theta)))
 Elnpy_mid_ztheta <- partial_likelihood1(keepsBTCSP, y) 
-#[1] -5583.962
+#[1] -4357.889
 lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP, y) 
-#[1] -4874.593
+#[1] -3727.651
 
 DIC7_1d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
 DIC7_1d
-#[1] 12586.66
-#compare to 12294.43 from the 1d model
+#[1] 9976.253
+#compare to 9672.983 from the 1d model... prefer 1d
 
 

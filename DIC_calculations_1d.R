@@ -55,7 +55,7 @@ partial_likelihood2 <-  function(k, y){ #k for keeps, y for correct vector
   v_mean = apply(k$v, 2, mean)
   theta_mean <- mean(k$theta)
   phi_mean <- mean(k$phi)
-  T <- nrow(y)
+  T <- length(y)
  dnorm(y, 
        mean(k$mu) + apply(k$J,2, mean) + 
          (mean(k$rho)/mean(k$sigma_v))*(v_mean[-1]-theta_mean-phi_mean*(v_mean[-(T+1)]-theta_mean)),
@@ -73,6 +73,6 @@ lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTC, y[,1]) + partial_likeliho
 
 DIC7_1d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
 DIC7_1d
-#17878.61
+#[1] 9672.983
 
 
