@@ -1,6 +1,8 @@
 #PARAMETERS
-#
+#SVMVN 
+  #norm_jumps: =TRUE if jumps should be normally distributed (fix all s params = 1)
 
+#norm_jumps: =TRUE if jumps should be normally distributed (fix all s params = 1)
 
 
 #keeps is a list that stores kept draws (everything after burnin B)
@@ -40,6 +42,12 @@ keeps <- list(
 for (chn in 1:n_chns){
 source("starting_values_2d.R") #initialize values
 #(in total, we're running R + B iterations)
+  
+  if (norm_jumps == TRUE){
+    xi_y1s <- xi_y2s <- rep(1, nrow(xi_y1s))
+    xi_cs <- array(1, dim = dim(xi_cs))
+  }
+  
 for (i in 1:(R + B)){
   print(i)
   #update stochastic volatility using pgas
@@ -47,19 +55,19 @@ for (i in 1:(R + B)){
   
   xi_y1<- pgas_xiy1_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y1w, xi_y1eta, xi_y1s, N=10) %>% as.vector()
     J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-  
+    if (norm_jumps == FALSE){
   xi_y1s <- pgas_s_cpp(xi_y1, xi_y1w, xi_y1eta, xi_y1s, N=10) %>%as.vector()
-  
+    }
   xi_y2 <- pgas_xiy2_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y2w, xi_y2eta, xi_y2s, N=10) %>% as.vector()
     J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-  
+    if (norm_jumps == FALSE){ 
   xi_y2s <- pgas_s_cpp(xi_y2, xi_y2w, xi_y2eta, xi_y2s, N=10) %>%as.vector()
-  
+    }
   xi_c <- pgas_xic_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_cw, sigma_c, rhoc, xi_cs, N=10)
     J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-  
+    if (norm_jumps == FALSE){
   xi_cs <- pgas_sc_cpp(xi_c, xi_cw, Sigma_c, xi_cs, N=10) %>% as.vector()
-
+    }
   delta <- update_delta(y,x,omega=v,xiy1=xi_y1, xiy2=xi_y2, xic=xi_c,mu,theta,phi,sigma_v,rho,lambda)
 
   N_y1 <- as.numeric(delta == 0)
