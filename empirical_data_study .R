@@ -10,16 +10,11 @@ library(MCMCpack)
 library(quantmod)
 library(RcppTN)
 
-#################################################### 
-# SV-MALD MODEL ----------
-#################################################### 
-
-sourceCpp("pgas_2d.cpp") #C++ updates
-#initialize values, create space to save draws
+k <- 5 #thinning param
 B <- 50000 #how many burn in draws to throw away
 R <- 50000 #how many draws to keep after burn in
 n_chns <- 1 #how many chains to run
-
+#load data
 getSymbols("BTC-USD",from = "2014-09-15",to = "2020-09-30")
 BTC <- as.data.frame(`BTC-USD`)
 BTC$Date <- seq(as.Date("2014-09-17"),as.Date("2020-09-30"),by="days")
@@ -29,12 +24,20 @@ SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
 S <- merge(BTC,SP500)
 T <- nrow(S) - 1
-S <- merge(BTC,SP500)
 
+
+
+#################################################### 
+# SVMALD MODEL ----------
+#################################################### 
+
+sourceCpp("pgas_2d.cpp") #C++ updates
+#initialize values, create space to save draws
 # #2-D MODEL MCMC
 y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
 x <- array(0,dim=dim(y))
 source("starting_values_2d.R") #initialize values
+exp_jumps <- norm_jumps <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
 saveRDS(keeps,paste0("keeps/keepsBTCSP.rds"))
 
@@ -56,16 +59,31 @@ source("run_mcmc.R")
 saveRDS(keeps,paste0("../keeps/keepsSP.rds"))
 
 
+#################################################### 
+# SVMVN MODEL ----------
+#################################################### 
+sourceCpp("pgas_2d.cpp") #C++ updates
+#initialize values, create space to save draws
+# #2-D MODEL MCMC
+y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
+x <- array(0,dim=dim(y))
+source("starting_values_2d.R") #initialize values
+exp_jumps  <- FALSE
+norm_jumps <- TRUE #NORMAL JUMPS SET TO TRUE SO B/s are set to 1
+source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
+saveRDS(keeps,paste0("keeps/keepsBTCSP_MVN.rds"))
 
-
-# #########2-d case 
-# y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
-# x <- array(0,dim=dim(y))
-# fix <- TRUE
-# MAPs <- THETA_map2d #where to find MAP estimates
-# #source("starting_values_2d.R") #initialize values
-# source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-# #save results! not sure how to do this... 
-# #maybe save each keeps object as separate RDS file?
-# saveRDS(keeps,paste0("keeps/keepsBTCSP.rds"))
+#################################################### 
+# SVLD MODEL ----------
+#################################################### 
+sourceCpp("pgas_2d.cpp") #C++ updates
+#initialize values, create space to save draws
+# #2-D MODEL MCMC
+y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
+x <- array(0,dim=dim(y))
+source("starting_values_2d.R") #initialize values
+exp_jumps  <- TRUE #ASYMMETRY PARAMETERS W SET TO 0 (exponential, laplace distributed jumps)
+norm_jumps <- FALSE 
+source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
+saveRDS(keeps,paste0("keeps/keepsBTCSP_LD.rds"))
 
