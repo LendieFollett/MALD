@@ -66,9 +66,9 @@ partial_likelihood2 <-  function(k, y){ #k for keeps, y for correct vector
 
 #E(ln(p(y|z,theta)))
 Elnpy_mid_ztheta <- partial_likelihood1(keepsBTC, y[,1]) + partial_likelihood1(keepsSP, y[,2])
-
+#[1] -4187.335
 lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTC, y[,1]) + partial_likelihood2(keepsSP, y[,2])
-
+#[1] -3538.179
 
 
 DIC7_1d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat

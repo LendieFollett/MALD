@@ -44,12 +44,12 @@ partial_likelihood1 <-  function(k, y){ #k for keeps, y for correct vector
     total_sub = 0
     for (t in 1:nrow(y)){
       Sigma11 <- matrix(c(k$v[r,t,1],
-                          k$rho[r,2]*sqrt(prod(k$v[r,t,])),
-                          k$rho[r,2]*sqrt(prod(k$v[r,t,])),
+                          k$rho[r,1]*sqrt(prod(k$v[r,t,])),
+                          k$rho[r,1]*sqrt(prod(k$v[r,t,])),
                           k$v[r,t,2]),nrow=2)
       Sigma22 <- matrix(c(k$sigma_v[r,1]^2*k$v[r,t,1],
-                          k$rho[r,1]*prod(k$sigma_v[r,])*sqrt(prod(k$v[r,t,])),
-                          k$rho[r,1]*prod(k$sigma_v[r,])*sqrt(prod(k$v[r,t,])),
+                          k$rho[r,2]*prod(k$sigma_v[r,])*sqrt(prod(k$v[r,t,])),
+                          k$rho[r,2]*prod(k$sigma_v[r,])*sqrt(prod(k$v[r,t,])),
                           k$sigma_v[r,2]^2*k$v[r,t,2]),nrow=2)
       Sigma12 <- diag(c(k$rho[r,3:4]*k$sigma_v[r,]*k$v[r,t,]))
       eps <- k$v[r,t+1,] - k$theta[r,] - k$phi[r,] * (k$v[r,t,] - k$theta[r,])
