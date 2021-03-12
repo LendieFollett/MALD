@@ -71,7 +71,7 @@ source("starting_values_2d.R") #initialize values
 exp_jumps  <- FALSE
 norm_jumps <- TRUE #NORMAL JUMPS SET TO TRUE SO B/s are set to 1
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps/keepsBTCSP_MVN.rds"))
+saveRDS(keeps,paste0("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP_MVN.rds"))
 
 #################################################### 
 # SVLD MODEL ----------
