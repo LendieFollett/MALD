@@ -30,7 +30,6 @@ getSymbols("^GSPC",from = "2014-09-15",to = "2020-09-30")
 SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
 
-S <- merge(BTC,SP500)
 T <- nrow(S) - 1
 S <- merge(BTC,SP500)
 y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
@@ -142,12 +141,12 @@ DIC7_1d
 #----SVMALD
 #E(ln(p(y|z,theta)))
 Elnpy_mid_ztheta <- partial_likelihood1(keepsBTCSP, y) 
-#[1] -4318.319
+#[1] -4299.164
 lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP, y) 
-#[1] -3727.651
+#[1] -3702.311
 DIC7_2d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
 DIC7_2d
-#[1] 9817.973
+#[1] 9792.034
 #compare to 9672.983 from the 1d model... prefer 1d
 
 #----SVMVN
@@ -159,4 +158,14 @@ lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP_MVN, y)
 DIC7_MVN = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
 DIC7_MVN
 #[1] 9796.803
+
+#----SVLD
+
+Elnpy_mid_ztheta <- partial_likelihood1(keepsBTCSP_LD, y) 
+#[1] 
+lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP_LD, y) 
+#[1] 
+DIC7_LD= -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
+DIC7_LD
+#[1]  9765.019
 

@@ -32,14 +32,13 @@ T <- nrow(S) - 1
 #################################################### 
 
 sourceCpp("pgas_2d.cpp") #C++ updates
-#initialize values, create space to save draws
 # #2-D MODEL MCMC
 y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
 x <- array(0,dim=dim(y))
 source("starting_values_2d.R") #initialize values
 exp_jumps <- norm_jumps <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps/keepsBTCSP.rds"))
+saveRDS(keeps,paste0("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP.rds"))
 
 #################################################### 
 # SVALD INDEPENDENCE (1d) MODEL ----------
@@ -85,5 +84,5 @@ source("starting_values_2d.R") #initialize values
 exp_jumps  <- TRUE #ASYMMETRY PARAMETERS W SET TO 0 (exponential, laplace distributed jumps)
 norm_jumps <- FALSE 
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps/keepsBTCSP_LD.rds"))
+saveRDS(keeps,paste0("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP_LD.rds"))
 
