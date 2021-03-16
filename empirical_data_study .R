@@ -86,3 +86,32 @@ norm_jumps <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
 saveRDS(keeps,paste0("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP_LD.rds"))
 
+
+#################################################### 
+# CONVERGENCE CHECKS ----------
+#################################################### 
+library(LaplacesDemon)
+
+total <- 10000 #number of mcmc iterations saved after burn-in, thinning
+doESS <- function(x, total){
+  R <- total
+  if(!is.null(dim(x))){ #if it's a data frame
+    return(apply(x[1:R,], 2, ESS))
+  }else{
+    return(ESS(x[1:R]))
+  }
+}
+
+#SVMALD
+lapply(keepsBTCSP[c(2:3,5:16)], doESS, total = total) %>% str()
+#SVMVN
+lapply(keepsBTCSP_MVN[c(2:3,5:16)], doESS, total = total) %>% str()
+#SVLD
+lapply(keepsBTCSP_LD[c(2:3,5:16)], doESS, total = total) %>% str()
+
+
+
+plot(keepsBTCSP$sigma_c[1:total, 1]);length(unique(keepsBTCSP$sigma_c[1:total, 1]))/total
+plot(keepsBTCSP$sigma_c[1:total, 1])
+plot(keepsBTCSP$rhoc[1:total])
+plot(keepsBTCSP$xi_y2eta[1:total])
