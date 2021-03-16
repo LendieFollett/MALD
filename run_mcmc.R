@@ -36,85 +36,28 @@ keeps <- list(
 #(in total, we're running R + B iterations of n_chns independent chains)
 for (chn in 1:n_chns){
 source("starting_values.R") #initialize values
-  if(fix == TRUE){
-    lambda <- MAPs$lambda
-    # #update mu
-    mu <- MAPs$mu
-    #update theta
-    theta <- MAPs$theta
-    #update phi
-    phi <- MAPs$phi
-    # #update sigma_v and rho
-    sigma_v <- MAPs$sigma_v
-    rho <- MAPs$rho
-    
-    xi_yeta <- MAPs$xi_yeta
-    xi_yw <- MAPs$xi_yw
-  }
+
 for (i in 1:(R + B)){
   #update stochastic volatility using pgas
-  #v <- pgas_v(Y=y,vprim=v, N=10)
-  #v <- true_omega
   v <- pgas_v_cpp(y, x, omega=v, J, mu, theta, phi, sigma_v, rho, N=10) %>% as.vector
-  
   #sample xi^y, associated parameters s, eta, w
   xi_y<- pgas_xiy_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y, N_y, xi_yw, xi_yeta, xi_ys, N=10) %>% as.vector()
   J = xi_y*N_y
-  #xi_y = true_xiy
   xi_ys <- pgas_s_cpp(xi_y, xi_yw, xi_yeta, xi_ys, N=10) %>%as.vector()
-  #sample xi^v, associated parameters s, eta, w
-  #xi_v<- pgas_xiv_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y, xi_v, xi_c, N_y, N_v, N_c, xi_vw, xi_veta, xi_vs, N=10) %>% as.vector()
-  #J = xi_c*(delta==2) +cbind(xi_y,0)*(delta==0) + cbind(0,xi_v)*(delta==1)
-  #xi_v <- true_xiw
-  #xi_vs <- pgas_s_cpp(xi_v, xi_vw, xi_veta, xi_vs, N=10) %>%as.vector()
-  #xi_veta <- update_eta(xi_v,xi_vw,xi_veta,xi_vs,tune_wsd = 0.5)
-  #xi_vw <- update_w(xi_v,xi_vw,xi_veta,xi_vs,tune_wsd = 0.5)
-  
-  #sample xi^c, associated parameters s, w
-  #xi_c <- pgas_xic_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y, xi_v, xi_c, N_y, N_v, N_c, xi_cw, sigma_c, rhoc, xi_cs, N=10)
-  #J = xi_c*(delta==2) +cbind(xi_y,0)*(delta==0) + cbind(0,xi_v)*(delta==1)
-  #xi_c <- true_xic
-  #  #update w_c, Sigma_c parameters)
-  #xi_cs <- pgas_sc_cpp(xi_c, xi_cw, Sigma_c, xi_cs, N=10) %>% as.vector()
-  #xi_cw <- update_w_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs, tune_wsd = 0.5)%>%as.vector()
-  #sigma_c <- update_sigma_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs,tune_wsd = 0.5)
-  #rhoc <- update_rho_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs,tune_wsd = 0.04)
-  #Sigma_c <- matrix(c(sigma_c[1]^2,rhoc*prod(sigma_c),rhoc*prod(sigma_c),sigma_c[2]^2),nrow=2)
-  #print(paste0("sigma_c=", sigma_c[1],",", sigma_c[2], ", rhoc=",rhoc,", wc=",xi_cw[1],",", xi_cw[2]))
-  
-  #update delta (c++)
   delta <- update_delta(y,x,omega=v,xiy=xi_y,mu,theta,phi,sigma_v,rho,lambda)
-  #delta <- true_delta
-  
+  #update N_y,J
   N_y <- as.numeric(delta == 0)
-  #N_v <- as.numeric(delta == 1)
-  #N_c <- as.numeric(delta == 2)
-  #print(table(delta, true_delta))
   J = xi_y*N_y
-  
-  if(fix == FALSE){
-  # #update lambda (R)
+  #updete THETA
   lambda <- update_lambda(c(sum(N_y),T-sum(N_y)),c(2,38))
-  
-  # #update mu
   mu <- update_mu(y,x,omega=v,J,theta,phi,sigma_v,rho)
-  
-  #update theta
   theta <- update_theta(y,x,omega=v,J,mu,phi,sigma_v,rho)
-  
-  #update phi
   phi <- update_phi(y,x,omega=v,J,mu,theta,sigma_v,rho)
-  
-  # #update sigma_v and rho
   sigma_v <- update_sigma_v(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_sigmasq = 0.1)
   rho <- update_rho(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_rhosd = 0.02)
-  # Update mu_y and nu_y
   xi_yeta <- update_eta(xi_y,xi_yw,xi_yeta,xi_ys,0.25)
   xi_yw <- update_w(xi_y,xi_yw,xi_yeta,xi_ys,0.25)
-  }
-  #tmp <- update_rho_sigma_v(); sigma_v = tmp[1]; rho = tmp[2];
-  #print(paste0("phi = ", phi, ", theta = ", theta, " rho = ", rho, " sigma_v = ",sigma_v))
-  
+
   if (i %% 10 == 0){
      print(paste0("Running Chain: ",chn,", Completed Iteration: ",i))
   #   print(qplot(1:T,true_omega[-(T+1)], geom = "line") + 

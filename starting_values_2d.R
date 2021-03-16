@@ -17,7 +17,7 @@ xi_y1eta <- 5; xi_y2eta <- 5;
 
 J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1) 
 
-rhoc <- 0
+rhoc <- .3
 sigma_c <- c(5,5)
 Sigma_c <- matrix(c(sigma_c[1]^2, 
                     rhoc*prod(sigma_c), 
@@ -25,11 +25,15 @@ Sigma_c <- matrix(c(sigma_c[1]^2,
                     sigma_c[2]^2), ncol = 2)
 
 
-#w_start <- rep(var(y-x), T+1) #naive starting values
-#or
-#w_start <- lowess((y-x)^2, f = 0.1)$y #informed starting values
+
+w_start <- array(0,dim = c(T+1,2))
+w_start[1:T,1] <- lowess((y[,1]-mean(y[,1]))^2, f = 0.2)$y #informed starting values
+w_start[1:T,2] <- lowess((y[,2]-mean(y[,2]))^2, f = 0.2)$y #informed starting values
+w_start[T+1,] <- c(w_start[T,1],w_start[T,2])
 #w_start <- c(w_start, tail(w_start,1))
-v <- array(1,dim = c(T+1,2))
+v <- w_start
+#plot(v[,1])
+#plot(v[,2])
 
 theta <- c(1,1)
 phi <- c(0.95,0.95)

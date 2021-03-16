@@ -131,21 +131,22 @@ arma::vec dmvnrm_arma(arma::mat x,
 
 arma::mat armgetSigma(arma::vec omegat, arma::vec sigma_v, arma::vec rho){
   arma::mat Sigma(4,4);
-  Sigma(0,0) = omegat(0);
-  Sigma(1,1) = omegat(1);
-  Sigma(2,2) = sigma_v(0) * sigma_v(0) * omegat(0);
-  Sigma(3,3) = sigma_v(1) * sigma_v(1) * omegat(1);
-  Sigma(0,1) = rho(0) * sqrt(omegat(0) * omegat(1));
+  Sigma(0,0) = omegat(0);//y1 variance
+  Sigma(1,1) = omegat(1); // y2 variance
+  Sigma(2,2) = sigma_v(0) * sigma_v(0) * omegat(0); // variance of v1
+  Sigma(3,3) = sigma_v(1) * sigma_v(1) * omegat(1); // variance of v2
+  
+  Sigma(0,1) = rho(0) * sqrt(omegat(0) * omegat(1)); //rho(0)= corr btwn y1, y2 errors
   Sigma(1,0) = rho(0) * sqrt(omegat(0) * omegat(1));
-  Sigma(0,2) = rho(2) * sigma_v(0) * omegat(0);
+  Sigma(0,2) = rho(2) * sigma_v(0) * omegat(0);//rho(2)= corr btwn y1, v1 errors
   Sigma(2,0) = rho(2) * sigma_v(0) * omegat(0);
   Sigma(0,3) = 0;
   Sigma(3,0) = 0;
   Sigma(1,2) = 0;
   Sigma(2,1) = 0;
-  Sigma(1,3) = rho(3) * sigma_v(1) * omegat(1);
+  Sigma(1,3) = rho(3) * sigma_v(1) * omegat(1); //rho(3) = corr btwn y2, v2 errors
   Sigma(3,1) = rho(3) * sigma_v(1) * omegat(1);
-  Sigma(2,3) = rho(1) * sigma_v(0) * sigma_v(1) * sqrt(omegat(0) * omegat(1));
+  Sigma(2,3) = rho(1) * sigma_v(0) * sigma_v(1) * sqrt(omegat(0) * omegat(1)); //rho(1) corr btwn v1, v2 errors
   Sigma(3,2) = rho(1) * sigma_v(0) * sigma_v(1) * sqrt(omegat(0) * omegat(1));
   return Sigma;
 }

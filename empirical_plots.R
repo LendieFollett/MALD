@@ -26,7 +26,7 @@ BTC$`BTC-USD.Close`[BTC$Date=="2020-04-17"] <- 7096.18
 getSymbols("^GSPC",from = "2014-09-15",to = "2020-09-30")
 SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
-Rsequence <- seq(1,nrow(keepsBTCSP$v), by = 100)
+Rsequence <- seq(1,nrow(keepsBTC$v), by = 100)
 S <- merge(BTC,SP500)
 T <- nrow(S) - 1
 S <- merge(BTC,SP500)
@@ -34,6 +34,8 @@ y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),
 x <- array(0,dim=dim(y))
 r2 <- 0
 y <-array(0, dim = c(T, 2, length(Rsequence)))
+
+#2d model
 for(r in Rsequence){ #loop over posterior draws -->posterior predictive distributions
   print(r)
   r2 <- r2 + 1
@@ -46,26 +48,28 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
   sim <- 0 
   for ( i in 1:T){
   
-  Sigma_c = matrix(c((keepsBTCSP$sigma_c[r,1])^2,
-                     (keepsBTCSP$rhoc[r])*prod(keepsBTCSP$sigma_c[r,]),
-                     (keepsBTCSP$rhoc[r])*prod(keepsBTCSP$sigma_c[r,]),
-                     (keepsBTCSP$sigma_c[r,2])^2),nrow=2)
-  whichone <- sample(c(0:3),prob=apply(keepsBTCSP$lambda,2,mean), 1)
-  delta[i] <- whichone
-  xics[i] <- rexp(1)
-  X<- mvrnorm(n = 1, mu = c(0,0), Sigma = Sigma_c)
-  xic[i,] <- (keepsBTCSP$xi_cw[r,]*xics[i]  + sqrt(xics[i])*X)
-  
-
-  xiy1s[i] <- rexp(1)
-  xiy1[i] <- keepsBTCSP$xi_y1w[r]*xiy1s[i]+ 
-                sqrt(xiy1s[i])*keepsBTCSP$xi_y1eta[r]*rnorm(1,0,1)
-  xiy2s[i] <- rexp(1)
-  xiy2[i] <- keepsBTCSP$xi_y2w[r]*xiy2s[i]+ 
-                sqrt(xiy2s[i])*keepsBTCSP$xi_y2eta[r]*rnorm(1,0,1)
-  
-  J[i,] = (delta[i] == 2)*xic[i,] + (delta[i] == 0)*c(xiy1[i],0) + (delta[i] == 1)*c(0,xiy2[i])
-  
+  # Sigma_c = matrix(c((keepsBTCSP$sigma_c[r,1])^2,
+  #                    (keepsBTCSP$rhoc[r])*prod(keepsBTCSP$sigma_c[r,]),
+  #                    (keepsBTCSP$rhoc[r])*prod(keepsBTCSP$sigma_c[r,]),
+  #                    (keepsBTCSP$sigma_c[r,2])^2),nrow=2)
+  # whichone <- sample(c(0:3),prob=apply(keepsBTCSP$lambda,2,mean), 1)
+  # delta[i] <- whichone
+  # xics[i] <- rexp(1)
+  # X<- mvrnorm(n = 1, mu = c(0,0), Sigma = Sigma_c)
+  # xic[i,] <- (keepsBTCSP$xi_cw[r,]*xics[i]  + sqrt(xics[i])*X)
+  # 
+  # 
+  # xiy1s[i] <- rexp(1)
+  # xiy1[i] <- keepsBTCSP$xi_y1w[r]*xiy1s[i]+ 
+  #               sqrt(xiy1s[i])*keepsBTCSP$xi_y1eta[r]*rnorm(1,0,1)
+  # xiy2s[i] <- rexp(1)
+  # xiy2[i] <- keepsBTCSP$xi_y2w[r]*xiy2s[i]+ 
+  #               sqrt(xiy2s[i])*keepsBTCSP$xi_y2eta[r]*rnorm(1,0,1)
+  # 
+  # J[i,] = (delta[i] == 2)*xic[i,] + (delta[i] == 0)*c(xiy1[i],0) + (delta[i] == 1)*c(0,xiy2[i])
+  # 
+  J[i,] = keepsBTCSP$J[r,i,]  
+    
   Sigma <- matrix(c(V[i,1],(keepsBTCSP$rho[r,1])*sqrt(prod(V[i,])),(keepsBTCSP$rho[r,3])*(keepsBTCSP$sigma_v[r,1])*V[i,1],0,
                     (keepsBTCSP$rho[r,1])*sqrt(prod(V[i,])),V[i,2],0,(keepsBTCSP$rho[r,4])*(keepsBTCSP$sigma_v[r,2])*V[i,2],
                     (keepsBTCSP$rho[r,3])*(keepsBTCSP$sigma_v[r,1])*V[i,1],0,(keepsBTCSP$sigma_v[r,1])^2*V[i,1],(keepsBTCSP$rho[r,2])*prod(keepsBTCSP$sigma_v[r,])*sqrt(prod(V[i,])),
@@ -99,14 +103,14 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
  print(r)
    V[1] <- c(keepsSP$v[r,1])
   for ( i in 1:T){
-  whichone <- sample(c(0:1),prob=c(keepsSP$lambda[r],1-keepsSP$lambda[r]), 1)
-  delta[i] <- whichone
-  
-  xiy1s[i] <- rexp(1)
-  xiy1[i] <- (keepsSP$xi_yw[r]*xiy1s[i]+ 
-                sqrt(xiy1s[i])*keepsSP$xi_yeta[r]*rnorm(1,0,1))
-  
-  J[i] = (delta[i] == 0)*xiy1[i]
+  # whichone <- sample(c(0:1),prob=c(keepsSP$lambda[r],1-keepsSP$lambda[r]), 1)
+  # delta[i] <- whichone
+  # 
+  # xiy1s[i] <- rexp(1)
+  # xiy1[i] <- (keepsSP$xi_yw[r]*xiy1s[i]+ 
+  #               sqrt(xiy1s[i])*keepsSP$xi_yeta[r]*rnorm(1,0,1))
+  # 
+  J[i] = keepsSP$J[r,i]#(delta[i] == 0)*xiy1[i]
   
   Sigma <- matrix(c(V[i],keepsSP$rho[r]*keepsSP$sigma_v[r]*V[i],keepsSP$rho[r]*keepsSP$sigma_v[r]*V[i],keepsSP$sigma_v[r]^2*V[i]),
                   nrow=2)
@@ -135,15 +139,15 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
   print(r)
   V[1] <- c(keepsBTC$v[r,1])
   for ( i in 1:T){
-    whichone <- sample(c(0:1),prob=c(keepsBTC$lambda[r],1-keepsBTC$lambda[r]), 1)
-    delta[i] <- whichone
+    # whichone <- sample(c(0:1),prob=c(keepsBTC$lambda[r],1-keepsBTC$lambda[r]), 1)
+    # delta[i] <- whichone
+    # 
+    # xiy1s[i] <- rexp(1)
+    # xiy1[i] <- (keepsBTC$xi_yw[r]*xiy1s[i]+ 
+    #               sqrt(xiy1s[i])*keepsBTC$xi_yeta[r]*rnorm(1,0,1))
     
-    xiy1s[i] <- rexp(1)
-    xiy1[i] <- (keepsBTC$xi_yw[r]*xiy1s[i]+ 
-                  sqrt(xiy1s[i])*keepsBTC$xi_yeta[r]*rnorm(1,0,1))
-    
-    J[i] = (delta[i] == 0)*xiy1[i]
-    
+    #J[i] = (delta[i] == 0)*xiy1[i]
+    J[i] = keepsBTC$J[r,i]
     Sigma <- matrix(c(V[i],keepsBTC$rho[r]*keepsBTC$sigma_v[r]*V[i],keepsBTC$rho[r]*keepsBTC$sigma_v[r]*V[i],keepsBTC$sigma_v[r]^2*V[i]),
                     nrow=2)
     
@@ -171,9 +175,13 @@ QQdatBTCSP = data.frame(S1 = 100*(log(S$`BTC-USD.Close`[-1]) - log(S$`BTC-USD.Cl
 str(y_2d); str(y_1d)
 
 r_2d <- do.call(rbind,apply(y_2d, 3, function(x){x - QQdatBTCSP}) )%>%
-  mutate(t = rep(c(1:T), length(Rsequence))) %>%
+  mutate(t = rep(c(1:T), length(Rsequence)),
+         v1 = as.vector(keepsBTCSP$v[Rsequence,-1 , 1]),
+         v2 = as.vector(keepsBTCSP$v[Rsequence, -1, 2])) %>%
+  mutate(S1 = S1/sqrt(v1),
+         S2 = S2/sqrt(v2)) %>%
   group_by(t) %>%
-  summarise(meanS1 = mean(S1),
+  summarise(meanS1 = mean(S1),#posterior summaries of residuals
             meanS2 = mean(S2),
             lowerS1 = quantile(S1, .05),
             upperS1 = quantile(S1, .95),
@@ -181,7 +189,11 @@ r_2d <- do.call(rbind,apply(y_2d, 3, function(x){x - QQdatBTCSP}) )%>%
             upperS2 = quantile(S2, .95))
 
 r_1d <- do.call(rbind,apply(y_1d, 3, function(x){x - QQdatBTCSP}) )%>%
-  mutate(t = rep(c(1:T), length(Rsequence))) %>%
+  mutate(t = rep(c(1:T), length(Rsequence)),
+         v1 = as.vector(keepsBTC$v[Rsequence,-1 ]),
+         v2 = as.vector(keepsSP$v[Rsequence, -1])) %>%
+  mutate(S1 = S1/sqrt(v1),
+         S2 = S2/sqrt(v2)) %>%
   group_by(t) %>%
   summarise(meanS1 = mean(S1),
             meanS2 = mean(S2),
@@ -192,25 +204,27 @@ r_1d <- do.call(rbind,apply(y_1d, 3, function(x){x - QQdatBTCSP}) )%>%
 
 p1_2d <- r_2d %>%
   ggplot(aes(x =apply(y_2d[,1,], 1, mean), y = meanS1)) +
+  geom_point()+
   geom_pointrange(aes(ymin = lowerS1, ymax = upperS1),alpha = I(.2)) +
-  theme_bw()
+  theme_bw() +labs(x = "Y-hat", y = "Residual")
 
 p2_2d <-r_2d %>%
   ggplot(aes(x =apply(y_2d[,2,], 1, mean), y = meanS2)) +
   geom_pointrange(aes(ymin = lowerS2, ymax = upperS2),alpha = I(.2))+
-  theme_bw()
+  theme_bw()+labs(x = "Y-hat", y = "Residual")
 
 
 p1_1d <-r_1d %>%
   ggplot(aes(x =apply(y_1d[,1,], 1, mean), y = meanS1))+
   geom_pointrange(aes(ymin = lowerS1, ymax = upperS1),alpha = I(.2))+
-  theme_bw()
+  theme_bw()+labs(x = "Y-hat", y = "Residual")
 
 
 p2_1d <-r_1d %>%
   ggplot(aes(x =apply(y_1d[,2,], 1, mean), y = meanS2)) +
   geom_pointrange(aes(ymin = lowerS2, ymax = upperS2),alpha = I(.2))+
-  theme_bw()
+  theme_bw()+labs(x = "Y-hat", y = "Residual")
+
 
 
 grid.arrange(p1_2d, p2_2d,p1_1d, p2_1d, nrow = 2)

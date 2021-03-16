@@ -1,3 +1,9 @@
+#PARAMETERS
+#SVMVN 
+  #norm_jumps: =TRUE if jumps should be normally distributed (fix all s params = 1)
+#SVLD
+  #exp_jumps: =TRUE if jumps should be (symmetric) exponentially distributed (fix all w params = 0)
+
 
 #keeps is a list that stores kept draws (everything after burnin B)
 keeps <- list(
@@ -34,28 +40,19 @@ keeps <- list(
 
 
 for (chn in 1:n_chns){
-  source("starting_values_2d.R") #initialize values
-  if(fix == TRUE){
-    sigma_c <- MAPs$sigma_c
-    rhoc <- MAPs$rhoc
-    Sigma_c <- matrix(c(sigma_c[1]^2,rhoc*prod(sigma_c),rhoc*prod(sigma_c),sigma_c[2]^2),nrow=2)
-    # #update lambda (R)
-    lambda <- MAPs$lambda
-    mu <- MAPs$mu
-    #update theta
-    theta <- MAPs$theta
-    phi <- MAPs$phi
-    #update sigma_v and rho
-    sigma_v <- MAPs$sigma_v
-    rho <- MAPs$rho
-    
-    xi_y1eta <- MAPs$xi_yeta[1]
-    xi_y1w <- MAPs$xi_yw[1]
-    xi_y2eta <- MAPs$xi_yeta[2]
-    xi_y2w <- MAPs$xi_yw[2]
-    
-  }
+source("starting_values_2d.R") #initialize values
 #(in total, we're running R + B iterations)
+  
+  if (norm_jumps == TRUE){
+    xi_y1s <- xi_y2s <- rep(1, length(xi_y1s))
+    xi_cs <- rep(1, length(xi_cs))
+  }
+  if(exp_jumps == TRUE){
+    xi_y1w <- 0
+    xi_y2w <- 0
+    xi_cw <- c(0,0)
+  }
+  
 for (i in 1:(R + B)){
   print(i)
   #update stochastic volatility using pgas
@@ -63,34 +60,34 @@ for (i in 1:(R + B)){
   
   xi_y1<- pgas_xiy1_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y1w, xi_y1eta, xi_y1s, N=10) %>% as.vector()
     J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-  
-  xi_y1s <- pgas_s_cpp(xi_y1, xi_y1w, xi_y1eta, xi_y1s, N=10) %>%as.vector()
-  
+    if (norm_jumps == FALSE){
+      xi_y1s <- pgas_s_cpp(xi_y1, xi_y1w, xi_y1eta, xi_y1s, N=10) %>%as.vector()
+    }
   xi_y2 <- pgas_xiy2_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y2w, xi_y2eta, xi_y2s, N=10) %>% as.vector()
     J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-  
-  xi_y2s <- pgas_s_cpp(xi_y2, xi_y2w, xi_y2eta, xi_y2s, N=10) %>%as.vector()
-  
+    if (norm_jumps == FALSE){ 
+      xi_y2s <- pgas_s_cpp(xi_y2, xi_y2w, xi_y2eta, xi_y2s, N=10) %>%as.vector()
+    }
   xi_c <- pgas_xic_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_cw, sigma_c, rhoc, xi_cs, N=10)
     J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-  
-  xi_cs <- pgas_sc_cpp(xi_c, xi_cw, Sigma_c, xi_cs, N=10) %>% as.vector()
-
+    if (norm_jumps == FALSE){
+      xi_cs <- pgas_sc_cpp(xi_c, xi_cw, Sigma_c, xi_cs, N=10) %>% as.vector()
+    }
   delta <- update_delta(y,x,omega=v,xiy1=xi_y1, xiy2=xi_y2, xic=xi_c,mu,theta,phi,sigma_v,rho,lambda)
 
   N_y1 <- as.numeric(delta == 0)
   N_y2 <- as.numeric(delta == 1)
   N_c <- as.numeric(delta == 2)
     J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-  
-  if (fix == FALSE){
   # #update lambda (R)
   lambda <- update_lambda(c(sum(N_y1),sum(N_y2),sum(N_c),T-sum(c(N_y1,N_y2,N_c))),c(10,10,10,170))
   xi_y1eta <- update_eta(xi_y1,xi_y1w,xi_y1eta,xi_y1s,0.25)
-  xi_y1w <- update_w(xi_y1,xi_y1w,xi_y1eta,xi_y1s,0.25)
   xi_y2eta <- update_eta(xi_y2,xi_y2w,xi_y2eta,xi_y2s,0.25)
-  xi_y2w <- update_w(xi_y2,xi_y2w,xi_y2eta,xi_y2s,0.25)
-  xi_cw <- update_w_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs, tune_wsd = 0.25) %>% as.vector()
+  if(exp_jumps == FALSE){
+    xi_y1w <- update_w(xi_y1,xi_y1w,xi_y1eta,xi_y1s,0.25)
+    xi_y2w <- update_w(xi_y2,xi_y2w,xi_y2eta,xi_y2s,0.25)
+    xi_cw <- update_w_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs, tune_wsd = 0.25) %>% as.vector()
+  }
   sigma_c <- update_sigma_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs,tune_wsd = 0.25)
   rhoc <- update_rho_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs,tune_wsd = 0.02)
     Sigma_c <- matrix(c(sigma_c[1]^2,rhoc*prod(sigma_c),rhoc*prod(sigma_c),sigma_c[2]^2),nrow=2)
@@ -99,7 +96,7 @@ for (i in 1:(R + B)){
   phi <- update_phi(y,x,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
   sigma_v <- update_sigma_v(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_sigmasq = 0.05) %>% as.vector
   rho <- update_rho(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_sigmasq = 0.04) %>% as.vector
-  }
+
   
   #store after burn in
   if (i > B) {
