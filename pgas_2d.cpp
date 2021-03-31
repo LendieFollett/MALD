@@ -172,7 +172,7 @@ double corDet(arma::vec rho){
   return det(Sigma);
 }
 
-double log_p(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arma::vec xi_y2, arma::mat xic, arma::vec xi_y1s, arma::vec xi_y2s, arma::vec xi_cs, arma::vec delta, arma::vec params){
+double log_p(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arma::vec xi_y2, arma::mat xic, arma::vec xi_y1s, arma::vec xi_y2s, arma::vec xi_cs, arma::vec delta, arma::vec params, bool norm_jumps){
   int T = y.n_rows;
   double target = 0;
   
@@ -218,12 +218,14 @@ double log_p(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arma::v
   target += R::dnorm(params(6), 0, 0.1, true); // sigma_v ~ Normal(0,0.01) Prior
   target += R::dnorm(params(7), 0, 0.1, true); // sigma_v ~ Normal(0,0.01) Prior
   // rho ~ Unif(-1,1) Prior
-  target += R::dcauchy(params(12), 0, 5, true); // xi_y1w ~ Cauchy(0,5) Prior
+  if (norm_jumps == false){
+    target += R::dcauchy(params(12), 0, 5, true); // xi_y1w ~ Cauchy(0,5) Prior
+    target += R::dcauchy(params(14), 0, 5, true); // xi_y2w ~ Cauchy(0,5) Prior
+    target += R::dcauchy(params(16), 0, 5, true); // xi_cw ~ Cauchy(0,5) Prior
+    target += R::dcauchy(params(17), 0, 5, true); // xi_cw ~ Cauchy(0,5) Prior
+  }
   target += R::dcauchy(params(13), 0, 5, true); // xi_y1eta ~ Cauchy(0,5) Prior
-  target += R::dcauchy(params(14), 0, 5, true); // xi_y2w ~ Cauchy(0,5) Prior
   target += R::dcauchy(params(15), 0, 5, true); // xi_y2eta ~ Cauchy(0,5) Prior
-  target += R::dcauchy(params(16), 0, 5, true); // xi_cw ~ Cauchy(0,5) Prior
-  target += R::dcauchy(params(17), 0, 5, true); // xi_cw ~ Cauchy(0,5) Prior
   target += R::dcauchy(params(18), 0, 5, true); // sigma_c ~ Cauchy(0,5) Prior
   target += R::dcauchy(params(19), 0, 5, true); // sigma_c ~ Cauchy(0,5) Prior
   // rhoc ~ Unif(-1,1) Prior
@@ -232,7 +234,7 @@ double log_p(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arma::v
   return -target;  
 }
 
-arma::vec dlog_p(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arma::vec xi_y2, arma::mat xic, arma::vec xi_y1s, arma::vec xi_y2s, arma::vec xi_cs, arma::vec delta, arma::vec params){
+arma::vec dlog_p(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arma::vec xi_y2, arma::mat xic, arma::vec xi_y1s, arma::vec xi_y2s, arma::vec xi_cs, arma::vec delta, arma::vec params, bool norm_jumps){
   int N = params.n_rows;
   arma::vec derivs(N);
   double h = 0.0000001;
@@ -240,6 +242,15 @@ arma::vec dlog_p(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arm
   double log_p_minus;
   
   for (int i=0, i < N, i++){
+    if (i == 12 & norm_jumps == false){
+      derivs(i) = 0;
+    } else if (i == 14 & norm_jumps == false){
+      derivs(i) = 0;
+    } else if (i == 16 & norm_jumps == false){
+      derivs(i) = 0;
+    } else if (i == 17 & norm_jumps == false){
+      derivs(i) = 0;
+    }
     params(i) += h;
     log_p_plus = log_p(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, params);
     params(i) += -2*h;
@@ -251,7 +262,7 @@ arma::vec dlog_p(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arm
 }
 
 // [[Rcpp::export]]
-arma::vec HMC_sampler(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arma::vec xi_y2, arma::mat xic, arma::vec xi_y1s, arma::vec xi_y2s, arma::vec xi_cs, arma::vec delta, arma::vec params, int L, double d){
+arma::vec HMC_sampler(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arma::vec xi_y2, arma::mat xic, arma::vec xi_y1s, arma::vec xi_y2s, arma::vec xi_cs, arma::vec delta, arma::vec params, int L, double d, bool norm_jumps){
   int N = params.n_rows;
   double a;
   arma::vec params_star(N);
