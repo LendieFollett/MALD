@@ -172,6 +172,126 @@ double corDet(arma::vec rho){
   return det(Sigma);
 }
 
+double log_p(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arma::vec xi_y2, arma::mat xic, arma::vec xi_y1s, arma::vec xi_y2s, arma::vec xi_cs, arma::vec delta, arma::vec params, bool norm_jumps){
+  int T = y.n_rows;
+  double target = 0;
+  
+  arma::rowvec epsilon(4);
+  arma::rowvec eps_xic(2);
+  arma::mat Sigma(4,4);
+  arma::mat Sigma_c(2,2);
+  arma::vec xi_c1 = xic.col(0);
+  arma::vec xi_c2 = xic.col(1);
+  
+  arma::vec sigma_v(2);
+  arma::vec rho(4);
+  sigma_v(0) = params(6); sigma_v(1) = params(7);
+  rho(0) = params(8); rho(1) = params(9); rho(2) = params(10); rho(3) = params(11);
+  for (int t = 0;t < T; t++){
+    Sigma = armgetSigma(arma::trans(omega.row(t)),  sigma_v,  rho);
+    
+    epsilon[0] = y(t,0) - (x(t,0) + params(0) + (delta(t) == 0)*xi_y1(t) + (delta(t) == 2)*xi_c1(t));
+    epsilon[1] = y(t,1) - (x(t,1) + params(1) + (delta(t) == 1)*xi_y2(t) + (delta(t) == 2)*xi_c2(t));
+    epsilon[2] = omega(t+1,0) - (params(2) + params(4) * (omega(t,0) - params(2)));
+    epsilon[3] = omega(t+1,1) - (params(3) + params(5) * (omega(t,1) - params(3)));
+    
+    target += dmvnorm_arma(epsilon,  arma::trans(arma::zeros(4)),  Sigma, true)[0];
+    target += R::dnorm(xi_y1(t), params(12) * xi_y1s(t), sqrt(params(13) * xi_y1s(t)), true);
+    target += R::dnorm(xi_y2(t), params(14) * xi_y2s(t), sqrt(params(15) * xi_y2s(t)), true);
+    
+    eps_xic(0) = xi_c1(t) - params(16) * xi_cs(t);
+    eps_xic(1) = xi_c2(t) - params(17) * xi_cs(t);
+    Sigma_c(0,0) = xi_cs(t) * params(18) * params(18);
+    Sigma_c(1,1) = xi_cs(t) * params(19) * params(19);
+    Sigma_c(0,1) = xi_cs(t) * params(20) * params(18) * params(19);
+    Sigma_c(0,1) = xi_cs(t) * params(20) * params(18) * params(19);
+    target += dmvnorm_arma(eps_xic,  arma::trans(arma::zeros(4)),  Sigma_c, true)[0];
+    
+    target += (delta(t) == 0) * log(params(21)) + (delta(t) == 1) * log(params(22)) + (delta(t) == 2) * log(params(23)) + (delta(t) == 3) * log(1 - params(21) - params(22) - params(23));
+  }
+  target += R::dnorm(params(0), 0, 1, true); // mu ~ Normal(0,1) Prior
+  target += R::dnorm(params(1), 0, 1, true); // mu ~ Normal(0,1) Prior
+  target += R::dnorm(params(2), 0, sqrt(10), true); // theta ~ Normal(0,10) Prior
+  target += R::dnorm(params(3), 0, sqrt(10), true); // theta ~ Normal(0,10) Prior
+  target += R::dnorm(params(4), 1, 0.5, true); // phi ~ Normal(1,0.25) Prior
+  target += R::dnorm(params(5), 1, 0.5, true); // phi ~ Normal(1,0.25) Prior
+  target += R::dnorm(params(6), 0, 0.1, true); // sigma_v ~ Normal(0,0.01) Prior
+  target += R::dnorm(params(7), 0, 0.1, true); // sigma_v ~ Normal(0,0.01) Prior
+  // rho ~ Unif(-1,1) Prior
+  if (norm_jumps == false){
+    target += R::dcauchy(params(12), 0, 5, true); // xi_y1w ~ Cauchy(0,5) Prior
+    target += R::dcauchy(params(14), 0, 5, true); // xi_y2w ~ Cauchy(0,5) Prior
+    target += R::dcauchy(params(16), 0, 5, true); // xi_cw ~ Cauchy(0,5) Prior
+    target += R::dcauchy(params(17), 0, 5, true); // xi_cw ~ Cauchy(0,5) Prior
+  }
+  target += R::dcauchy(params(13), 0, 5, true); // xi_y1eta ~ Cauchy(0,5) Prior
+  target += R::dcauchy(params(15), 0, 5, true); // xi_y2eta ~ Cauchy(0,5) Prior
+  target += R::dcauchy(params(18), 0, 5, true); // sigma_c ~ Cauchy(0,5) Prior
+  target += R::dcauchy(params(19), 0, 5, true); // sigma_c ~ Cauchy(0,5) Prior
+  // rhoc ~ Unif(-1,1) Prior
+  target += (10 - 1) * log(params(21)) + (10 - 1) * log(params(22)) + (10 - 1) * log(params(23)) + (170 - 1) * log(1 - params(21) - params(22) - params(23)); //Dirichlet(10,10,10,170) Prior
+
+  return -target;  
+}
+
+arma::vec dlog_p(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arma::vec xi_y2, arma::mat xic, arma::vec xi_y1s, arma::vec xi_y2s, arma::vec xi_cs, arma::vec delta, arma::vec params, bool norm_jumps){
+  int N = params.n_rows;
+  arma::vec derivs(N);
+  double h = 0.0000001;
+  double log_p_plus;
+  double log_p_minus;
+  
+  for (int i=0, i < N, i++){
+    if (i == 12 & norm_jumps == false){
+      derivs(i) = 0;
+    } else if (i == 14 & norm_jumps == false){
+      derivs(i) = 0;
+    } else if (i == 16 & norm_jumps == false){
+      derivs(i) = 0;
+    } else if (i == 17 & norm_jumps == false){
+      derivs(i) = 0;
+    }
+    params(i) += h;
+    log_p_plus = log_p(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, params);
+    params(i) += -2*h;
+    log_p_minus = log_p(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, params);
+    params(i) += h;
+    derivs(i) = (log_p_plus - log_p_minus) / (2*h);
+  }
+  return derivs;
+}
+
+// [[Rcpp::export]]
+arma::vec HMC_sampler(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1, arma::vec xi_y2, arma::mat xic, arma::vec xi_y1s, arma::vec xi_y2s, arma::vec xi_cs, arma::vec delta, arma::vec params, int L, double d, bool norm_jumps){
+  int N = params.n_rows;
+  double a;
+  arma::vec params_star(N);
+  arma::vec drvs;
+  arma::vec P(N);
+  arma::vec P_star(N);
+  for (int i=0; i < N; i++){
+    P(i) = R::rnorm(0,1);
+  }
+  P_star = P;
+  params_star = params;
+  
+  for (int l=0; l < L; l++){
+    drvs = dlog_p(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, params_star);
+    P_star = P_star - drvs * d / 2;
+    params_star = params_star + P_star * d;
+    drvs = dlog_p(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, params_star);
+    P_star = P_star - drvs * d / 2;
+  }
+  
+  a = -log_p(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, params_star);
+  a += log_p(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, params);
+  a += -arma::sum(P_star % P_star) / 2 + arma::sum(P % P) / 2; 
+  
+  if (a > log(R::runif(0, 1))) {
+    params = params_star;
+  }
+  return params;
+}
 
 std::vector<int> csample_int( std::vector<int> x, 
                               int size,
@@ -1606,7 +1726,7 @@ arma::vec update_lambda(arma::vec sumN, arma::vec prior_probs){
    lambda(2) = R::rgamma(a2, 1);
    lambda(3) = R::rgamma(a3, 1);
  
-   return lambda/sum(lambda);
+   return lambda/arma::sum(lambda);
 }
 
 

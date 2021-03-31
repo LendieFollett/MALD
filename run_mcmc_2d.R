@@ -59,43 +59,57 @@ for (i in 1:(R + B)){
   v <- pgas_v_cpp(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,N=10)
   
   xi_y1<- pgas_xiy1_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y1w, xi_y1eta, xi_y1s, N=10) %>% as.vector()
-    J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-    if (norm_jumps == FALSE){
-      xi_y1s <- pgas_s_cpp(xi_y1, xi_y1w, xi_y1eta, xi_y1s, N=10) %>%as.vector()
-    }
+  J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
+  if (norm_jumps == FALSE){
+    xi_y1s <- pgas_s_cpp(xi_y1, xi_y1w, xi_y1eta, xi_y1s, N=10) %>%as.vector()
+  }
   xi_y2 <- pgas_xiy2_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y2w, xi_y2eta, xi_y2s, N=10) %>% as.vector()
-    J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-    if (norm_jumps == FALSE){ 
-      xi_y2s <- pgas_s_cpp(xi_y2, xi_y2w, xi_y2eta, xi_y2s, N=10) %>%as.vector()
-    }
+  J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
+  if (norm_jumps == FALSE){ 
+    xi_y2s <- pgas_s_cpp(xi_y2, xi_y2w, xi_y2eta, xi_y2s, N=10) %>%as.vector()
+  }
   xi_c <- pgas_xic_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_cw, sigma_c, rhoc, xi_cs, N=10)
-    J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-    if (norm_jumps == FALSE){
-      xi_cs <- pgas_sc_cpp(xi_c, xi_cw, Sigma_c, xi_cs, N=10) %>% as.vector()
-    }
+  J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
+  if (norm_jumps == FALSE){
+    xi_cs <- pgas_sc_cpp(xi_c, xi_cw, Sigma_c, xi_cs, N=10) %>% as.vector()
+  }
   delta <- update_delta(y,x,omega=v,xiy1=xi_y1, xiy2=xi_y2, xic=xi_c,mu,theta,phi,sigma_v,rho,lambda)
 
   N_y1 <- as.numeric(delta == 0)
   N_y2 <- as.numeric(delta == 1)
   N_c <- as.numeric(delta == 2)
-    J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
+  J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
   # #update lambda (R)
-  lambda <- update_lambda(c(sum(N_y1),sum(N_y2),sum(N_c),T-sum(c(N_y1,N_y2,N_c))),c(10,10,10,170))
-  xi_y1eta <- update_eta(xi_y1,xi_y1w,xi_y1eta,xi_y1s,0.25)
-  xi_y2eta <- update_eta(xi_y2,xi_y2w,xi_y2eta,xi_y2s,0.25)
-  if(exp_jumps == FALSE){
-    xi_y1w <- update_w(xi_y1,xi_y1w,xi_y1eta,xi_y1s,0.25)
-    xi_y2w <- update_w(xi_y2,xi_y2w,xi_y2eta,xi_y2s,0.25)
-    xi_cw <- update_w_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs, tune_wsd = 0.25) %>% as.vector()
-  }
-  sigma_c <- update_sigma_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs,tune_wsd = 0.25)
-  rhoc <- update_rho_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs,tune_wsd = 0.02)
-    Sigma_c <- matrix(c(sigma_c[1]^2,rhoc*prod(sigma_c),rhoc*prod(sigma_c),sigma_c[2]^2),nrow=2)
-  mu <- update_mu(y,x,omega=v,J,theta,phi,sigma_v,rho) %>% as.vector
-  theta <- update_theta(y,x,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
-  phi <- update_phi(y,x,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
-  sigma_v <- update_sigma_v(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_sigmasq = 0.05) %>% as.vector
-  rho <- update_rho(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_sigmasq = 0.04) %>% as.vector
+  # lambda <- update_lambda(c(sum(N_y1),sum(N_y2),sum(N_c),T-sum(c(N_y1,N_y2,N_c))),c(10,10,10,170))
+  # xi_y1eta <- update_eta(xi_y1,xi_y1w,xi_y1eta,xi_y1s,0.25)
+  # xi_y2eta <- update_eta(xi_y2,xi_y2w,xi_y2eta,xi_y2s,0.25)
+  # if(exp_jumps == FALSE){
+  #   xi_y1w <- update_w(xi_y1,xi_y1w,xi_y1eta,xi_y1s,0.25)
+  #   xi_y2w <- update_w(xi_y2,xi_y2w,xi_y2eta,xi_y2s,0.25)
+  #   xi_cw <- update_w_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs, tune_wsd = 0.25) %>% as.vector()
+  # }
+  # sigma_c <- update_sigma_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs,tune_wsd = 0.25)
+  # rhoc <- update_rho_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs,tune_wsd = 0.02)
+  # Sigma_c <- matrix(c(sigma_c[1]^2,rhoc*prod(sigma_c),rhoc*prod(sigma_c),sigma_c[2]^2),nrow=2)
+  # mu <- update_mu(y,x,omega=v,J,theta,phi,sigma_v,rho) %>% as.vector
+  # theta <- update_theta(y,x,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
+  # phi <- update_phi(y,x,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
+  # sigma_v <- update_sigma_v(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_sigmasq = 0.05) %>% as.vector
+  # rho <- update_rho(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_sigmasq = 0.04) %>% as.vector
+  params <- HMC_sampler(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, L=50, d=0.3, norm_jumps)
+  mu <- params[1:2]
+  theta <- params[3:4]
+  phi <- params[5:6]
+  sigma_v <- params[7:8]
+  rho <- params[9:12]
+  xi_y1w <- params[13]
+  xi_y1eta <- params[14]
+  xi_y2w <- params[15]
+  xi_y2eta <- params[16]
+  xi_cw <- params[17:18]
+  sigma_c <- params[19:20]
+  rhoc <- params[21]
+  lambda <- c(params[22:24],1-sum(params[22:24]))
 
   
   #store after burn in
