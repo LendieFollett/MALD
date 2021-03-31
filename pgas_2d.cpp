@@ -283,7 +283,8 @@ arma::vec HMC_sampler(arma::mat y, arma::mat x, arma::mat omega, arma::vec xi_y1
     P_star = P_star - drvs * d / 2;
   }
   
-  a = -log_p(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, params_star) + log_p(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, params);
+  a = -log_p(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, params_star);
+  a += log_p(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, params);
   a += -arma::sum(P_star % P_star) / 2 + arma::sum(P % P) / 2; 
   
   if (a > log(R::runif(0, 1))) {
