@@ -24,6 +24,7 @@ keepsIND <- readRDS(paste0(filepath,"keepsBTCSP_IND.rds")) #independence
 keepsBTCSP <- readRDS(paste0(filepath,"keepsBTCSP.rds")) #MALD jump;s
 keepsBTCSP_MVN <- readRDS(paste0(filepath,"keepsBTCSP_MVN.rds")) #multivariate normal jumps
 keepsBTCSP_LD <- readRDS(paste0(filepath,"keepsBTCSP_LD.rds")) #laplacian jumps
+#generate data
 getSymbols("BTC-USD",from = "2014-09-15",to = "2020-09-30")
 BTC <- as.data.frame(`BTC-USD`)
 BTC$Date <- seq(as.Date("2014-09-17"),as.Date("2020-09-30"),by="days")
@@ -131,33 +132,33 @@ partial_likelihood2_1d  <-  function(k, y){ #k for keeps, y for correct vector
 #-----CALCULATIONS------------
 #----SVALD
 #E(ln(p(y|z,theta)))
-Elnpy_mid_ztheta <- partial_likelihood1(keepsIND, y)
+Elnpy_mid_ztheta_LD <- partial_likelihood1(keepsIND, y)
 #[1]
-lnpy_mid_zhatthetahat <- partial_likelihood2(keepsIND, y) 
+lnpy_mid_zhatthetahat_LD <- partial_likelihood2(keepsIND, y) 
 #[1] 
 
-DIC7_1d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
-DIC7_1d
+DIC7_LD = -4*Elnpy_mid_ztheta_LD + 2*lnpy_mid_zhatthetahat_LD
+DIC7_LD#10953.52
 #[1] 
 
 #----SVMALD
 #E(ln(p(y|z,theta)))
-Elnpy_mid_ztheta <- partial_likelihood1(keepsBTCSP, y) 
+Elnpy_mid_ztheta_MALD <- partial_likelihood1(keepsBTCSP, y) 
 #[1]
-lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP, y) 
+lnpy_mid_zhatthetahat_MALD <- partial_likelihood2(keepsBTCSP, y) 
 #[1] 
-DIC7_2d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
-DIC7_2d
-#[1] 
-#compare to Xxxxx from the 1d model... prefer 1d
+DIC7_MALD = -4*Elnpy_mid_ztheta_MALD + 2*lnpy_mid_zhatthetahat_MALD
+DIC7_MALD
+#[1] 9813.312
+#compare to 10953.52 from the 1d model... prefer MALD
 
 #----SVMVN
 
-Elnpy_mid_ztheta <- partial_likelihood1(keepsBTCSP_MVN, y) 
+Elnpy_mid_ztheta_MVN <- partial_likelihood1(keepsBTCSP_MVN, y) 
 #[1] 
-lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP_MVN, y) 
+lnpy_mid_zhatthetahat_MVN <- partial_likelihood2(keepsBTCSP_MVN, y) 
 #[1] 
-DIC7_MVN = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
+DIC7_MVN = -4*Elnpy_mid_ztheta_MVN + 2*lnpy_mid_zhatthetahat_MVN
 DIC7_MVN
 #[1] 
 
