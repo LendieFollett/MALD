@@ -45,68 +45,78 @@ r2 <- 0
 for(r in Rsequence){ #loop over posterior draws -->posterior predictive distributions
   print(r)
   r2 <- r2 + 1
-  delta <- rep(0,T)
-  xiy1 <- xiy2 <- xiy1s <- xiy2s <- xics <- rep(0,T)
-  V <- array(0,dim=c(T+1,2))
-  xic <- J <-  x <- array(0,dim=c(T,2))
-  V[1,] <- keepsBTCSP$v[r,1,]
+  V_MVN <- array(0,dim=c(T+1,2))
+  V_MALD <- array(0,dim=c(T+1,2))
+  V_LD <-array(0,dim=c(T+1,2))
+  V_IND <- array(0,dim=c(T+1,2))
+  
+  V_MVN[1,] <- keepsBTCSP_MVN$v[r,1,]
+  V_MALD[1,] <- keepsBTCSP_MALD$v[r,1,]
+  V_LD[1,] <- keepsBTCSP_LD$v[r,1,]
+  V_IND[1,] <- keepsIND$v[r,1,]
 
   sim <- 0 
   for ( i in 1:T){
   
     #MALD JUMPS
-  J[i,] = keepsBTCSP_MALD$J[r,i,]  
     
-  Sigma <- matrix(c(V[i,1],(keepsBTCSP_MALD$rho[r,1])*sqrt(prod(V[i,])),(keepsBTCSP_MALD$rho[r,3])*(keepsBTCSP_MALD$sigma_v[r,1])*V[i,1],0,
-                    (keepsBTCSP_MALD$rho[r,1])*sqrt(prod(V[i,])),V[i,2],0,(keepsBTCSP_MALD$rho[r,4])*(keepsBTCSP_MALD$sigma_v[r,2])*V[i,2],
-                    (keepsBTCSP_MALD$rho[r,3])*(keepsBTCSP_MALD$sigma_v[r,1])*V[i,1],0,(keepsBTCSP_MALD$sigma_v[r,1])^2*V[i,1],(keepsBTCSP_MALD$rho[r,2])*prod(keepsBTCSP_MALD$sigma_v[r,])*sqrt(prod(V[i,])),
-                    0,(keepsBTCSP_MALD$rho[r,4])*(keepsBTCSP_MALD$sigma_v[r,2])*V[i,2],(keepsBTCSP_MALD$rho[r,2])*prod(keepsBTCSP_MALD$sigma_v[r,])*sqrt(prod(V[i,])),(keepsBTCSP_MALD$sigma_v[r,2])^2*V[i,2]),nrow=4)
+  Sigma <- matrix(c(V_MALD[i,1],(keepsBTCSP_MALD$rho[r,1])*sqrt(prod(V_MALD[i,])),(keepsBTCSP_MALD$rho[r,3])*(keepsBTCSP_MALD$sigma_v[r,1])*V_MALD[i,1],0,
+                    (keepsBTCSP_MALD$rho[r,1])*sqrt(prod(V_MALD[i,])),V_MALD[i,2],0,(keepsBTCSP_MALD$rho[r,4])*(keepsBTCSP_MALD$sigma_v[r,2])*V_MALD[i,2],
+                    (keepsBTCSP_MALD$rho[r,3])*(keepsBTCSP_MALD$sigma_v[r,1])*V_MALD[i,1],0,(keepsBTCSP_MALD$sigma_v[r,1])^2*V_MALD[i,1],(keepsBTCSP_MALD$rho[r,2])*prod(keepsBTCSP_MALD$sigma_v[r,])*sqrt(prod(V_MALD[i,])),
+                    0,(keepsBTCSP_MALD$rho[r,4])*(keepsBTCSP_MALD$sigma_v[r,2])*V_MALD[i,2],(keepsBTCSP_MALD$rho[r,2])*prod(keepsBTCSP_MALD$sigma_v[r,])*sqrt(prod(V_MALD[i,])),(keepsBTCSP_MALD$sigma_v[r,2])^2*V_MALD[i,2]),nrow=4)
 
   temp <- rtmvnorm(n = 1, 
-                   mean = c(x[i,] + keepsBTCSP_MALD$mu[r,]+ J[i,],
-                            keepsBTCSP_MALD$theta[r,] + keepsBTCSP_MALD$phi[r,]*(V[i,] - keepsBTCSP_MALD$theta[r,])),
+                   mean = c(x[i,] + keepsBTCSP_MALD$mu[r,]+ keepsBTCSP_MALD$J[r,i,] ,
+                            keepsBTCSP_MALD$theta[r,] + keepsBTCSP_MALD$phi[r,]*(V_MALD[i,] - keepsBTCSP_MALD$theta[r,])),
                    sigma = Sigma, lower=c(-Inf,-Inf,0,0))
-  #INDEPENDENCE
-  J[i,] = keepsIND$J[r,i,]  
   
-  Sigma <- matrix(c(V[i,1],(keepsIND$rho[r,1])*sqrt(prod(V[i,])),(keepsIND$rho[r,3])*(keepsIND$sigma_v[r,1])*V[i,1],0,
-                    (keepsIND$rho[r,1])*sqrt(prod(V[i,])),V[i,2],0,(keepsIND$rho[r,4])*(keepsIND$sigma_v[r,2])*V[i,2],
-                    (keepsIND$rho[r,3])*(keepsIND$sigma_v[r,1])*V[i,1],0,(keepsIND$sigma_v[r,1])^2*V[i,1],(keepsIND$rho[r,2])*prod(keepsIND$sigma_v[r,])*sqrt(prod(V[i,])),
-                    0,(keepsIND$rho[r,4])*(keepsIND$sigma_v[r,2])*V[i,2],(keepsIND$rho[r,2])*prod(keepsIND$sigma_v[r,])*sqrt(prod(V[i,])),(keepsIND$sigma_v[r,2])^2*V[i,2]),nrow=4)
+  V_MALD[i+1,] <- temp[3:4]
+  y_MALD[i,,r2] <- temp[1:2]
+  
+  #INDEPENDENCE
+  
+  Sigma <- matrix(c(V_IND[i,1],(keepsIND$rho[r,1])*sqrt(prod(V_IND[i,])),(keepsIND$rho[r,3])*(keepsIND$sigma_v[r,1])*V_IND[i,1],0,
+                    (keepsIND$rho[r,1])*sqrt(prod(V_IND[i,])),V_IND[i,2],0,(keepsIND$rho[r,4])*(keepsIND$sigma_v[r,2])*V_IND[i,2],
+                    (keepsIND$rho[r,3])*(keepsIND$sigma_v[r,1])*V_IND[i,1],0,(keepsIND$sigma_v[r,1])^2*V_IND[i,1],(keepsIND$rho[r,2])*prod(keepsIND$sigma_v[r,])*sqrt(prod(V_IND[i,])),
+                    0,(keepsIND$rho[r,4])*(keepsIND$sigma_v[r,2])*V[i,2],(keepsIND$rho[r,2])*prod(keepsIND$sigma_v[r,])*sqrt(prod(V_IND[i,])),(keepsIND$sigma_v[r,2])^2*V_IND[i,2]),nrow=4)
   
   temp <- rtmvnorm(n = 1, 
-                   mean = c(x[i,] + keepsIND$mu[r,]+ J[i,],
-                            keepsIND$theta[r,] + keepsIND$phi[r,]*(V[i,] - keepsIND$theta[r,])),
+                   mean = c(x[i,] + keepsIND$mu[r,]+ keepsIND$J[r,i,] ,
+                            keepsIND$theta[r,] + keepsIND$phi[r,]*(V_IND[i,] - keepsIND$theta[r,])),
                    sigma = Sigma, lower=c(-Inf,-Inf,0,0))
+  V_IND[i+1,] <- temp[3:4]
+  y_IND[i,,r2] <- temp[1:2]
   
   #MULTIVARIATE NORMAL JUMPS
-  J[i,] = keepsMVN$J[r,i,]  
-  
-  Sigma <- matrix(c(V[i,1],(keepsBTCSP_MVN$rho[r,1])*sqrt(prod(V[i,])),(keepsBTCSP_MVN$rho[r,3])*(keepsBTCSP_MVN$sigma_v[r,1])*V[i,1],0,
-                    (keepsBTCSP_MVN$rho[r,1])*sqrt(prod(V[i,])),V[i,2],0,(keepsBTCSP_MVN$rho[r,4])*(keepsBTCSP_MVN$sigma_v[r,2])*V[i,2],
-                    (keepsBTCSP_MVN$rho[r,3])*(keepsBTCSP_MVN$sigma_v[r,1])*V[i,1],0,(keepsBTCSP_MVN$sigma_v[r,1])^2*V[i,1],(keepsBTCSP_MVN$rho[r,2])*prod(keepsBTCSP_MVN$sigma_v[r,])*sqrt(prod(V[i,])),
-                    0,(keepsBTCSP_MVN$rho[r,4])*(keepsBTCSP_MVN$sigma_v[r,2])*V[i,2],(keepsBTCSP_MVN$rho[r,2])*prod(keepsBTCSP_MVN$sigma_v[r,])*sqrt(prod(V[i,])),(keepsBTCSP_MVN$sigma_v[r,2])^2*V[i,2]),nrow=4)
+
+  Sigma <- matrix(c(V_MVN[i,1],(keepsBTCSP_MVN$rho[r,1])*sqrt(prod(V_MVN[i,])),(keepsBTCSP_MVN$rho[r,3])*(keepsBTCSP_MVN$sigma_v[r,1])*V_MVN[i,1],0,
+                    (keepsBTCSP_MVN$rho[r,1])*sqrt(prod(V[i,])),V[i,2],0,(keepsBTCSP_MVN$rho[r,4])*(keepsBTCSP_MVN$sigma_v[r,2])*V_MVN[i,2],
+                    (keepsBTCSP_MVN$rho[r,3])*(keepsBTCSP_MVN$sigma_v[r,1])*V_MVN[i,1],0,(keepsBTCSP_MVN$sigma_v[r,1])^2*V_MVN[i,1],(keepsBTCSP_MVN$rho[r,2])*prod(keepsBTCSP_MVN$sigma_v[r,])*sqrt(prod(V[i,])),
+                    0,(keepsBTCSP_MVN$rho[r,4])*(keepsBTCSP_MVN$sigma_v[r,2])*V_MVN[i,2],(keepsBTCSP_MVN$rho[r,2])*prod(keepsBTCSP_MVN$sigma_v[r,])*sqrt(prod(V_MVN[i,])),(keepsBTCSP_MVN$sigma_v[r,2])^2*V_MVN[i,2]),nrow=4)
   
   temp <- rtmvnorm(n = 1, 
-                   mean = c(x[i,] + keepsBTCSP_MVN$mu[r,]+ J[i,],
-                            keepsBTCSP_MVN$theta[r,] + keepsBTCSP_MVN$phi[r,]*(V[i,] - keepsBTCSP_MVN$theta[r,])),
+                   mean = c(x[i,] + keepsBTCSP_MVN$mu[r,]+ keepsMVN$J[r,i,]  ,
+                            keepsBTCSP_MVN$theta[r,] + keepsBTCSP_MVN$phi[r,]*(V_MVN[i,] - keepsBTCSP_MVN$theta[r,])),
                    sigma = Sigma, lower=c(-Inf,-Inf,0,0))
+  V_MVN[i+1,] <- temp[3:4]
+  y_MVN[i,,r2] <- temp[1:2]
   
   #LAPLACIAN JUMPS
   J[i,] = keepsMVN$J[r,i,]  
   
-  Sigma <- matrix(c(V[i,1],(keepsBTCSP_LD$rho[r,1])*sqrt(prod(V[i,])),(keepsBTCSP_LD$rho[r,3])*(keepsBTCSP_LD$sigma_v[r,1])*V[i,1],0,
-                    (keepsBTCSP_LD$rho[r,1])*sqrt(prod(V[i,])),V[i,2],0,(keepsBTCSP_LD$rho[r,4])*(keepsBTCSP_LD$sigma_v[r,2])*V[i,2],
-                    (keepsBTCSP_LD$rho[r,3])*(keepsBTCSP_LD$sigma_v[r,1])*V[i,1],0,(keepsBTCSP_MVN$sigma_v[r,1])^2*V[i,1],(keepsBTCSP_MVN$rho[r,2])*prod(keepsBTCSP_MVN$sigma_v[r,])*sqrt(prod(V[i,])),
-                    0,(keepsBTCSP_MVN$rho[r,4])*(keepsBTCSP_MVN$sigma_v[r,2])*V[i,2],(keepsBTCSP_MVN$rho[r,2])*prod(keepsBTCSP_MVN$sigma_v[r,])*sqrt(prod(V[i,])),(keepsBTCSP_MVN$sigma_v[r,2])^2*V[i,2]),nrow=4)
+  Sigma <- matrix(c(V_LD[i,1],(keepsBTCSP_LD$rho[r,1])*sqrt(prod(V_LD[i,])),(keepsBTCSP_LD$rho[r,3])*(keepsBTCSP_LD$sigma_v[r,1])*V_LD[i,1],0,
+                    (keepsBTCSP_LD$rho[r,1])*sqrt(prod(V_LD[i,])),V_LD[i,2],0,(keepsBTCSP_LD$rho[r,4])*(keepsBTCSP_LD$sigma_v[r,2])*V_LD[i,2],
+                    (keepsBTCSP_LD$rho[r,3])*(keepsBTCSP_LD$sigma_v[r,1])*V[i,1],0,(keepsBTCSP_LD$sigma_v[r,1])^2*V[i,1],(keepsBTCSP_LD$rho[r,2])*prod(keepsBTCSP_LD$sigma_v[r,])*sqrt(prod(V_LD[i,])),
+                    0,(keepsBTCSP_LD$rho[r,4])*(keepsBTCSP_LD$sigma_v[r,2])*V[i,2],(keepsBTCSP_LD$rho[r,2])*prod(keepsBTCSP_LD$sigma_v[r,])*sqrt(prod(V_LD[i,])),(keepsBTCSP_LD$sigma_v[r,2])^2*V_LD[i,2]),nrow=4)
   
   temp <- rtmvnorm(n = 1, 
-                   mean = c(x[i,] + keepsBTCSP_MVN$mu[r,]+ J[i,],
-                            keepsBTCSP_MVN$theta[r,] + keepsBTCSP_MVN$phi[r,]*(V[i,] - keepsBTCSP_MVN$theta[r,])),
+                   mean = c(x[i,] + keepsBTCSP_LD$mu[r,]+ J[i,],
+                            keepsBTCSP_LD$theta[r,] + keepsBTCSP_LD$phi[r,]*(V_LD[i,] - keepsBTCSP_LD$theta[r,])),
                    sigma = Sigma, lower=c(-Inf,-Inf,0,0))
   
-  V[i+1,] <- temp[3:4]
-  y[i,,r2] <- temp[1:2]
+  V_LD[i+1,] <- temp[3:4]
+  y_LD[i,,r2] <- temp[1:2]
+  
   if( i+1 <= T){ x[i+1,] <- c(0,0)}  
   }
   print(summary(y[,,r2]))
