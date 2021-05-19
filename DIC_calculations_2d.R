@@ -17,12 +17,13 @@ library(quantmod)
 library(RcppTN)
 
 #DIC7 = -4E(ln(p(y|z,theta))) + 2ln(p(y|z-hat, theta-hat))
-
+filepath <- "/Users/000766412/OneDrive - Drake University/Documents/Research/Asymmetric Laplace Jumps/keeps/"
 # DATA AND MCMC SAMPLES ------------
 #download full MCMC results (obtained from run_mcmc.R with fix = FALSE)
-keepsBTCSP <- readRDS("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP.rds")
-keepsBTCSP_MVN <- readRDS("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP_MVN.rds")
-keepsBTCSP_LD <- readRDS("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP_LD.rds")
+keepsIND <- readRDS(paste0(filepath,"keepsBTCSP_IND.rds")) #independence
+keepsBTCSP <- readRDS(paste0(filepath,"keepsBTCSP.rds")) #MALD jump;s
+keepsBTCSP_MVN <- readRDS(paste0(filepath,"keepsBTCSP_MVN.rds")) #multivariate normal jumps
+keepsBTCSP_LD <- readRDS(paste0(filepath,"keepsBTCSP_LD.rds")) #laplacian jumps
 getSymbols("BTC-USD",from = "2014-09-15",to = "2020-09-30")
 BTC <- as.data.frame(`BTC-USD`)
 BTC$Date <- seq(as.Date("2014-09-17"),as.Date("2020-09-30"),by="days")
@@ -130,35 +131,35 @@ partial_likelihood2_1d  <-  function(k, y){ #k for keeps, y for correct vector
 #-----CALCULATIONS------------
 #----SVALD
 #E(ln(p(y|z,theta)))
-Elnpy_mid_ztheta <- partial_likelihood1(keepsBTC, y[,1]) + partial_likelihood1(keepsSP, y[,2])
-#[1] -4187.335
-lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTC, y[,1]) + partial_likelihood2(keepsSP, y[,2])
-#[1] -3538.179
+Elnpy_mid_ztheta <- partial_likelihood1(keepsIND, y)
+#[1]
+lnpy_mid_zhatthetahat <- partial_likelihood2(keepsIND, y) 
+#[1] 
 
 DIC7_1d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
 DIC7_1d
-#[1] 9672.983
+#[1] 
 
 #----SVMALD
 #E(ln(p(y|z,theta)))
 Elnpy_mid_ztheta <- partial_likelihood1(keepsBTCSP, y) 
-#[1] -4299.164
+#[1]
 lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP, y) 
-#[1] -3702.311
+#[1] 
 DIC7_2d = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
 DIC7_2d
-#[1] 9792.034
-#compare to 9672.983 from the 1d model... prefer 1d
+#[1] 
+#compare to Xxxxx from the 1d model... prefer 1d
 
 #----SVMVN
 
 Elnpy_mid_ztheta <- partial_likelihood1(keepsBTCSP_MVN, y) 
-#[1] -4296.839
+#[1] 
 lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP_MVN, y) 
-#[1] -3695.277
+#[1] 
 DIC7_MVN = -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
 DIC7_MVN
-#[1] 9796.803
+#[1] 
 
 #----SVLD
 
@@ -168,5 +169,4 @@ lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP_LD, y)
 #[1] 
 DIC7_LD= -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
 DIC7_LD
-#[1]  9765.019
-
+#[1]  
