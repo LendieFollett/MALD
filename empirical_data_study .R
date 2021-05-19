@@ -10,8 +10,8 @@ library(MCMCpack)
 library(quantmod)
 library(RcppTN)
 
-k <- 5 #thinning param
-B <- 50000 #how many burn in draws to throw away
+thin <- 5 #thinning param
+B <- 20000 #how many burn in draws to throw away
 R <- 50000 #how many draws to keep after burn in
 n_chns <- 1 #how many chains to run
 #load data
@@ -34,28 +34,26 @@ T <- nrow(S) - 1
 sourceCpp("pgas_2d.cpp") #C++ updates
 # #2-D MODEL MCMC
 y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
-x <- array(0,dim=dim(y))
-source("starting_values_2d.R") #initialize values
-exp_jumps <- norm_jumps <- FALSE
+yprim <- array(0,dim=dim(y))
+#source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
+exp_jumps <- norm_jumps <- ind <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP.rds"))
+saveRDS(keeps,paste0("keepsBTCSP.rds"))
 
 #################################################### 
 # SVALD INDEPENDENCE (1d) MODEL ----------
 #################################################### 
-sourceCpp("pgas_mstuart.cpp") #C++ updates
-#for BTC
-y <- 100*(log(S[-1,c("BTC-USD.Close")]) - log(S[-nrow(S),c("BTC-USD.Close")]))
-x <- rep(0,length(y))
-source("starting_values.R") #initialize values
-source("run_mcmc.R") 
-saveRDS(keeps,paste0("../keeps/keepsBTC.rds"))
-#for SP
-y <- 100*(log(S[-1,c("GSPC.Close")]) - log(S[-nrow(S),c("GSPC.Close")]))
-x <- rep(0,length(y))
-source("starting_values.R") #initialize values
-source("run_mcmc.R") 
-saveRDS(keeps,paste0("../keeps/keepsSP.rds"))
+sourceCpp("pgas_2d.cpp") #C++ updates
+#initialize values, create space to save draws
+# #2-D MODEL MCMC
+y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
+yprim <- array(0,dim=dim(y))
+#source("starting_values_2d.R") #initialize values
+exp_jumps  <- FALSE 
+norm_jumps <- FALSE 
+ind <- TRUE #Bitcoin and S&P 500 have no relationship in return, volatility or jumps
+source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
+saveRDS(keeps,paste0("keepsBTCSP_IND.rds"))
 
 
 #################################################### 
@@ -65,12 +63,13 @@ sourceCpp("pgas_2d.cpp") #C++ updates
 #initialize values, create space to save draws
 # #2-D MODEL MCMC
 y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
-x <- array(0,dim=dim(y))
+yprim <- array(0,dim=dim(y))
 source("starting_values_2d.R") #initialize values
-exp_jumps  <- FALSE
+exp_jumps <- FALSE
 norm_jumps <- TRUE #NORMAL JUMPS SET TO TRUE SO B/s are set to 1
+ind <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP_MVN.rds"))
+saveRDS(keeps,paste0("keepsBTCSP_MVN.rds"))
 
 #################################################### 
 # SVLD MODEL ----------
@@ -79,12 +78,13 @@ sourceCpp("pgas_2d.cpp") #C++ updates
 #initialize values, create space to save draws
 # #2-D MODEL MCMC
 y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
-x <- array(0,dim=dim(y))
+yprim <- array(0,dim=dim(y))
 source("starting_values_2d.R") #initialize values
 exp_jumps  <- TRUE #ASYMMETRY PARAMETERS W SET TO 0 (exponential, laplace distributed jumps)
 norm_jumps <- FALSE 
+ind <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("/Users/000766412/Box Sync/ALD_Codes/keepsBTCSP_LD.rds"))
+saveRDS(keeps,paste0("keepsBTCSP_LD.rds"))
 
 
 #################################################### 
@@ -103,11 +103,13 @@ doESS <- function(x, total){
 }
 
 #SVMALD
-lapply(keepsBTCSP[c(2:3,5:16)], doESS, total = total) %>% str()
+lapply(keepsBTCSP[c(4,6:17)], doESS, total = total) %>% str()
+#SVALD
+lapply(keepsBTCSP_IND[c(4,6:17)], doESS, total = total) %>% str()
 #SVMVN
-lapply(keepsBTCSP_MVN[c(2:3,5:16)], doESS, total = total) %>% str()
+lapply(keepsBTCSP_MVN[c(4,6:17)], doESS, total = total) %>% str()
 #SVLD
-lapply(keepsBTCSP_LD[c(2:3,5:16)], doESS, total = total) %>% str()
+lapply(keepsBTCSP_LD[c(4,6:17)], doESS, total = total) %>% str()
 
 
 

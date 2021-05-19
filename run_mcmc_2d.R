@@ -4,123 +4,189 @@
 #SVLD
   #exp_jumps: =TRUE if jumps should be (symmetric) exponentially distributed (fix all w params = 0)
 
-
 #keeps is a list that stores kept draws (everything after burnin B)
 keeps <- list(
-  chain = rep(0,n_chns*R/k),
-  v = array(NA, dim = c(R*n_chns/k, T+1, 2)),
-  delta =  array(NA, dim = c(R*n_chns/k, T)),
-  lambda = array(0, dim = c(R*n_chns/k,4)),
-  J = array(NA, dim = c(R*n_chns/k, T, 2)),
-  sigma_v = array(NA, dim=c(R*n_chns/k,2)),
+  chain = rep(0,n_chns*R/thin),
+  v = array(NA, dim = c(R*n_chns/thin, T+1, 2)),
+  delta =  array(NA, dim = c(R*n_chns/thin, T)),
+  lambda = array(0, dim = c(R*n_chns/thin,4)),
+  J = array(NA, dim = c(R*n_chns/thin, T, 2)),
+  sigma_v = array(NA, dim=c(R*n_chns/thin,2)),
   
-  sigma_c = array(NA, dim = c(R*n_chns/k,2)),
-  rhoc = rep(NA, R*n_chns/k),
-  xi_cw = array(NA, dim = c(R*n_chns/k, 2)),
+  sigma_c = array(NA, dim = c(R*n_chns/thin,2)),
+  rhoc = rep(NA, R*n_chns/thin),
+  xi_cw = array(NA, dim = c(R*n_chns/thin, 2)),
   
-  xi_y1eta = rep(NA, R*n_chns/k),
-  xi_y1w = rep(NA, R*n_chns/k),
+  xi_y1eta = rep(NA, R*n_chns/thin),
+  xi_y1w = rep(NA, R*n_chns/thin),
   
-  xi_y2eta = rep(NA, R*n_chns/k),
-  xi_y2w = rep(NA, R*n_chns/k),
+  xi_y2eta = rep(NA, R*n_chns/thin),
+  xi_y2w = rep(NA, R*n_chns/thin),
   
-  phi = array(NA, dim = c(R*n_chns/k,2)),
-  theta = array(NA, dim = c(R*n_chns/k,2)),
+  phi = array(NA, dim = c(R*n_chns/thin,2)),
+  theta = array(NA, dim = c(R*n_chns/thin,2)),
   
-  mu = array(NA, dim = c(R*n_chns/k,2)),
-  rho = array(NA, dim = c(R*n_chns/k,4)),
+  mu = array(NA, dim = c(R*n_chns/thin,2)),
+  rho = array(NA, dim = c(R*n_chns/thin,4)),
   
-  xi_y1 =array(NA, dim = c(R*n_chns/k, T)),
-  xi_y2 =array(NA, dim = c(R*n_chns/k, T)),
-  xi_y1c =array(NA, dim = c(R*n_chns/k, T)),
-  xi_y2c =array(NA, dim = c(R*n_chns/k, T))
-  
+  xi_y1 =array(NA, dim = c(R*n_chns/thin, T)),
+  xi_y2 =array(NA, dim = c(R*n_chns/thin, T)),
+  xi_y1c =array(NA, dim = c(R*n_chns/thin, T)),
+  xi_y2c =array(NA, dim = c(R*n_chns/thin, T))
 )
-
-
+h <- 1e-4
 
 for (chn in 1:n_chns){
 source("starting_values_2d.R") #initialize values
 #(in total, we're running R + B iterations)
   
-  if (norm_jumps == TRUE){
-    xi_y1s <- xi_y2s <- rep(1, length(xi_y1s))
-    xi_cs <- rep(1, length(xi_cs))
-  }
-  if(exp_jumps == TRUE){
-    xi_y1w <- 0
-    xi_y2w <- 0
-    xi_cw <- c(0,0)
-  }
-  
 for (i in 1:(R + B)){
   print(i)
   #update stochastic volatility using pgas
-  v <- pgas_v_cpp(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,N=10)
+  v <- pgas_v_cpp(y,yprim,omega=v,J,mu,theta,phi,sigma_v,rho,N=10)
   
-  xi_y1<- pgas_xiy1_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y1w, xi_y1eta, xi_y1s, N=10) %>% as.vector()
+  xi_y1<- pgas_xiy1_cpp(y,yprim, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y1w, xi_y1eta, xi_y1s, N=10) %>% as.vector()
   J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
   if (norm_jumps == FALSE){
     xi_y1s <- pgas_s_cpp(xi_y1, xi_y1w, xi_y1eta, xi_y1s, N=10) %>%as.vector()
   }
-  xi_y2 <- pgas_xiy2_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y2w, xi_y2eta, xi_y2s, N=10) %>% as.vector()
+  xi_y2 <- pgas_xiy2_cpp(y,yprim, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y2w, xi_y2eta, xi_y2s, N=10) %>% as.vector()
   J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
   if (norm_jumps == FALSE){ 
     xi_y2s <- pgas_s_cpp(xi_y2, xi_y2w, xi_y2eta, xi_y2s, N=10) %>%as.vector()
   }
-  xi_c <- pgas_xic_cpp(y, x, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_cw, sigma_c, rhoc, xi_cs, N=10)
-  J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-  if (norm_jumps == FALSE){
-    xi_cs <- pgas_sc_cpp(xi_c, xi_cw, Sigma_c, xi_cs, N=10) %>% as.vector()
+  if (ind == TRUE){
+    xi_c = cbind(xi_y1,xi_y2)
+    J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
+  } else {
+    xi_c <- pgas_xic_cpp(y,yprim, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_cw, sigma_c, rhoc, xi_cs, N=10)
+    J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
+    if (norm_jumps == FALSE){
+      xi_cs <- pgas_sc_cpp(xi_c, xi_cw, Sigma_c, xi_cs, N=10) %>% as.vector()
+    }
   }
-  delta <- update_delta(y,x,omega=v,xiy1=xi_y1, xiy2=xi_y2, xic=xi_c,mu,theta,phi,sigma_v,rho,lambda)
+  delta <- update_delta(y,yprim,omega=v,xiy1=xi_y1, xiy2=xi_y2, xic=xi_c,mu,theta,phi,sigma_v,rho,lambda)
 
   N_y1 <- as.numeric(delta == 0)
   N_y2 <- as.numeric(delta == 1)
   N_c <- as.numeric(delta == 2)
   J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-  # #update lambda (R)
-  # lambda <- update_lambda(c(sum(N_y1),sum(N_y2),sum(N_c),T-sum(c(N_y1,N_y2,N_c))),c(10,10,10,170))
-  # xi_y1eta <- update_eta(xi_y1,xi_y1w,xi_y1eta,xi_y1s,0.25)
-  # xi_y2eta <- update_eta(xi_y2,xi_y2w,xi_y2eta,xi_y2s,0.25)
-  # if(exp_jumps == FALSE){
-  #   xi_y1w <- update_w(xi_y1,xi_y1w,xi_y1eta,xi_y1s,0.25)
-  #   xi_y2w <- update_w(xi_y2,xi_y2w,xi_y2eta,xi_y2s,0.25)
-  #   xi_cw <- update_w_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs, tune_wsd = 0.25) %>% as.vector()
-  # }
-  # sigma_c <- update_sigma_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs,tune_wsd = 0.25)
-  # rhoc <- update_rho_c(xi_c, xi_cw, sigma_c, rhoc, xi_cs,tune_wsd = 0.02)
-  # Sigma_c <- matrix(c(sigma_c[1]^2,rhoc*prod(sigma_c),rhoc*prod(sigma_c),sigma_c[2]^2),nrow=2)
-  # mu <- update_mu(y,x,omega=v,J,theta,phi,sigma_v,rho) %>% as.vector
-  # theta <- update_theta(y,x,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
-  # phi <- update_phi(y,x,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
-  # sigma_v <- update_sigma_v(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_sigmasq = 0.05) %>% as.vector
-  # rho <- update_rho(y,x,omega=v,J,mu,theta,phi,sigma_v,rho,tune_sigmasq = 0.04) %>% as.vector
-  params <- HMC_sampler(y, x, omega, xi_y1, xi_y2, xic, xi_y1s, xi_y2s, xi_cs, delta, L=50, d=0.3, norm_jumps)
-  mu <- params[1:2]
-  theta <- params[3:4]
-  phi <- params[5:6]
-  sigma_v <- params[7:8]
-  rho <- params[9:12]
-  xi_y1w <- params[13]
-  xi_y1eta <- params[14]
-  xi_y2w <- params[15]
-  xi_y2eta <- params[16]
-  xi_cw <- params[17:18]
-  sigma_c <- params[19:20]
-  rhoc <- params[21]
-  lambda <- c(params[22:24],1-sum(params[22:24]))
-
+  lambda <- update_lambda(c(sum(N_y1),sum(N_y2),sum(N_c),T-sum(c(N_y1,N_y2,N_c))),c(10,10,10,170))
+  
+  f <- function(s){(log_pxi(xi_y1,xi_y1s,xi_y1w,s+h/2) - log_pxi(xi_y1,xi_y1s,xi_y1w,s-h/2)) / h}
+  hat <- uniroot(f,c(0.001,100))$root
+  sd <- sqrt(-h^2 / (log_pxi(xi_y1,xi_y1s,xi_y1w,hat+h) - 2*log_pxi(xi_y1,xi_y1s,xi_y1w,hat) + log_pxi(xi_y1,xi_y1s,xi_y1w,hat-h)))
+  xi_y1eta <- update_eta(xi_y1,xi_y1s,xi_y1w,xi_y1eta,hat,sd)
+  
+  f <- function(s){(log_pxi(xi_y2,xi_y2s,xi_y2w,s+h/2) - log_pxi(xi_y2,xi_y2s,xi_y2w,s-h/2)) / h}
+  hat <- uniroot(f,c(0.001,100))$root
+  sd <- sqrt(-h^2 / (log_pxi(xi_y2,xi_y2s,xi_y2w,hat+h) - 2*log_pxi(xi_y2,xi_y2s,xi_y2w,hat) + log_pxi(xi_y2,xi_y2s,xi_y2w,hat-h)))
+  xi_y2eta <- update_eta(xi_y2,xi_y2s,xi_y2w,xi_y2eta,hat,sd)
+  
+  if(exp_jumps == FALSE){
+    f <- function(s){(log_pxi(xi_y1,xi_y1s,s+h/2,xi_y1eta) - log_pxi(xi_y1,xi_y1s,s-h/2,xi_y1eta)) / h}
+    hat <- uniroot(f,c(-100,100))$root
+    sd <- sqrt(-h^2 / (log_pxi(xi_y1,xi_y1s,hat+h/2,xi_y1eta) - 2*log_pxi(xi_y1,xi_y1s,hat,xi_y1eta) + log_pxi(xi_y1,xi_y1s,hat-h/2,xi_y1eta)))
+    xi_y1w <- update_w(xi_y1,xi_y1s,xi_y1w,xi_y1eta,hat,sd)
+    
+    f <- function(s){(log_pxi(xi_y2,xi_y2s,s+h/2,xi_y2eta) - log_pxi(xi_y2,xi_y2s,s-h/2,xi_y2eta)) / h}
+    hat <- uniroot(f,c(-100,100))$root
+    sd <- sqrt(-h^2 / (log_pxi(xi_y2,xi_y2s,hat+h/2,xi_y2eta) - 2*log_pxi(xi_y2,xi_y2s,hat,xi_y2eta) + log_pxi(xi_y2,xi_y2s,hat-h/2,xi_y2eta)))
+    xi_y2w <- update_w(xi_y2,xi_y2s,xi_y2w,xi_y2eta,hat,sd)
+    
+    if (ind == FALSE){
+      f <- function(s){(log_pxi_c(xi_c,xi_cs,c(s+h/2,xi_cw[2]),sigma_c,rhoc) - log_pxi_c(xi_c,xi_cs,c(s-h/2,xi_cw[2]),sigma_c,rhoc)) / h}
+      hat <- uniroot(f,c(-100,100))$root
+      sd <- sqrt(-h^2 / (log_pxi_c(xi_c,xi_cs,c(hat+h,xi_cw[2]),sigma_c,rhoc) - 2*log_pxi_c(xi_c,xi_cs,c(hat,xi_cw[2]),sigma_c,rhoc) + log_pxi_c(xi_c,xi_cs,c(hat-h/2,xi_cw[2]),sigma_c,rhoc)))
+      xi_cw[1] <- update_w_c(xi_c,xi_cs,xi_cw,sigma_c,rhoc,hat,sd,0)
+      
+      f <- function(s){(log_pxi_c(xi_c,xi_cs,c(xi_cw[1],s+h/2),sigma_c,rhoc) - log_pxi_c(xi_c,xi_cs,c(xi_cw[1],s-h/2),sigma_c,rhoc)) / h}
+      hat <- uniroot(f,c(-100,100))$root
+      sd <- sqrt(-h^2 / (log_pxi_c(xi_c,xi_cs,c(xi_cw[1],hat+h),sigma_c,rhoc) - 2*log_pxi_c(xi_c,xi_cs,c(xi_cw[1],hat),sigma_c,rhoc) + log_pxi_c(xi_c,xi_cs,c(xi_cw[1],hat-h),sigma_c,rhoc)))
+      xi_cw[2] <- update_w_c(xi_c,xi_cs,xi_cw,sigma_c,rhoc,hat,sd,1)
+    }
+  }
+  
+  if (ind == FALSE){
+    f <- function(s){(log_pxi_c(xi_c,xi_cs,xi_cw,c(s+h/2,sigma_c[2]),rhoc) - log_pxi_c(xi_c,xi_cs,xi_cw,c(s-h/2,sigma_c[2]),rhoc)) / h}
+    hat <- uniroot(f,c(0.001,100))$root
+    sd <- sqrt(-h^2 / (log_pxi_c(xi_c,xi_cs,xi_cw,c(hat+h,sigma_c[2]),rhoc) - 2*log_pxi_c(xi_c,xi_cs,xi_cw,c(hat,sigma_c[2]),rhoc) + log_pxi_c(xi_c,xi_cs,xi_cw,c(hat-h,sigma_c[2]),rhoc)))
+    sigma_c[1] <- update_sigma_c(xi_c,xi_cs,xi_cw,sigma_c,rhoc,hat,sd,0)
+    
+    f <- function(s){(log_pxi_c(xi_c,xi_cs,xi_cw,c(sigma_c[1],s+h/2),rhoc) - log_pxi_c(xi_c,xi_cs,xi_cw,c(sigma_c[1],s-h/2),rhoc)) / h}
+    hat <- uniroot(f,c(0.001,100))$root
+    sd <- sqrt(-h^2 / (log_pxi_c(xi_c,xi_cs,xi_cw,c(sigma_c[1],hat+h),rhoc) - 2*log_pxi_c(xi_c,xi_cs,xi_cw,c(sigma_c[1],hat),rhoc) + log_pxi_c(xi_c,xi_cs,xi_cw,c(sigma_c[1],hat-h),rhoc)))
+    sigma_c[2] <- update_sigma_c(xi_c,xi_cs,xi_cw,sigma_c,rhoc,hat,sd,1)
+    
+    f <- function(s){(log_pxi_c(xi_c,xi_cs,xi_cw,sigma_c,s+h/2) - log_pxi_c(xi_c,xi_cs,xi_cw,sigma_c,s-h/2)) / h}
+    hat <- uniroot(f,c(-0.999,0.999))$root
+    sd <- sqrt(-h^2 / (log_pxi_c(xi_c,xi_cs,xi_cw,sigma_c,hat+h) - 2*log_pxi_c(xi_c,xi_cs,xi_cw,sigma_c,hat) + log_pxi_c(xi_c,xi_cs,xi_cw,sigma_c,hat-h)))
+    rhoc <- update_rhoc(xi_c,xi_cs,xi_cw,sigma_c,rhoc,hat,sd)
+  }
+  
+  Sigma_c <- matrix(c(sigma_c[1]^2,rhoc*prod(sigma_c),rhoc*prod(sigma_c),sigma_c[2]^2),nrow=2)
+  mu <- update_mu(y,yprim,omega=v,J,theta,phi,sigma_v,rho) %>% as.vector
+  theta <- update_theta(y,yprim,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
+  phi <- update_phi(y,yprim,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
+  
+  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,c(s+h/2,sigma_v[2]),rho) - log_pyv(y,yprim,v,J,mu,theta,phi,c(s-h/2,sigma_v[2]),rho)) / h}
+  hat <- uniroot(f,c(0.001,100))$root
+  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,c(hat+h,sigma_v[2]),rho) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,c(hat,sigma_v[2]),rho) + log_pyv(y,yprim,v,J,mu,theta,phi,c(hat-h,sigma_v[2]),rho)))
+  sigma_v[1] <- update_sigma_v(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,0)
+  
+  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],s+h/2),rho) - log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],s-h/2),rho)) / h}
+  hat <- uniroot(f,c(0.001,100))$root
+  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat+h),rho) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat),rho) + log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat-h/2),rho)))
+  sigma_v[2] <- update_sigma_v(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,1)
+  
+  if (ind == FALSE){
+    f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(s+h/2,rho[2:4])) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(s-h/2,rho[2:4]))) / h}
+    a = rho[2]^2 - 1
+    b = -2*prod(rho[-1])
+    c = 1 - sum(rho[-1]^2) + prod(rho[3:4])^2
+    end = (-b + c(-1,1)*sqrt(b^2 - 4*a*c)) / (2*a)
+    hat <- uniroot(f,c(min(end)+0.001,max(end)-0.001))$root
+    sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat+h,rho[2:4])) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat,rho[2:4])) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat-h,rho[2:4]))))
+    rho[1] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,0)
+    
+    f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],s+h/2,rho[3:4])) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],s-h/2,rho[3:4]))) / h}
+    a = rho[1]^2 - 1
+    b = -2*prod(rho[-2])
+    c = 1 - sum(rho[-2]^2) + prod(rho[3:4])^2
+    end = (-b + c(-1,1)*sqrt(b^2 - 4*a*c)) / (2*a)
+    hat <- uniroot(f,c(min(end)+0.001,max(end)-0.001))$root
+    sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],hat+h,rho[3:4])) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],hat,rho[3:4])) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],hat-h,rho[3:4]))))
+    rho[2] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,1)
+  }
+  
+  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],s+h/2,rho[4])) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],s-h/2,rho[4]))) / h}
+  a = rho[4]^2 - 1
+  b = -2*prod(rho[-3])
+  c = 1 - sum(rho[-3]^2) + prod(rho[1:2])^2
+  end = (-b + c(-1,1)*sqrt(b^2 - 4*a*c)) / (2*a)
+  hat <- uniroot(f,c(min(end)+0.001,max(end)-0.001))$root
+  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat+h,rho[4])) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat,rho[4])) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat-h,rho[4]))))
+  rho[3] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,2)
+  
+  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:3],s+h/2)) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:3],s-h/2))) / h}
+  a = rho[3]^2 - 1
+  b = -2*prod(rho[-4])
+  c = 1 - sum(rho[-4]^2) + prod(rho[1:2])^2
+  end = (-b + c(-1,1)*sqrt(b^2 - 4*a*c)) / (2*a)
+  hat <- uniroot(f,c(min(end)+0.001,max(end)-0.001))$root
+  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:3],hat+h)) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:3],hat)) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:3],hat-h))))
+  rho[4] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,3)
   
   #store after burn in
   if (i > B) {
-    if (i %% k == 0){
+    if (i %% thin == 0){
       #mean jump sizes (incorporates binary indicator delta draws)
       J_mean <- J_mean + J/R
       #mean stochastic volatility
       v_mean <- v_mean + v/R
       
-      j = (R*(chn - 1) + i - B)/k
+      j = (R*(chn - 1) + i - B)/thin
+      print(paste0("Saving Iteration: ",j))
       keeps$sigma_v[j,] <- sigma_v
       keeps$v[j,,] <- v
       keeps$J[j,,] <- J
