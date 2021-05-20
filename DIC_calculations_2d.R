@@ -133,12 +133,12 @@ partial_likelihood2_1d  <-  function(k, y){ #k for keeps, y for correct vector
 #-----CALCULATIONS------------
 #----SVALD
 #E(ln(p(y|z,theta)))
-Elnpy_mid_ztheta_LD <- partial_likelihood1(keepsIND, y)
+Elnpy_mid_ztheta_IND <- partial_likelihood1(keepsIND, y)
 #[1]
-lnpy_mid_zhatthetahat_LD <- partial_likelihood2(keepsIND, y) 
+lnpy_mid_zhatthetahat_IND <- partial_likelihood2(keepsIND, y) 
 #[1] 
 
-DIC7_LD = -4*Elnpy_mid_ztheta_LD + 2*lnpy_mid_zhatthetahat_LD
+DIC7_LD = -4*Elnpy_mid_ztheta_IND + 2*lnpy_mid_zhatthetahat_IND
 DIC7_LD#10953.52
 #[1] 
 
@@ -167,7 +167,7 @@ DIC7_MVN
 
 Elnpy_mid_ztheta_LD <- partial_likelihood1(keepsBTCSP_LD, y) 
 #[1] 
-lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP_LD, y) 
+lnpy_mid_zhatthetahat_LD <- partial_likelihood2(keepsBTCSP_LD, y) 
 #[1] 
 DIC7_LD= -4*Elnpy_mid_ztheta_LD + 2*lnpy_mid_zhatthetahat
 DIC7_LD

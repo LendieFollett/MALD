@@ -50,10 +50,10 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
   V_LD <-array(0,dim=c(T+1,2))
   V_IND <- array(0,dim=c(T+1,2))
   
-  V_MVN[1,] <- keepsBTCSP_MVN$v[r,1,]
-  V_MALD[1,] <- keepsBTCSP_MALD$v[r,1,]
-  V_LD[1,] <- keepsBTCSP_LD$v[r,1,]
-  V_IND[1,] <- keepsIND$v[r,1,]
+  V_MVN <- keepsBTCSP_MVN$v[r,,]
+  V_MALD <- keepsBTCSP_MALD$v[r,,]
+  V_LD <- keepsBTCSP_LD$v[r,,]
+  V_IND <- keepsIND$v[r,,]
 
   sim <- 0 
   for ( i in 1:T){
@@ -65,11 +65,11 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     0,(keepsBTCSP_MALD$rho[r,4])*(keepsBTCSP_MALD$sigma_v[r,2])*V_MALD[i,2],(keepsBTCSP_MALD$rho[r,2])*prod(keepsBTCSP_MALD$sigma_v[r,])*sqrt(prod(V_MALD[i,])),(keepsBTCSP_MALD$sigma_v[r,2])^2*V_MALD[i,2]),nrow=4)
 
   temp <- mvrnorm(n = 1, 
-                   mu = c(x[i,] + keepsBTCSP_MALD$mu[r,]+ keepsBTCSP_MALD$J[r,i,] ,
-                            keepsBTCSP_MALD$theta[r,] + keepsBTCSP_MALD$phi[r,]*(V_MALD[i,] - keepsBTCSP_MALD$theta[r,])),
-                   Sigma = Sigma)#, lower=c(-Inf,-Inf,0,0))
+                   mu = c(x[i,] + keepsBTCSP_MALD$mu[r,]+ keepsBTCSP_MALD$J[r,i,]) ,
+                            #keepsBTCSP_MALD$theta[r,] + keepsBTCSP_MALD$phi[r,]*(V_MALD[i,] - keepsBTCSP_MALD$theta[r,])),
+                   Sigma = Sigma[1:2,1:2])#, lower=c(-Inf,-Inf,0,0))
   
-  V_MALD[i+1,] <- pmax(temp[3:4], c(0.001,0.001))
+  #V_MALD[i+1,] <- keepsBTCSP_MALD$v[r,i,]#pmax(temp[3:4], c(0.001,0.001))
   y_MALD[i,,r2] <- temp[1:2]
   
   #INDEPENDENCE
@@ -80,10 +80,10 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     0,(keepsIND$rho[r,4])*(keepsIND$sigma_v[r,2])*V_IND[i,2],(keepsIND$rho[r,2])*prod(keepsIND$sigma_v[r,])*sqrt(prod(V_IND[i,])),(keepsIND$sigma_v[r,2])^2*V_IND[i,2]),nrow=4)
   
   temp <- mvrnorm(n = 1, 
-                   mu = c(x[i,] + keepsIND$mu[r,]+ keepsIND$J[r,i,] ,
-                            keepsIND$theta[r,] + keepsIND$phi[r,]*(V_IND[i,] - keepsIND$theta[r,])),
-                   Sigma = Sigma)#, lower=c(-Inf,-Inf,0,0))
-  V_IND[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
+                   mu = c(x[i,] + keepsIND$mu[r,]+ keepsIND$J[r,i,]) ,
+                            #keepsIND$theta[r,] + keepsIND$phi[r,]*(V_IND[i,] - keepsIND$theta[r,])),
+                   Sigma = Sigma[1:2,1:2])#, lower=c(-Inf,-Inf,0,0))
+  #V_IND[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
   y_IND[i,,r2] <- temp[1:2]
   
   #MULTIVARIATE NORMAL JUMPS
@@ -93,10 +93,10 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     0,(keepsBTCSP_MVN$rho[r,4])*(keepsBTCSP_MVN$sigma_v[r,2])*V_MVN[i,2],(keepsBTCSP_MVN$rho[r,2])*prod(keepsBTCSP_MVN$sigma_v[r,])*sqrt(prod(V_MVN[i,])),(keepsBTCSP_MVN$sigma_v[r,2])^2*V_MVN[i,2]),nrow=4)
   
   temp <- mvrnorm(n = 1, 
-                   mu = c(x[i,] + keepsBTCSP_MVN$mu[r,]+ keepsBTCSP_MVN$J[r,i,]  ,
-                            keepsBTCSP_MVN$theta[r,] + keepsBTCSP_MVN$phi[r,]*(V_MVN[i,] - keepsBTCSP_MVN$theta[r,])),
-                   Sigma = Sigma)#, lower=c(-Inf,-Inf,0,0))
-  V_MVN[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
+                   mu = c(x[i,] + keepsBTCSP_MVN$mu[r,]+ keepsBTCSP_MVN$J[r,i,] ) ,
+                          #  keepsBTCSP_MVN$theta[r,] + keepsBTCSP_MVN$phi[r,]*(V_MVN[i,] - keepsBTCSP_MVN$theta[r,])),
+                   Sigma = Sigma[1:2,1:2])#, lower=c(-Inf,-Inf,0,0))
+  #V_MVN[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
   y_MVN[i,,r2] <- temp[1:2]
   
   #LAPLACIAN JUMPS
@@ -106,11 +106,11 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     0,(keepsBTCSP_LD$rho[r,4])*(keepsBTCSP_LD$sigma_v[r,2])*V_LD[i,2],(keepsBTCSP_LD$rho[r,2])*prod(keepsBTCSP_LD$sigma_v[r,])*sqrt(prod(V_LD[i,])),(keepsBTCSP_LD$sigma_v[r,2])^2*V_LD[i,2]),nrow=4)
   
   temp <- mvrnorm(n = 1, 
-                   mu = c(x[i,] + keepsBTCSP_LD$mu[r,]+ keepsBTCSP_LD$J[r,i,],
-                            keepsBTCSP_LD$theta[r,] + keepsBTCSP_LD$phi[r,]*(V_LD[i,] - keepsBTCSP_LD$theta[r,])),
-                   Sigma = Sigma)#, lower=c(-Inf,-Inf,0,0))
+                   mu = c(x[i,] + keepsBTCSP_LD$mu[r,]+ keepsBTCSP_LD$J[r,i,]),
+                          #  keepsBTCSP_LD$theta[r,] + keepsBTCSP_LD$phi[r,]*(V_LD[i,] - keepsBTCSP_LD$theta[r,])),
+                   Sigma = Sigma[1:2,1:2])#, lower=c(-Inf,-Inf,0,0))
   
-  V_LD[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
+  #V_LD[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
   y_LD[i,,r2] <- temp[1:2]
   
   if( i+1 <= T){ x[i+1,] <- c(0,0)}  
@@ -146,7 +146,8 @@ y_MALD[,,1] %>%as.data.frame()%>%
   facet_wrap(~variable, nrow = 2)
 
 #make 'lineup'
-as.data.frame.table(y_IND) %>%
+lu_fun <- function(y, index,title){
+as.data.frame.table(y) %>%
   mutate(Date = rep(as.Date(S$Date[-1]), 200)) %>%
   rename(variable = Var2,
            iteration= Var3,
@@ -160,12 +161,30 @@ as.data.frame.table(y_IND) %>%
                                     labels = c("BTC", "SP")),
                   iteration = "truth",
                   Date = as.Date(rep(S$Date[-1], 2))))) %>%
-  subset(variable == "BTC"& iteration %in% c("truth", toupper(letters))&
+  subset(variable == index& #only look at one index
+           iteration %in% c("truth", toupper(letters)[16:26])&
          Date > "2019-01-01")%>%
   ggplot() +
   geom_line(aes(x = Date, y = value )) +
-  facet_wrap(~iteration)
+  facet_wrap(~iteration) +
+  ggtitle(title)
+  }
 
+grid.arrange(lu_fun(y=y_MALD, index="BTC",title= "SVMALD, BTC"),
+             lu_fun(y=y_IND, index="BTC",title= "SVIND, BTC"),
+             lu_fun(y=y_MVN, index="BTC",title= "SVMVN, BTC"),
+             lu_fun(y=y_LD, index="BTC",title= "SVLD, BTC")
+)
+
+#notes:
+#SVIND clearly misses the large negative jump in BTC in early 2020
+
+apply(keepsIND$v, 2:3, mean) %>%
+  as.data.frame() %>%
+  melt() %>%
+  mutate(Date = as.Date(rep(S$Date, 2))) %>%
+  ggplot() + geom_line(aes(x = Date, y = value)) +
+  facet_wrap(~variable, scales = "free_y", nrow = 2)
 
 #----basic residual plots
 
