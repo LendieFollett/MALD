@@ -10,6 +10,7 @@ library(MCMCpack)
 library(quantmod)
 library(RcppTN)
 
+
 thin <- 5 #thinning param
 B <- 20000 #how many burn in draws to throw away
 R <- 50000 #how many draws to keep after burn in
@@ -105,7 +106,7 @@ doESS <- function(x, total){
 #SVMALD
 lapply(keepsBTCSP[c(4,6:17)], doESS, total = total) %>% str()
 #SVALD
-lapply(keepsBTCSP_IND[c(4,6:17)], doESS, total = total) %>% str()
+lapply(keepsIND[c(4,6:17)], doESS, total = total) %>% str()
 #SVMVN
 lapply(keepsBTCSP_MVN[c(4,6:17)], doESS, total = total) %>% str()
 #SVLD

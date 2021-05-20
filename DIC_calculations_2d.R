@@ -23,7 +23,8 @@ filepath <- "/Users/000766412/OneDrive - Drake University/Documents/Research/Asy
 keepsIND <- readRDS(paste0(filepath,"keepsBTCSP_IND.rds")) #independence
 keepsBTCSP <- readRDS(paste0(filepath,"keepsBTCSP.rds")) #MALD jump;s
 keepsBTCSP_MVN <- readRDS(paste0(filepath,"keepsBTCSP_MVN.rds")) #multivariate normal jumps
-keepsBTCSP_LD <- readRDS(paste0(filepath,"keepsBTCSP_LD.rds")) #laplacian jumps
+keepsBTCSP_LD <-  readRDS(paste0(filepath,"keepsBTCSP_LD")) #laplacian jumps
+#keepsBTCSP_LD <-  readRDS(file.choose()) #laplacian jumps
 #generate data
 getSymbols("BTC-USD",from = "2014-09-15",to = "2020-09-30")
 BTC <- as.data.frame(`BTC-USD`)
@@ -160,14 +161,14 @@ lnpy_mid_zhatthetahat_MVN <- partial_likelihood2(keepsBTCSP_MVN, y)
 #[1] 
 DIC7_MVN = -4*Elnpy_mid_ztheta_MVN + 2*lnpy_mid_zhatthetahat_MVN
 DIC7_MVN
-#[1] 
+#[1] 9818.368 still prefer mald
 
 #----SVLD
 
-Elnpy_mid_ztheta <- partial_likelihood1(keepsBTCSP_LD, y) 
+Elnpy_mid_ztheta_LD <- partial_likelihood1(keepsBTCSP_LD, y) 
 #[1] 
 lnpy_mid_zhatthetahat <- partial_likelihood2(keepsBTCSP_LD, y) 
 #[1] 
-DIC7_LD= -4*Elnpy_mid_ztheta + 2*lnpy_mid_zhatthetahat
+DIC7_LD= -4*Elnpy_mid_ztheta_LD + 2*lnpy_mid_zhatthetahat
 DIC7_LD
-#[1]  
+#[1]  9796.879 
