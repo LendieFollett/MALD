@@ -163,10 +163,11 @@ as.data.frame.table(y) %>%
                   Date = as.Date(rep(S$Date[-1], 2))))) %>%
   subset(variable == index& #only look at one index
            iteration %in% c("truth", toupper(letters)[16:26])&
-         Date > "2019-01-01")%>%
+         Date > "2020-01-01")%>%
   ggplot() +
   geom_line(aes(x = Date, y = value )) +
   facet_wrap(~iteration) +
+    scale_x_date(date_labels = "%b-%y",date_breaks = "4 month")+
   ggtitle(title)
   }
 
@@ -175,6 +176,13 @@ grid.arrange(lu_fun(y=y_MALD, index="BTC",title= "SVMALD, BTC"),
              lu_fun(y=y_MVN, index="BTC",title= "SVMVN, BTC"),
              lu_fun(y=y_LD, index="BTC",title= "SVLD, BTC")
 )
+
+grid.arrange(lu_fun(y=y_MALD, index="SP",title= "SVMALD, SP"),
+             lu_fun(y=y_IND, index="SP",title= "SVIND, SP"),
+             lu_fun(y=y_MVN, index="SP",title= "SVMVN, SP"),
+             lu_fun(y=y_LD, index="SP",title= "SVLD, SP")
+)
+
 
 #notes:
 #SVIND clearly misses the large negative jump in BTC in early 2020
