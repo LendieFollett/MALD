@@ -165,9 +165,11 @@ as.data.frame.table(y) %>%
            iteration %in% c("truth", toupper(letters)[16:26])&
          Date > "2020-01-01")%>%
   ggplot() +
-  geom_line(aes(x = Date, y = value )) +
+  geom_line(aes(x = Date, y = value, colour = value )) +
   facet_wrap(~iteration) +
     scale_x_date(date_labels = "%b-%y",date_breaks = "4 month")+
+    scale_colour_distiller("Effect",palette = "RdYlGn")+
+    theme(legend.position = "none")+
   ggtitle(title)
   }
 
@@ -241,27 +243,23 @@ r_IND %>%
   theme_bw()+labs(x = "Y-hat", y = "Residual")
 
 
-
-
-
-grid.arrange(p1_2d, p2_2d,p1_1d, p2_1d, nrow = 2)
-
-
 #count number of jumps larger (in absolute magnitude) than percent%
 #y1 is the first time point (true) to get back to original scale
-njumps <- function(y, y1, percent=.25){
- jump <-  y/(cumsum(c(0,y[-(T)])) + y1)
-  sum(abs(jump) > percent)
-}
-njumps2 <- function(y, y1, percent=.25){
-  jump <-  y/(cumsum(c(0,y[-(T)])) + y1)
-  abs(jump) > percent
+njumps_pos <- function(y, percent=.50){
+  sum(exp(y) >  1 +percent ) #how many times was y_t/y_{t-1} > 1.25?
 }
 
+njumps_pos_joint <- function(y1, y2, percent=.50){
+  sum(exp(y1) >  1 +percent &  exp(y2) >  1 +percent) #how many times was y_t/y_{t-1} > 1.25?
+}
+njumps_neg <- function(y, percent=.50){
+  sum(exp(y) <  1 -percent ) #how many times was y_t/y_{t-1} > 1.25?
+}
 
+#Y = log(yt/y_{t-1}) = log(yt) - log(y_{t-1})
+#exp(Y) = yt/y_{t-1}
 
-keeps <- list()
-keeps3 <- list()
+T_stats <- list()
 
 r2 <- 0
 for(r in Rsequence){ 
@@ -269,25 +267,26 @@ for(r in Rsequence){
 #H0: that x and y were drawn from the same continuous distribution
 #grab the p-values
 
-keeps[[r2]] <- data.frame(y1 = QQdatBTCSP$S1,
-                          y2 = QQdatBTCSP$S2,
-                          y1_1d = y_1d[,1,r2],
-                          y2_1d = y_1d[,2,r2],
-                          y1_2d = y_2d[,1,r2],
-                          y2_2d = y_2d[,2,r2],
-                          iteration = r2)
-keeps3[[r2]] <- data.frame(n_y1 = njumps(QQdatBTCSP$S1,log(S$`BTC-USD.Close`[1])),
-                           n_y2 = njumps(QQdatBTCSP$S2,log(S$`GSPC.Close`[1]) ),
-                           n_both = sum(njumps2(QQdatBTCSP$S1,log(S$`BTC-USD.Close`[1])) &njumps2(QQdatBTCSP$S2,log(S$`GSPC.Close`[1]) ) ),
+
+T_stats[[r2]] <- data.frame(n_BTC = njumps_pos(QQdatBTCSP$S1),
+                           n_SP = njumps_pos(QQdatBTCSP$S2 ),
+                           n_both =  njumps_pos_joint(QQdatBTCSP$S1,QQdatBTCSP$S2 ),
                           
-                           n_1d_1 = njumps(y_1d[,1,r2],log(S$`BTC-USD.Close`[1])),
-                           n_1d_2 = njumps(y_1d[,2,r2],log(S$`GSPC.Close`[1])),
-                           n_1d_both <- sum(njumps2(y_1d[,1,r2],log(S$`BTC-USD.Close`[1])) & njumps2(y_1d[,2,r2],log(S$`GSPC.Close`[1]) ) ),
-                            
-                           n_2d_1 = njumps(y_2d[,1,r2],log(S$`BTC-USD.Close`[1])),
-                           n_2d_2 = njumps(y_2d[,2,r2],log(S$`GSPC.Close`[1])),
-                           n_2d_both = sum(njumps2(y_2d[,1,r2],log(S$`BTC-USD.Close`[1])) & njumps2(y_2d[,2,r2],log(S$`GSPC.Close`[1]) ) ),
+                           n_MALD_BTC = njumps_pos(y_MALD[,1,r2]),
+                           n_MALD_SP = njumps_pos(y_MALD[,2,r2] ),
+                           n_MALD_both =  njumps_pos_joint(y_MALD[,1,r2],y_MALD[,2,r2] ),
                            
+                           n_LD_BTC = njumps_pos(y_LD[,1,r2]),
+                           n_LD_SP = njumps_pos(y_LD[,2,r2] ),
+                           n_LD_both = njumps_pos_joint(y_LD[,1,r2],y_LD[,2,r2] ) ,
+                           
+                           n_IND_BTC = njumps_pos(y_IND[,1,r2]),
+                           n_IND_SP = njumps_pos(y_IND[,2,r2] ),
+                           n_IND_both =  njumps_pos_joint(y_IND[,1,r2],y_IND[,2,r2] ),
+                            
+                           n_MVN_BTC = njumps_pos(y_MVN[,1,r2]),
+                           n_MVN_SP = njumps_pos(y_MVN[,2,r2] ),
+                           n_MVN_both =  njumps_pos_joint(y_MVN[,1,r2],y_MVN[,2,r2] ) ,
                            iteration = r2)
   
 
@@ -296,25 +295,40 @@ keeps3[[r2]] <- data.frame(n_y1 = njumps(QQdatBTCSP$S1,log(S$`BTC-USD.Close`[1])
 library(reshape2)
 
 
-do.call(rbind,keeps3) %>%
-  select(c( "n_1d_1", "n_2d_1", "iteration","n_y1", "n_y2"))%>%
-  melt(id.var = c("iteration", "n_y1", "n_y2")) %>%
+do.call(rbind,T_stats) %>%
+  select(c( "n_MALD_BTC", "n_MVN_BTC","n_IND_BTC", "n_LD_BTC", "iteration","n_BTC"))%>%
+  melt(id.var = c("iteration", "n_BTC")) %>%
   ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
-  geom_vline(aes(xintercept = n_y1))
+  geom_vline(aes(xintercept = n_BTC))
 
-(do.call(rbind,keeps3)$n_1d_1 > do.call(rbind,keeps3)$n_y1) %>%mean
-(do.call(rbind,keeps3)$n_2d_1 > do.call(rbind,keeps3)$n_y1) %>%mean
+(do.call(rbind,T_stats)$n_MALD_BTC > do.call(rbind,T_stats)$n_BTC) %>%mean
+(do.call(rbind,T_stats)$n_MVN_BTC > do.call(rbind,T_stats)$n_BTC) %>%mean
 
-do.call(rbind,keeps3) %>%
-  select(c( "n_1d_2", "n_2d_2", "iteration","n_y1", "n_y2"))%>%
-  melt(id.var = c("iteration", "n_y1", "n_y2")) %>%
+
+do.call(rbind,T_stats) %>%
+  select(c( "n_MALD_SP", "n_MVN_SP", "n_IND_SP", "n_LD_SP", "iteration","n_SP"))%>%
+  melt(id.var = c("iteration", "n_SP")) %>%
   ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
-  geom_vline(aes(xintercept = n_y2))
+  geom_vline(aes(xintercept = n_SP))
 
-(do.call(rbind,keeps3)$n_1d_2 > do.call(rbind,keeps3)$n_y2) %>%mean
-(do.call(rbind,keeps3)$n_2d_2 > do.call(rbind,keeps3)$n_y2) %>%mean
 
-(do.call(rbind,keeps3)$n_1d_both > do.call(rbind,keeps3)$n_both) %>%mean
-(do.call(rbind,keeps3)$n_2d_both > do.call(rbind,keeps3)$n_both) %>%mean
+(do.call(rbind,T_stats)$n_MALD_SP > do.call(rbind,T_stats)$n_SP) %>%mean
+(do.call(rbind,T_stats)$n_MVN_SP > do.call(rbind,T_stats)$n_SP) %>%mean
+
+
+
+do.call(rbind,T_stats) %>%
+  select(c( "n_MALD_both", "n_MVN_both", "n_LD_both", "n_IND_both", "iteration","n_both"))%>%
+  melt(id.var = c("iteration", "n_both")) %>%
+  ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
+  geom_vline(aes(xintercept = n_both))
+
+
+(do.call(rbind,T_stats)$n_MALD_both > do.call(rbind,T_stats)$n_both) %>%mean
+(do.call(rbind,T_stats)$n_MVN_both > do.call(rbind,T_stats)$n_both) %>%mean
+(do.call(rbind,T_stats)$n_IND_both > do.call(rbind,T_stats)$n_both) %>%mean
+(do.call(rbind,T_stats)$n_LD_both > do.call(rbind,T_stats)$n_both) %>%mean
+
+
 
 
