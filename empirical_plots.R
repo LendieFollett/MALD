@@ -12,6 +12,7 @@ library(tmvtnorm)
 library(Rcpp)
 library(MCMCpack)
 library(quantmod)
+library(reshape2)
 
 
 keepsIND <- readRDS(paste0(filepath,"keepsBTCSP_IND.rds")) #independence
@@ -145,7 +146,8 @@ y_MALD[,,1] %>%as.data.frame()%>%
   geom_line(aes(x = as.Date(rep(S$Date[-1], 2)), y = value )) +
   facet_wrap(~variable, nrow = 2)
 
-#make 'lineup'
+#-----make 'lineup' plots-----------
+
 lu_fun <- function(y, index,title){
 as.data.frame.table(y) %>%
   mutate(Date = rep(as.Date(S$Date[-1]), 200)) %>%
@@ -196,62 +198,29 @@ apply(keepsIND$v, 2:3, mean) %>%
   ggplot() + geom_line(aes(x = Date, y = value)) +
   facet_wrap(~variable, scales = "free_y", nrow = 2)
 
-#----basic residual plots
 
 
-r_summary <- function(y_2d){
-  do.call(rbind,apply(y_2d, 3, function(x){x - QQdatBTCSP}) )%>%
-  mutate(t = rep(c(1:T), length(Rsequence)),
-         v1 = as.vector(keepsBTCSP$v[Rsequence,-1 , 1]),
-         v2 = as.vector(keepsBTCSP$v[Rsequence, -1, 2])) %>%
-  mutate(S1 = S1/sqrt(v1),
-         S2 = S2/sqrt(v2)) %>%
-  group_by(t) %>%
-  summarise(meanS1 = mean(S1),#posterior summaries of residuals
-            meanS2 = mean(S2),
-            lowerS1 = quantile(S1, .05),
-            upperS1 = quantile(S1, .95),
-            lowerS2 = quantile(S2, .05),
-            upperS2 = quantile(S2, .95))}
+#--------------- posterior predictive p values----
+
+#T() functions of data
+#ideally function captures some characteristic we consider important
+#i.e., something a 'good' model would reflect in resulting simulations
+#... what might MALD catch that others may not? are the lineups helpful in
+#identifying these characteristics?
+#any time point that is interesting based on real life incidents?
 
 
-r_MALD <- r_summary(y_MALD)
-r_IND <- r_summary(y_IND)
-r_MVN <- r_summary(y_MVN)
-r_LD <- r_summary(y_LD)
-
-r_MALD %>%
-  ggplot(aes(x =apply(y_MALD[,1,], 1, mean), y = meanS1)) +
-  geom_point()+
-  geom_pointrange(aes(ymin = lowerS1, ymax = upperS1),alpha = I(.2)) +
-  theme_bw() +labs(x = "Y-hat", y = "Residual")
-
-r_MALD %>%
-  ggplot(aes(x =apply(y_MALD[,2,], 1, mean), y = meanS2)) +
-  geom_pointrange(aes(ymin = lowerS2, ymax = upperS2),alpha = I(.2))+
-  theme_bw()+labs(x = "Y-hat", y = "Residual")
-
-
-r_IND %>%
-  ggplot(aes(x =apply(y_IND[,1,], 1, mean), y = meanS1))+
-  geom_pointrange(aes(ymin = lowerS1, ymax = upperS1),alpha = I(.2))+
-  theme_bw()+labs(x = "Y-hat", y = "Residual")
-
-r_IND %>%
-  ggplot(aes(x =apply(y_IND[,1,], 1, mean), y = meanS1))+
-  geom_pointrange(aes(ymin = lowerS1, ymax = upperS1),alpha = I(.2))+
-  theme_bw()+labs(x = "Y-hat", y = "Residual")
-
-
-#count number of jumps larger (in absolute magnitude) than percent%
-#y1 is the first time point (true) to get back to original scale
+#count number of positive jumps larger  than percent%
 njumps_pos <- function(y, percent=.50){
   sum(exp(y) >  1 +percent ) #how many times was y_t/y_{t-1} > 1.25?
 }
 
+#count number of JOINT positive jumps where both were larger than percent%
 njumps_pos_joint <- function(y1, y2, percent=.50){
-  sum(exp(y1) >  1 +percent &  exp(y2) >  1 +percent) #how many times was y_t/y_{t-1} > 1.25?
+  sum((exp(y1) >  1 +percent) &  (exp(y2) >  1 +percent)) #how many times was y_t/y_{t-1} > 1.25?
 }
+
+#count number of negative jumps larger  than percent%
 njumps_neg <- function(y, percent=.50){
   sum(exp(y) <  1 -percent ) #how many times was y_t/y_{t-1} > 1.25?
 }
@@ -292,15 +261,16 @@ T_stats[[r2]] <- data.frame(n_BTC = njumps_pos(QQdatBTCSP$S1),
 
 }
 
-library(reshape2)
 
 
+#visualizt distribution of T() from simualted datasets vs what is observed in actual data
 do.call(rbind,T_stats) %>%
   select(c( "n_MALD_BTC", "n_MVN_BTC","n_IND_BTC", "n_LD_BTC", "iteration","n_BTC"))%>%
   melt(id.var = c("iteration", "n_BTC")) %>%
   ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
   geom_vline(aes(xintercept = n_BTC))
 
+#ppp
 (do.call(rbind,T_stats)$n_MALD_BTC > do.call(rbind,T_stats)$n_BTC) %>%mean
 (do.call(rbind,T_stats)$n_MVN_BTC > do.call(rbind,T_stats)$n_BTC) %>%mean
 
@@ -311,7 +281,7 @@ do.call(rbind,T_stats) %>%
   ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
   geom_vline(aes(xintercept = n_SP))
 
-
+#ppp
 (do.call(rbind,T_stats)$n_MALD_SP > do.call(rbind,T_stats)$n_SP) %>%mean
 (do.call(rbind,T_stats)$n_MVN_SP > do.call(rbind,T_stats)$n_SP) %>%mean
 
@@ -323,12 +293,57 @@ do.call(rbind,T_stats) %>%
   ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
   geom_vline(aes(xintercept = n_both))
 
-
+#ppp
 (do.call(rbind,T_stats)$n_MALD_both > do.call(rbind,T_stats)$n_both) %>%mean
 (do.call(rbind,T_stats)$n_MVN_both > do.call(rbind,T_stats)$n_both) %>%mean
 (do.call(rbind,T_stats)$n_IND_both > do.call(rbind,T_stats)$n_both) %>%mean
 (do.call(rbind,T_stats)$n_LD_both > do.call(rbind,T_stats)$n_both) %>%mean
 
 
+#----YOU CAN IGNORE THIS SECTION basic residual plots ----
+
+
+r_summary <- function(y_2d){
+  do.call(rbind,apply(y_2d, 3, function(x){x - QQdatBTCSP}) )%>%
+    mutate(t = rep(c(1:T), length(Rsequence)),
+           v1 = as.vector(keepsBTCSP$v[Rsequence,-1 , 1]),
+           v2 = as.vector(keepsBTCSP$v[Rsequence, -1, 2])) %>%
+    mutate(S1 = S1/sqrt(v1),
+           S2 = S2/sqrt(v2)) %>%
+    group_by(t) %>%
+    summarise(meanS1 = mean(S1),#posterior summaries of residuals
+              meanS2 = mean(S2),
+              lowerS1 = quantile(S1, .05),
+              upperS1 = quantile(S1, .95),
+              lowerS2 = quantile(S2, .05),
+              upperS2 = quantile(S2, .95))}
+
+
+r_MALD <- r_summary(y_MALD)
+r_IND <- r_summary(y_IND)
+r_MVN <- r_summary(y_MVN)
+r_LD <- r_summary(y_LD)
+
+r_MALD %>%
+  ggplot(aes(x =apply(y_MALD[,1,], 1, mean), y = meanS1)) +
+  geom_point()+
+  geom_pointrange(aes(ymin = lowerS1, ymax = upperS1),alpha = I(.2)) +
+  theme_bw() +labs(x = "Y-hat", y = "Residual")
+
+r_MALD %>%
+  ggplot(aes(x =apply(y_MALD[,2,], 1, mean), y = meanS2)) +
+  geom_pointrange(aes(ymin = lowerS2, ymax = upperS2),alpha = I(.2))+
+  theme_bw()+labs(x = "Y-hat", y = "Residual")
+
+
+r_IND %>%
+  ggplot(aes(x =apply(y_IND[,1,], 1, mean), y = meanS1))+
+  geom_pointrange(aes(ymin = lowerS1, ymax = upperS1),alpha = I(.2))+
+  theme_bw()+labs(x = "Y-hat", y = "Residual")
+
+r_IND %>%
+  ggplot(aes(x =apply(y_IND[,1,], 1, mean), y = meanS1))+
+  geom_pointrange(aes(ymin = lowerS1, ymax = upperS1),alpha = I(.2))+
+  theme_bw()+labs(x = "Y-hat", y = "Residual")
 
 
