@@ -86,18 +86,18 @@ for (i in 1:(R + B)){
   if(exp_jumps == FALSE){
     f <- function(s){(log_pxi(xi_y1,xi_y1s,s+h/2,xi_y1eta) - log_pxi(xi_y1,xi_y1s,s-h/2,xi_y1eta)) / h}
     hat <- uniroot(f,c(-100,100))$root
-    sd <- sqrt(-h^2 / (log_pxi(xi_y1,xi_y1s,hat+h/2,xi_y1eta) - 2*log_pxi(xi_y1,xi_y1s,hat,xi_y1eta) + log_pxi(xi_y1,xi_y1s,hat-h/2,xi_y1eta)))
+    sd <- sqrt(-h^2 / (log_pxi(xi_y1,xi_y1s,hat+h,xi_y1eta) - 2*log_pxi(xi_y1,xi_y1s,hat,xi_y1eta) + log_pxi(xi_y1,xi_y1s,hat-h,xi_y1eta)))
     xi_y1w <- update_w(xi_y1,xi_y1s,xi_y1w,xi_y1eta,hat,sd)
     
     f <- function(s){(log_pxi(xi_y2,xi_y2s,s+h/2,xi_y2eta) - log_pxi(xi_y2,xi_y2s,s-h/2,xi_y2eta)) / h}
     hat <- uniroot(f,c(-100,100))$root
-    sd <- sqrt(-h^2 / (log_pxi(xi_y2,xi_y2s,hat+h/2,xi_y2eta) - 2*log_pxi(xi_y2,xi_y2s,hat,xi_y2eta) + log_pxi(xi_y2,xi_y2s,hat-h/2,xi_y2eta)))
+    sd <- sqrt(-h^2 / (log_pxi(xi_y2,xi_y2s,hat+h,xi_y2eta) - 2*log_pxi(xi_y2,xi_y2s,hat,xi_y2eta) + log_pxi(xi_y2,xi_y2s,hat-h,xi_y2eta)))
     xi_y2w <- update_w(xi_y2,xi_y2s,xi_y2w,xi_y2eta,hat,sd)
     
     if (ind == FALSE){
       f <- function(s){(log_pxi_c(xi_c,xi_cs,c(s+h/2,xi_cw[2]),sigma_c,rhoc) - log_pxi_c(xi_c,xi_cs,c(s-h/2,xi_cw[2]),sigma_c,rhoc)) / h}
       hat <- uniroot(f,c(-100,100))$root
-      sd <- sqrt(-h^2 / (log_pxi_c(xi_c,xi_cs,c(hat+h,xi_cw[2]),sigma_c,rhoc) - 2*log_pxi_c(xi_c,xi_cs,c(hat,xi_cw[2]),sigma_c,rhoc) + log_pxi_c(xi_c,xi_cs,c(hat-h/2,xi_cw[2]),sigma_c,rhoc)))
+      sd <- sqrt(-h^2 / (log_pxi_c(xi_c,xi_cs,c(hat+h,xi_cw[2]),sigma_c,rhoc) - 2*log_pxi_c(xi_c,xi_cs,c(hat,xi_cw[2]),sigma_c,rhoc) + log_pxi_c(xi_c,xi_cs,c(hat-h,xi_cw[2]),sigma_c,rhoc)))
       xi_cw[1] <- update_w_c(xi_c,xi_cs,xi_cw,sigma_c,rhoc,hat,sd,0)
       
       f <- function(s){(log_pxi_c(xi_c,xi_cs,c(xi_cw[1],s+h/2),sigma_c,rhoc) - log_pxi_c(xi_c,xi_cs,c(xi_cw[1],s-h/2),sigma_c,rhoc)) / h}
@@ -136,7 +136,7 @@ for (i in 1:(R + B)){
   
   f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],s+h/2),rho) - log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],s-h/2),rho)) / h}
   hat <- uniroot(f,c(0.001,100))$root
-  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat+h),rho) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat),rho) + log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat-h/2),rho)))
+  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat+h),rho) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat),rho) + log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat-h),rho)))
   sigma_v[2] <- update_sigma_v(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,1)
   
   if (ind == FALSE){
