@@ -33,7 +33,7 @@ T <- nrow(S) - 1
 #################################################### 
 
 sourceCpp("pgas_2d.cpp") #C++ updates
-# #2-D MODEL MCMC
+# #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
 yprim <- array(0,dim=dim(y))
 #source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)

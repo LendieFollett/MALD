@@ -167,10 +167,11 @@ as.data.frame.table(y) %>%
            iteration %in% c("truth", toupper(letters)[16:26])&
          Date > "2020-01-01")%>%
   ggplot() +
-  geom_line(aes(x = Date, y = value, colour = value )) +
+  geom_point(aes(x = Date, y = value, colour = exp(value)<1-.5 )) +
+    geom_hline(aes(yintercept = 0))+
   facet_wrap(~iteration) +
     scale_x_date(date_labels = "%b-%y",date_breaks = "4 month")+
-    scale_colour_distiller("Effect",palette = "RdYlGn")+
+    #scale_colour_distiller("Effect",palette = "RdYlGn")+
     theme(legend.position = "none")+
   ggtitle(title)
   }
@@ -211,31 +212,24 @@ apply(keepsIND$v, 2:3, mean) %>%
 
 
 #count number of positive jumps larger  than percent%
-njumps_pos <- function(y, percent=.50){
-  sum(exp(y) >  1 +percent ) #how many times was y_t/y_{t-1} > 1.25?
+njumps_pos <- function(y, percent=.25){
+  sum(exp(y) <  1 -percent | exp(y ) < 1-percent ) #how many times was y_t/y_{t-1} > 1.25?
 }
 
 #count number of JOINT positive jumps where both were larger than percent%
-njumps_pos_joint <- function(y1, y2, percent=.50){
-  sum((exp(y1) >  1 +percent) &  (exp(y2) >  1 +percent)) #how many times was y_t/y_{t-1} > 1.25?
+njumps_pos_joint <- function(y1, y2, percent=.25){
+  sum((exp(y1) <  1 -percent| exp(y1) <  1 -percent) &  (exp(y2) <  1 -percent|exp(y2) -  1 -percent)) #how many times was y_t/y_{t-1} > 1.25?
 }
 
-#count number of negative jumps larger  than percent%
-njumps_neg <- function(y, percent=.50){
-  sum(exp(y) <  1 -percent ) #how many times was y_t/y_{t-1} > 1.25?
-}
 
 #Y = log(yt/y_{t-1}) = log(yt) - log(y_{t-1})
-#exp(Y) = yt/y_{t-1}
+#exp(Y) = yt/y_{t-1} > 1.25 or < .75
 
 T_stats <- list()
 
 r2 <- 0
 for(r in Rsequence){ 
   r2 <- r2 + 1
-#H0: that x and y were drawn from the same continuous distribution
-#grab the p-values
-
 
 T_stats[[r2]] <- data.frame(n_BTC = njumps_pos(QQdatBTCSP$S1),
                            n_SP = njumps_pos(QQdatBTCSP$S2 ),
@@ -263,12 +257,15 @@ T_stats[[r2]] <- data.frame(n_BTC = njumps_pos(QQdatBTCSP$S1),
 
 
 
-#visualizt distribution of T() from simualted datasets vs what is observed in actual data
+#visualize distribution of T() from simulated datasets vs what is observed in actual data
 do.call(rbind,T_stats) %>%
   select(c( "n_MALD_BTC", "n_MVN_BTC","n_IND_BTC", "n_LD_BTC", "iteration","n_BTC"))%>%
   melt(id.var = c("iteration", "n_BTC")) %>%
-  ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
-  geom_vline(aes(xintercept = n_BTC))
+  ggplot() + 
+  geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
+  geom_vline(aes(xintercept = n_BTC)) +
+  labs(x = "Simulated Counts", y = "Density")+
+  ggtitle("# of BTC jumps greater than 25%")
 
 #ppp
 (do.call(rbind,T_stats)$n_MALD_BTC > do.call(rbind,T_stats)$n_BTC) %>%mean
@@ -279,7 +276,9 @@ do.call(rbind,T_stats) %>%
   select(c( "n_MALD_SP", "n_MVN_SP", "n_IND_SP", "n_LD_SP", "iteration","n_SP"))%>%
   melt(id.var = c("iteration", "n_SP")) %>%
   ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
-  geom_vline(aes(xintercept = n_SP))
+  geom_vline(aes(xintercept = n_SP)) +
+  labs(x = "Simulated Counts", y = "Density")+
+  ggtitle("# of S&P jumps greater than 25%")
 
 #ppp
 (do.call(rbind,T_stats)$n_MALD_SP > do.call(rbind,T_stats)$n_SP) %>%mean
@@ -291,7 +290,11 @@ do.call(rbind,T_stats) %>%
   select(c( "n_MALD_both", "n_MVN_both", "n_LD_both", "n_IND_both", "iteration","n_both"))%>%
   melt(id.var = c("iteration", "n_both")) %>%
   ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
-  geom_vline(aes(xintercept = n_both))
+  geom_vline(aes(xintercept = n_both)) +
+  labs(x = "Simulated Counts", y = "Density")+
+  ggtitle("# of joint jumps where both greater than 25%")
+
+
 
 #ppp
 (do.call(rbind,T_stats)$n_MALD_both > do.call(rbind,T_stats)$n_both) %>%mean
