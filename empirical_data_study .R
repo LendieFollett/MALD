@@ -12,8 +12,8 @@ library(RcppTN)
 
 
 thin <- 5 #thinning param
-B <- 20000 #how many burn in draws to throw away
-R <- 50000 #how many draws to keep after burn in
+B <- 10000 #how many burn in draws to throw away
+R <- 100000 #how many draws to keep after burn in
 n_chns <- 1 #how many chains to run
 #load data
 getSymbols("BTC-USD",from = "2014-09-15",to = "2020-09-30")
@@ -29,7 +29,7 @@ T <- nrow(S) - 1
 
 
 #################################################### 
-# SVMALD MODEL ----------
+# SVMALD MODEL ---------- LRF RUNS
 #################################################### 
 
 sourceCpp("pgas_2d.cpp") #C++ updates
@@ -42,7 +42,7 @@ source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
 saveRDS(keeps,paste0("keepsBTCSP.rds"))
 
 #################################################### 
-# SVALD INDEPENDENCE (1d) MODEL ----------
+# SVALD INDEPENDENCE (1d) MODEL ---------- LRF RUNS
 #################################################### 
 sourceCpp("pgas_2d.cpp") #C++ updates
 #initialize values, create space to save draws
@@ -58,7 +58,7 @@ saveRDS(keeps,paste0("keepsBTCSP_IND.rds"))
 
 
 #################################################### 
-# SVMVN MODEL ----------
+# SVMVN MODEL ---------- MS RUNS
 #################################################### 
 sourceCpp("pgas_2d.cpp") #C++ updates
 #initialize values, create space to save draws
@@ -73,7 +73,7 @@ source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
 saveRDS(keeps,paste0("keepsBTCSP_MVN.rds"))
 
 #################################################### 
-# SVLD MODEL ----------
+# SVLD MODEL ----------MS RUNS
 #################################################### 
 sourceCpp("pgas_2d.cpp") #C++ updates
 #initialize values, create space to save draws

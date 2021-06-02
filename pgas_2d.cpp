@@ -228,8 +228,8 @@ double log_pxi(arma::vec xi, arma::vec xi_s, double w, double eta){
   for (int t = 0;t < T; t++){
     target += R::dnorm(xi(t),w*xi_s(t),eta*sqrt(xi_s(t)),true);
   }
-  target += R::dnorm(w, 0, 5, true); // w ~ norm(0,5) Prior
-  target += R::dnorm(eta, 0, 5, true); // eta ~ norm(0,5) Prior
+  target += R::dnorm(w, 0, 1, true); // w ~ norm(0,5) Prior
+  target += R::dnorm(eta, 0, 1, true); // eta ~ norm(0,5) Prior
   return target;  
 }
 
@@ -252,10 +252,10 @@ double log_pxi_c(arma::mat xi_c, arma::vec xi_cs, arma::vec xi_cw, arma::vec sig
     target += dmvnorm_arma(eps_xic,  arma::trans(arma::zeros(2)),  Sigma_xic, true)[0];
     
   }
-  target += R::dnorm(xi_cw(0), 0, 5, true); // w_c ~ norm(0,5) Prior
-  target += R::dnorm(xi_cw(1), 0, 5, true); // w_c ~ norm(0,5) Prior
-  target += R::dnorm(sigma_c(0), 0, 5, true); // sigma_c ~ norm(0,5) Prior
-  target += R::dnorm(sigma_c(1), 0, 5, true); // sigma_c ~ norm(0,5) Prior
+  target += R::dnorm(xi_cw(0), 0, 1, true); // w_c ~ norm(0,5) Prior
+  target += R::dnorm(xi_cw(1), 0, 1, true); // w_c ~ norm(0,5) Prior
+  target += R::dnorm(sigma_c(0), 0, 1, true); // sigma_c ~ norm(0,5) Prior
+  target += R::dnorm(sigma_c(1), 0, 1, true); // sigma_c ~ norm(0,5) Prior
   // rhoc ~ Unif(-1,1)
   return target;  
 }
