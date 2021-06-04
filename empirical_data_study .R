@@ -93,7 +93,7 @@ saveRDS(keeps,paste0("keepsBTCSP_LD.rds"))
 #################################################### 
 library(LaplacesDemon)
 
-total <- 10000 #number of mcmc iterations saved after burn-in, thinning
+total <- 20000 #number of mcmc iterations saved after burn-in, thinning
 doESS <- function(x, total){
   R <- total
   if(!is.null(dim(x))){ #if it's a data frame
@@ -104,7 +104,13 @@ doESS <- function(x, total){
 }
 
 #SVMALD
-lapply(keepsBTCSP[c(4,6:17)], doESS, total = total) %>% str()
+lapply(keepsBTCSP[c(4,6:17)], doESS, total = 10000) %>% str()
+plot(keeps$sigma_c[,1])
+plot(keeps$sigma_c[,2])
+plot(keeps$rhoc)
+plot(keeps$xi_cw[,2])
+plot(keeps$xi_y2eta)
+plot(keeps$xi_y1w)
 #SVALD
 lapply(keepsIND[c(4,6:17)], doESS, total = total) %>% str()
 #SVMVN
