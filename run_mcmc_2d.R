@@ -119,7 +119,7 @@ for (i in 1:(R + B)){
     sigma_c[2] <- update_sigma_c(xi_c,xi_cs,xi_cw,sigma_c,rhoc,hat,sd,1)
     
     f <- function(s){(log_pxi_c(xi_c,xi_cs,xi_cw,sigma_c,s+h/2) - log_pxi_c(xi_c,xi_cs,xi_cw,sigma_c,s-h/2)) / h}
-    hat <- uniroot(f,c(-0.999,0.999))$root
+    hat <- uniroot(f,c(-0.9999,0.9999))$root
     sd <- sqrt(-h^2 / (log_pxi_c(xi_c,xi_cs,xi_cw,sigma_c,hat+h) - 2*log_pxi_c(xi_c,xi_cs,xi_cw,sigma_c,hat) + log_pxi_c(xi_c,xi_cs,xi_cw,sigma_c,hat-h)))
     rhoc <- update_rhoc(xi_c,xi_cs,xi_cw,sigma_c,rhoc,hat,sd)
   }
