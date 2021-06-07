@@ -103,14 +103,27 @@ doESS <- function(x, total){
   }
 }
 
+domean<- function(x, total){
+  R <- total
+  if(!is.null(dim(x))){ #if it's a data frame
+    return(apply(x[1:R,], 2, mean))
+  }else{
+    return(mean(x[1:R]))
+  }
+}
+
 #SVMALD
 lapply(keepsBTCSP[c(4,6:17)], doESS, total = 10000) %>% str()
+lapply(keeps[c(4,6:17)], doESS, total = 20000) %>% str()
 plot(keeps$sigma_c[,1])
 plot(keeps$sigma_c[,2])
 plot(keeps$rhoc)
+plot(keeps$xi_cw[,1])
 plot(keeps$xi_cw[,2])
+plot(keeps$xi_y1eta)
 plot(keeps$xi_y2eta)
 plot(keeps$xi_y1w)
+plot(keeps$xi_y2w)
 #SVALD
 lapply(keepsIND[c(4,6:17)], doESS, total = total) %>% str()
 #SVMVN
