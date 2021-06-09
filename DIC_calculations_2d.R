@@ -18,6 +18,7 @@ library(RcppTN)
 
 #DIC7 = -4E(ln(p(y|z,theta))) + 2ln(p(y|z-hat, theta-hat))
 filepath <- "/Users/000766412/OneDrive - Drake University/Documents/Research/Asymmetric Laplace Jumps/keeps/"
+filepath <- "keeps_060821/" #contains runs with semi-informative priors on jump sizes (N(.5, 1) on eta and sigma_c)
 # DATA AND MCMC SAMPLES ------------
 #download full MCMC results (obtained from run_mcmc.R with fix = FALSE)
 keepsIND <- readRDS(paste0(filepath,"keepsBTCSP_IND.rds")) #independence
@@ -102,55 +103,27 @@ partial_likelihood2 <-  function(k, y){ #k for keeps, y for correct vector
 
 
 
-#----1 D FUNCTIONS----
-partial_likelihood1_1d <-  function(k, y){ #k for keeps, y for correct vector
-  R <- dim(k$v[complete.cases(k$v),])[1]
-  total = 0
-  for (r in 1:R){
-    total = total + (dnorm(y, 
-                           k$mu[r] + k$J[r,]+
-                             (k$rho[r]/k$sigma_v[r])*(k$v[r,-1]-k$theta[r]-k$phi[r]*(k$v[r,-(T+1)]-k$theta[r])),
-                           sqrt(k$v[r,-(T+1)]*(1-k$rho[r]^2)), log = TRUE) %>%sum)/R #average over R draws
-  }
-  return(total)
-}
-
-#use plug-in posterior means of z, theta
-partial_likelihood2_1d  <-  function(k, y){ #k for keeps, y for correct vector
-  v_mean = apply(k$v, 2, mean)
-  theta_mean <- mean(k$theta)
-  phi_mean <- mean(k$phi)
-  T <- length(y)
-  dnorm(y, 
-        mean(k$mu) + apply(k$J,2, mean) + 
-          (mean(k$rho)/mean(k$sigma_v))*(v_mean[-1]-theta_mean-phi_mean*(v_mean[-(T+1)]-theta_mean)),
-        sqrt(v_mean[-(T+1)]*(1-mean(k$rho)^2)), log = TRUE) %>%sum
-  
-}
-
-
-
 #-----CALCULATIONS------------
-#----SVALD
+#----SVIND
 #E(ln(p(y|z,theta)))
 Elnpy_mid_ztheta_IND <- partial_likelihood1(keepsIND, y)
 #[1]
 lnpy_mid_zhatthetahat_IND <- partial_likelihood2(keepsIND, y) 
 #[1] 
 
-DIC7_LD = -4*Elnpy_mid_ztheta_IND + 2*lnpy_mid_zhatthetahat_IND
-DIC7_LD#10953.52
+DIC7_IND = -4*Elnpy_mid_ztheta_IND + 2*lnpy_mid_zhatthetahat_IND
+DIC7_IND#10953.52
 #[1] 
 
 #----SVMALD
 #E(ln(p(y|z,theta)))
-Elnpy_mid_ztheta_MALD <- partial_likelihood1(keepsBTCSP, y) 
+Elnpy_mid_ztheta_MALD <- partial_likelihood1(keeps, y) 
 #[1]
-lnpy_mid_zhatthetahat_MALD <- partial_likelihood2(keepsBTCSP, y) 
+lnpy_mid_zhatthetahat_MALD <- partial_likelihood2(keeps, y) 
 #[1] 
 DIC7_MALD = -4*Elnpy_mid_ztheta_MALD + 2*lnpy_mid_zhatthetahat_MALD
 DIC7_MALD
-#[1] 9813.312
+#[1] 9813.312 (9827.731 on 06/08)
 #compare to 10953.52 from the 1d model... prefer MALD
 
 #----SVMVN
@@ -172,3 +145,7 @@ lnpy_mid_zhatthetahat_LD <- partial_likelihood2(keepsBTCSP_LD, y)
 DIC7_LD= -4*Elnpy_mid_ztheta_LD + 2*lnpy_mid_zhatthetahat
 DIC7_LD
 #[1]  9796.879 
+
+
+data.frame(model = c("SVMALD", "SVIND", "SVLD", "SVMVN"),
+           DIC = c("DIC7_MALD", "DIC7_IND", "DIC7_LD", "DIC7_MVN"))

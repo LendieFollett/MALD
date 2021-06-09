@@ -69,6 +69,37 @@ N_c <- as.numeric(delta == 2)
 J_mean <- array(0, dim = c(T,2))
 v_mean <- array(0, dim = c(T+1,2))
 
+if (use_starting_values == TRUE){
+  sv <- readRDS("starting_values_MALD.rds")
+  v <- sv$v
+  theta <- sv$theta
+  phi <- sv$phi
+  rho <- sv$rho + rnorm(4, 0, .0001)
+  sigma_v <- sv$sigma_v+ rnorm(2, 0, .0001)
+  mu <- sv$mu
+  xi_y1w <- sv$xi_y1w
+  xi_y2w <- sv$xi_y2w
+  xi_cw <- sv$xi_cw
+  xi_y1eta <- sv$xi_y1eta; xi_y2eta <- sv$xi_y2eta;
+  
+  rhoc <- sv$rhoc +rnorm(1, 0, .0001)
+  sigma_c <- sv$sigma_c
+  Sigma_c <- matrix(c(sigma_c[1]^2, 
+                      rhoc*prod(sigma_c), 
+                      rhoc*prod(sigma_c), 
+                      sigma_c[2]^2), ncol = 2)
+  
+  xi_y1 <- sv$xi_y1
+  xi_y2 <- sv$xi_y2
+  xi_c <- cbind(sv$xi_y1c,sv$xi_y2c)
+  
+  delta <- sv$delta
+  
+  J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1) 
+  N_y1 <- as.numeric(delta == 0)
+  N_y2 <- as.numeric(delta == 1)
+  N_c <- as.numeric(delta == 2)
+}
 
 ####### KEEPS IS NOW DEFINED IN run_mcmc_2d.R
 #keeps is a list that stores kept draws (everything after burnin B)

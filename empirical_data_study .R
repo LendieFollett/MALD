@@ -27,11 +27,18 @@ S <- merge(BTC,SP500)
 T <- nrow(S) - 1
 
 
+data$cabin_location <- NA
+data[grepl("A",data$cabin),"cabin_location"] <- "A"
+
+....
+
+data[! data$cabin_location %in% c("A", "B", "C"), "cabin_location"] <- "missing"
+
 
 #################################################### 
 # SVMALD MODEL ---------- LRF RUNS
 #################################################### 
-
+use_starting_values <- TRUE
 sourceCpp("pgas_2d.cpp") #C++ updates
 # #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
@@ -44,6 +51,7 @@ saveRDS(keeps,paste0("keepsBTCSP.rds"))
 #################################################### 
 # SVALD INDEPENDENCE (1d) MODEL ---------- LRF RUNS
 #################################################### 
+use_starting_values <- TRUE
 sourceCpp("pgas_2d.cpp") #C++ updates
 #initialize values, create space to save draws
 # #2-D MODEL MCMC
@@ -105,25 +113,27 @@ doESS <- function(x, total){
 
 domean<- function(x, total){
   R <- total
-  if(!is.null(dim(x))){ #if it's a data frame
-    return(apply(x[1:R,], 2, mean))
+  if(length(dim(x)) == 2){ #if it's a data frame
+    return(apply(x[1:R,], 2, median))
+  }else if (length(dim(x)) > 2){
+    return(apply(x[1:R,,], 2:3, function(x){(median(x))}))
   }else{
-    return(mean(x[1:R]))
+    return(median(x[1:R]))
   }
 }
 
 #SVMALD
-lapply(keepsBTCSP[c(4,6:17)], doESS, total = 10000) %>% str()
-lapply(keeps[c(4,6:17)], doESS, total = 20000) %>% str()
-plot(keeps$sigma_c[,1])
-plot(keeps$sigma_c[,2])
-plot(keeps$rhoc)
-plot(keeps$xi_cw[,1])
-plot(keeps$xi_cw[,2])
-plot(keeps$xi_y1eta)
-plot(keeps$xi_y2eta)
-plot(keeps$xi_y1w)
-plot(keeps$xi_y2w)
+lapply(keeps[c(4,6:17)], doESS, total = 10000) %>% str()
+
+plot(keepsBTCSP$sigma_c[,1])
+plot(keepsBTCSP$sigma_c[,2])
+plot(keepsBTCSP$rhoc)
+plot(keepsBTCSP$xi_cw[,1])
+plot(keepsBTCSP$xi_cw[,2])
+plot(keepsBTCSP$xi_y1eta)
+plot(keepsBTCSP$xi_y2eta)
+plot(keepsBTCSP$xi_y1w)
+plot(keepsBTCSP$xi_y2w)
 #SVALD
 lapply(keepsIND[c(4,6:17)], doESS, total = total) %>% str()
 #SVMVN
@@ -137,3 +147,12 @@ plot(keepsBTCSP$sigma_c[1:total, 1]);length(unique(keepsBTCSP$sigma_c[1:total, 1
 plot(keepsBTCSP$sigma_c[1:total, 1])
 plot(keepsBTCSP$rhoc[1:total])
 plot(keepsBTCSP$xi_y2eta[1:total])
+
+#use for starting values?
+
+starting_values <- lapply(keeps, domean, total = 20000)
+starting_values %>% str
+starting_values$delta <- apply(starting_values$delta , 2, round)
+starting_values$xi_y1 <- starting_values$xi_y1c <- starting_values$J[,1] + rnorm(length(starting_values$xi_y1), 0, .001)
+starting_values$xi_y2 <- starting_values$xi_y2c <- starting_values$J[,2]+ rnorm(length(starting_values$xi_y1), 0, .001)
+saveRDS(starting_values,"starting_values_MALD.rds")
