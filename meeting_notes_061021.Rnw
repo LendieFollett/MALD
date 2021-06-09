@@ -29,10 +29,53 @@ $$\xi_{y,t+1} \overset{iid}{\sim} \mathcal{AL}_1(\mu_y, \nu_y^2)$$
 
 $$N_{y,t+1} \sim Bernoulli(\lambda\Delta)$$
 
-
+\newpage
 \section{Empirical study: S\&P and BTC jointly}
 
 \subsection{Some results}
+<<echo=FALSE>>=
+library(ggplot2)
+library(reshape2)
+filepath <- "keeps_060821/" 
+keepsBTCSP <- readRDS(paste0(filepath,"keepsBTCSP.rds")) #MALD jump;s
+
+domean<- function(x, total){
+  R <- total
+  if(length(dim(x)) == 2){ #if it's a data frame
+    return(apply(x[1:R,], 2, mean))
+  }else if (length(dim(x)) > 2){
+    return(apply(x[1:R,,], 2:3, function(x){(mean(x))}))
+  }else{
+    return(mean(x[1:R]))
+  }
+}
+
+#Posterior Means
+lapply(keepsBTCSP[c(4,6:17)], domean, total = 10000) %>% str()
+
+#Related to joint jumps:
+
+keepsBTCSP$xi_cw %>%
+  melt() %>%
+  ggplot() +
+  geom_histogram(aes(x = value)) +
+  facet_grid(~variable)+
+  ggtitle("w_c (location of MALD)")
+
+keepsBTCSP$sigma_c %>%
+  melt() %>%
+  ggplot() +
+  geom_histogram(aes(x = value)) +
+  facet_grid(~variable) +
+  ggtitle("sigma_c (scale of MALD)")
+
+  ggplot() +
+  geom_histogram(aes(x = keepsBTCSP$rhoc)) +
+  ggtitle("rho_c (correlation of MALD)")
+
+
+
+@
 
 \subsection{DIC}
 

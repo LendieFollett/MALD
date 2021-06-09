@@ -46,7 +46,7 @@ yprim <- array(0,dim=dim(y))
 #source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
 exp_jumps <- norm_jumps <- ind <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keepsBTCSP.rds"))
+saveRDS(keeps,paste0("keeps_060821/keepsBTCSP.rds"))
 
 #################################################### 
 # SVALD INDEPENDENCE (1d) MODEL ---------- LRF RUNS
@@ -63,7 +63,7 @@ norm_jumps <- FALSE
 ind <- TRUE #Bitcoin and S&P 500 have no relationship in return, volatility or jumps
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
 saveRDS(keeps,paste0("keepsBTCSP_IND.rds"))
-
+saveRDS(keeps,paste0("keeps_060821/keepsBTCSP_IND.rds"))
 
 #################################################### 
 # SVMVN MODEL ---------- MS RUNS

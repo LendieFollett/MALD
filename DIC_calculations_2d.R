@@ -112,7 +112,7 @@ lnpy_mid_zhatthetahat_IND <- partial_likelihood2(keepsIND, y)
 #[1] 
 
 DIC7_IND = -4*Elnpy_mid_ztheta_IND + 2*lnpy_mid_zhatthetahat_IND
-DIC7_IND#10953.52
+DIC7_IND#10953.52 (10884.23 on 06/08)
 #[1] 
 
 #----SVMALD
