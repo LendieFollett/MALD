@@ -1,8 +1,57 @@
-\documentclass{article}
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+% maxwidth is the original width if it is less than linewidth
+% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
 \usepackage{amsmath}
-\usepackage{Sweave}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
-\input{meeting_notes_061021-concordance}
 
 \section{Models}
 
@@ -34,3 +83,97 @@ $$N_{y,t+1} \sim Bernoulli(\lambda\Delta)$$
 \section{Empirical study: S\&P and BTC jointly}
 
 \subsection{Some results}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# \\\#\# Attaching package: 'dplyr'}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# The following objects are masked from 'package:stats':\\\#\# \\\#\# \ \ \ \ filter, lag}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# The following objects are masked from 'package:base':\\\#\# \\\#\# \ \ \ \ intersect, setdiff, setequal, union}}\begin{verbatim}
+## List of 13
+##  $ lambda  : num [1:4] 0.097 0.0367 0.085 0.7813
+##  $ sigma_v : num [1:2] 0.436 0.212
+##  $ sigma_c : num [1:2] 1.074 0.174
+##  $ rhoc    : num -0.104
+##  $ xi_cw   : num [1:2] -5.236 -0.166
+##  $ xi_y1eta: num 0.839
+##  $ xi_y1w  : num 4.91
+##  $ xi_y2eta: num 0.347
+##  $ xi_y2w  : num -0.668
+##  $ phi     : num [1:2] 0.985 0.976
+##  $ theta   : num [1:2] 6.96 1.12
+##  $ mu      : num [1:2] 0.165 0.0547
+##  $ rho     : num [1:4] 0.00665 0.07259 0.45863 -0.70195
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#Related to joint jumps:}
+
+\hlstd{keepsBTCSP}\hlopt{$}\hlstd{xi_cw} \hlopt{%>%}
+  \hlkwd{as.data.frame}\hlstd{()} \hlopt{%>%}
+  \hlkwd{melt}\hlstd{()} \hlopt{%>%}
+  \hlkwd{mutate}\hlstd{(}\hlkwc{variable} \hlstd{=} \hlkwd{factor}\hlstd{(variable,} \hlkwc{levels} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"V1"}\hlstd{,} \hlstr{"V2"}\hlstd{),}\hlkwc{labels} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"BTC"}\hlstd{,} \hlstr{"S&P"}\hlstd{)))}\hlopt{%>%}
+  \hlkwd{ggplot}\hlstd{()} \hlopt{+}
+  \hlkwd{geom_histogram}\hlstd{(}\hlkwd{aes}\hlstd{(}\hlkwc{x} \hlstd{= value))} \hlopt{+}
+  \hlkwd{facet_grid}\hlstd{(}\hlopt{~}\hlstd{variable)}\hlopt{+}
+  \hlkwd{ggtitle}\hlstd{(}\hlstr{"w_c (location of MALD)"}\hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# No id variables; using all as measure variables}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# `stat\_bin()` using `bins = 30`. Pick better value with `binwidth`.}}\end{kframe}
+\includegraphics[width=8in,height=5in]{figure/unnamed-chunk-2-1} 
+\end{knitrout}
+\clearpage
+\newpage
+
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{keepsBTCSP}\hlopt{$}\hlstd{sigma_c} \hlopt{%>%}
+    \hlkwd{as.data.frame}\hlstd{()} \hlopt{%>%}
+  \hlkwd{melt}\hlstd{()} \hlopt{%>%}
+  \hlkwd{mutate}\hlstd{(}\hlkwc{variable} \hlstd{=} \hlkwd{factor}\hlstd{(variable,} \hlkwc{levels} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"V1"}\hlstd{,} \hlstr{"V2"}\hlstd{),}\hlkwc{labels} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"BTC"}\hlstd{,} \hlstr{"S&P"}\hlstd{)))}\hlopt{%>%}
+  \hlkwd{ggplot}\hlstd{()} \hlopt{+}
+  \hlkwd{geom_histogram}\hlstd{(}\hlkwd{aes}\hlstd{(}\hlkwc{x} \hlstd{= value))} \hlopt{+}
+  \hlkwd{facet_grid}\hlstd{(}\hlopt{~}\hlstd{variable)} \hlopt{+}
+  \hlkwd{ggtitle}\hlstd{(}\hlstr{"sigma_c (scale of MALD)"}\hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# No id variables; using all as measure variables}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# `stat\_bin()` using `bins = 30`. Pick better value with `binwidth`.}}\end{kframe}
+\includegraphics[width=8in,height=5in]{figure/unnamed-chunk-3-1} 
+\end{knitrout}
+
+\clearpage
+\newpage
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+  \hlkwd{ggplot}\hlstd{()} \hlopt{+}
+  \hlkwd{geom_histogram}\hlstd{(}\hlkwd{aes}\hlstd{(}\hlkwc{x} \hlstd{= keepsBTCSP}\hlopt{$}\hlstd{rhoc))} \hlopt{+}
+  \hlkwd{ggtitle}\hlstd{(}\hlstr{"rho_c (correlation of MALD)"}\hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# `stat\_bin()` using `bins = 30`. Pick better value with `binwidth`.}}\end{kframe}
+\includegraphics[width=5in,height=5in]{figure/unnamed-chunk-4-1} 
+\end{knitrout}
+
+\subsection{DIC}
+
+\subsection{Posterior predictive p-values}
+
+\end{document}

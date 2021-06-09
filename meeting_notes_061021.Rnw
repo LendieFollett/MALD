@@ -1,7 +1,6 @@
 \documentclass{article}
 \usepackage{amsmath}
 \begin{document}
-\SweaveOpts{concordance=TRUE}
 
 \section{Models}
 
@@ -36,6 +35,7 @@ $$N_{y,t+1} \sim Bernoulli(\lambda\Delta)$$
 <<echo=FALSE>>=
 library(ggplot2)
 library(reshape2)
+library(dplyr)
 filepath <- "keeps_060821/" 
 keepsBTCSP <- readRDS(paste0(filepath,"keepsBTCSP.rds")) #MALD jump;s
 
@@ -51,29 +51,44 @@ domean<- function(x, total){
 }
 
 #Posterior Means
-lapply(keepsBTCSP[c(4,6:17)], domean, total = 10000) %>% str()
+lapply(keepsBTCSP[c(4,6:17)], domean, total = 20000) %>% str()
+@
 
+<< out.width = '8in', out.height = '5in'>>=
 #Related to joint jumps:
 
 keepsBTCSP$xi_cw %>%
+  as.data.frame() %>%
   melt() %>%
+  mutate(variable = factor(variable, levels = c("V1", "V2"),labels = c("BTC", "S&P")))%>%
   ggplot() +
   geom_histogram(aes(x = value)) +
   facet_grid(~variable)+
   ggtitle("w_c (location of MALD)")
+@
+\clearpage
+\newpage
 
+
+
+<<out.width = '8in', out.height = '5in' >>=
 keepsBTCSP$sigma_c %>%
+    as.data.frame() %>%
   melt() %>%
+  mutate(variable = factor(variable, levels = c("V1", "V2"),labels = c("BTC", "S&P")))%>%
   ggplot() +
   geom_histogram(aes(x = value)) +
   facet_grid(~variable) +
   ggtitle("sigma_c (scale of MALD)")
+@
 
+\clearpage
+\newpage
+
+<<out.width = '5in', out.height = '5in' >>=
   ggplot() +
   geom_histogram(aes(x = keepsBTCSP$rhoc)) +
   ggtitle("rho_c (correlation of MALD)")
-
-
 
 @
 
