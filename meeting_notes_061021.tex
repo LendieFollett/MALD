@@ -50,6 +50,7 @@
 
 \usepackage{alltt}
 \usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
 
@@ -66,23 +67,33 @@ M_{y_1,t+1},M_{y_2,t+1},M_{c,t+1} \sim Multinomial(1;\frac{\lambda_{y_1}}{\lambd
 
 \subsection{SVLD}
 
+\begin{align}
+    \begin{bmatrix} Y_{1,t + 1} - Y_{1,t} \\ Y_{2,t + 1} - Y_{1,t} \\ V_{1,t + 1} - V_{1,t} \\ V_{2,t + 1} - V_{2,t} \end{bmatrix} = \begin{bmatrix} \mu_1 \Delta \\ \mu_2 \Delta \\ \kappa_1(\theta_1 - V_{1,t}) \Delta \\ \kappa_2(\theta_2 - V_{2,t}) \Delta \end{bmatrix} + \sqrt{\Delta}\Sigma_t^{\frac{1}{2}} \begin{bmatrix} \epsilon_{y_1,t+1} \\ \epsilon_{y_2,t+1} \\ \epsilon_{v_1,t+1} \\ \epsilon_{v_2,t+1} \end{bmatrix} + \begin{bmatrix} N_{t+1}(M_{y_1,t+1} \xi_{y_1, t+1} + M_{c,t+1} \xi_{y_1,c,t+1}) \\ N_{t+1}(M_{y_2,t+1} \xi_{y_2, t+1} + M_{c,t+1} \xi_{y_2,c,t+1}) \\ 0 \\ 0 \end{bmatrix}, \label{S_tdisc_2d}
+\end{align}
+where $\Sigma_{t} = \begin{bmatrix} V_{1,t} & \rho_y \sqrt{V_{1,t}V_{2,t}} & \rho_1 \sigma_{v,1} V_{1,t} & 0 \\ \rho_y \sqrt{V_{1,t}V_{2,t}} & V_{2,t} & 0 & \rho_2 \sigma_{v,2} V_{2,t} \\ \rho_1 \sigma_{v,1} V_{1,t} & 0 & \sigma_{v,1}^2 V_{1,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} \\ 0 & \rho_2 \sigma_{v,2} V_{2,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} & \sigma_{v,2}^2 V_{2,t} \end{bmatrix}$, \\$\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y_1,y_2,v_1,v_2\}$, $\xi_{y_1,t+1} \overset{iid}{\sim} \mathcal{AL}_1(0, \nu_{y_1}^2)$, $\xi_{y_2,t+1} \overset{iid}{\sim} \mathcal{AL}_1(0, \nu_{y_2}^2)$, $\boldsymbol{\xi}_{c,t+1} = [\xi_{y_1,c,t+1}, \xi_{y_2,c,t+1}]' \overset{iid}{\sim} \mathcal{AL}_2(\boldsymbol{0}, \boldsymbol{\nu}_c)$, $\begin{bmatrix}
+M_{y_1,t+1},M_{y_2,t+1},M_{c,t+1} \sim Multinomial(1;\frac{\lambda_{y_1}}{\lambda},\frac{\lambda_{y_2}}{\lambda},\frac{\lambda_c}{\lambda})
+\end{bmatrix}$, and $N_{t+1} \sim Bernoulli(\lambda\Delta)$
+
 \subsection{SVMVN}
+
+\begin{align}
+    \begin{bmatrix} Y_{1,t + 1} - Y_{1,t} \\ Y_{2,t + 1} - Y_{1,t} \\ V_{1,t + 1} - V_{1,t} \\ V_{2,t + 1} - V_{2,t} \end{bmatrix} = \begin{bmatrix} \mu_1 \Delta \\ \mu_2 \Delta \\ \kappa_1(\theta_1 - V_{1,t}) \Delta \\ \kappa_2(\theta_2 - V_{2,t}) \Delta \end{bmatrix} + \sqrt{\Delta}\Sigma_t^{\frac{1}{2}} \begin{bmatrix} \epsilon_{y_1,t+1} \\ \epsilon_{y_2,t+1} \\ \epsilon_{v_1,t+1} \\ \epsilon_{v_2,t+1} \end{bmatrix} + \begin{bmatrix} N_{t+1}(M_{y_1,t+1} \xi_{y_1, t+1} + M_{c,t+1} \xi_{y_1,c,t+1}) \\ N_{t+1}(M_{y_2,t+1} \xi_{y_2, t+1} + M_{c,t+1} \xi_{y_2,c,t+1}) \\ 0 \\ 0 \end{bmatrix}, \label{S_tdisc_2d}
+\end{align}
+where $\Sigma_{t} = \begin{bmatrix} V_{1,t} & \rho_y \sqrt{V_{1,t}V_{2,t}} & \rho_1 \sigma_{v,1} V_{1,t} & 0 \\ \rho_y \sqrt{V_{1,t}V_{2,t}} & V_{2,t} & 0 & \rho_2 \sigma_{v,2} V_{2,t} \\ \rho_1 \sigma_{v,1} V_{1,t} & 0 & \sigma_{v,1}^2 V_{1,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} \\ 0 & \rho_2 \sigma_{v,2} V_{2,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} & \sigma_{v,2}^2 V_{2,t} \end{bmatrix}$, \\$\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y_1,y_2,v_1,v_2\}$, $\xi_{y_1,t+1} \overset{iid}{\sim} N(\mu_{y_1}, \nu_{y_1}^2)$, $\xi_{y_2,t+1} \overset{iid}{\sim} N(\mu_{y_2}, \nu_{y_2}^2)$, $\boldsymbol{\xi}_{c,t+1} = [\xi_{y_1,c,t+1}, \xi_{y_2,c,t+1}]' \overset{iid}{\sim} MVN(\boldsymbol{\mu}_c, \boldsymbol{\nu}_c)$, $\begin{bmatrix}
+M_{y_1,t+1},M_{y_2,t+1},M_{c,t+1} \sim Multinomial(1;\frac{\lambda_{y_1}}{\lambda},\frac{\lambda_{y_2}}{\lambda},\frac{\lambda_c}{\lambda})
+\end{bmatrix}$, and $N_{t+1} \sim Bernoulli(\lambda\Delta)$
 
 \subsection{SVIND}
 \begin{align}
     \begin{bmatrix} Y_{t+1} - Y_t \\ V_{t+1} - V_t \end{bmatrix} = \begin{bmatrix}\mu\Delta \\ \kappa(\theta - V_{t})\Delta\end{bmatrix}  + \sqrt{V_{t}\Delta} \begin{bmatrix} 1 & 0 \\ \rho \sigma_v & \sqrt{1 - \rho^2} \sigma_v \end{bmatrix} \begin{bmatrix} \epsilon_{y,t+1} \\ \epsilon_{v,t+1} \end{bmatrix} + \begin{bmatrix} N_{y,t+1} \xi_{y,t+1} \\0  \end{bmatrix}, \label{S_tdisc}
 \end{align}
 
-$$\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$$
-
-$$\xi_{y,t+1} \overset{iid}{\sim} \mathcal{AL}_1(\mu_y, \nu_y^2)$$
-
-$$N_{y,t+1} \sim Bernoulli(\lambda\Delta)$$
+$\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overset{iid}{\sim} \mathcal{AL}_1(\mu_y, \nu_y^2)$, $N_{y,t+1} \sim Bernoulli(\lambda\Delta)$
 
 \newpage
 \section{Empirical study: S\&P and BTC jointly}
 
-\subsection{Some results}
+\subsection{Results: Joint Jumps}
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 
@@ -110,6 +121,9 @@ $$N_{y,t+1} \sim Bernoulli(\lambda\Delta)$$
 \end{kframe}
 \end{knitrout}
 
+\clearpage
+\newpage
+
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
@@ -129,7 +143,7 @@ $$N_{y,t+1} \sim Bernoulli(\lambda\Delta)$$
 {\ttfamily\noindent\itshape\color{messagecolor}{\#\# No id variables; using all as measure variables}}
 
 {\ttfamily\noindent\itshape\color{messagecolor}{\#\# `stat\_bin()` using `bins = 30`. Pick better value with `binwidth`.}}\end{kframe}
-\includegraphics[width=8in,height=5in]{figure/unnamed-chunk-2-1} 
+\includegraphics[width=6in,height=5in]{figure/unnamed-chunk-2-1} 
 \end{knitrout}
 \clearpage
 \newpage
@@ -153,7 +167,7 @@ $$N_{y,t+1} \sim Bernoulli(\lambda\Delta)$$
 {\ttfamily\noindent\itshape\color{messagecolor}{\#\# No id variables; using all as measure variables}}
 
 {\ttfamily\noindent\itshape\color{messagecolor}{\#\# `stat\_bin()` using `bins = 30`. Pick better value with `binwidth`.}}\end{kframe}
-\includegraphics[width=8in,height=5in]{figure/unnamed-chunk-3-1} 
+\includegraphics[width=6in,height=5in]{figure/unnamed-chunk-3-1} 
 \end{knitrout}
 
 \clearpage
@@ -170,6 +184,24 @@ $$N_{y,t+1} \sim Bernoulli(\lambda\Delta)$$
 
 {\ttfamily\noindent\itshape\color{messagecolor}{\#\# `stat\_bin()` using `bins = 30`. Pick better value with `binwidth`.}}\end{kframe}
 \includegraphics[width=5in,height=5in]{figure/unnamed-chunk-4-1} 
+\end{knitrout}
+
+\clearpage
+\newpage
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{keepsBTCSP}\hlopt{$}\hlstd{delta} \hlopt{%>%}
+  \hlkwd{melt}\hlstd{()} \hlopt{%>%}
+  \hlkwd{mutate}\hlstd{(}\hlkwc{value} \hlstd{=} \hlkwd{factor}\hlstd{(value,} \hlkwc{levels} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{0}\hlopt{:}\hlnum{3}\hlstd{),}
+                        \hlkwc{labels} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"BTC jump"}\hlstd{,} \hlstr{"S&P jump"}\hlstd{,} \hlstr{"Joint jump"}\hlstd{,} \hlstr{"No jump"}\hlstd{)))} \hlopt{%>%}
+  \hlkwd{ggplot}\hlstd{()} \hlopt{+}
+  \hlkwd{geom_bar}\hlstd{(}\hlkwd{aes}\hlstd{(}\hlkwc{x} \hlstd{= Var2,} \hlkwc{fill} \hlstd{= value),} \hlkwc{position} \hlstd{=} \hlstr{"fill"}\hlstd{)} \hlopt{+}
+  \hlkwd{scale_fill_brewer}\hlstd{(}\hlstr{"Type"}\hlstd{,}\hlkwc{type} \hlstd{=} \hlstr{"qual"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-5-1} 
 \end{knitrout}
 
 \subsection{DIC}

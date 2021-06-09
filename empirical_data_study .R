@@ -123,7 +123,7 @@ domean<- function(x, total){
 }
 
 #SVMALD
-lapply(keeps[c(4,6:17)], doESS, total = 10000) %>% str()
+lapply(keepsBTCSP[c(4,6:17)], doESS, total = 20000) %>% str()
 
 plot(keepsBTCSP$sigma_c[,1])
 plot(keepsBTCSP$sigma_c[,2])

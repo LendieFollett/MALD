@@ -134,7 +134,7 @@ lnpy_mid_zhatthetahat_MVN <- partial_likelihood2(keepsBTCSP_MVN, y)
 #[1] 
 DIC7_MVN = -4*Elnpy_mid_ztheta_MVN + 2*lnpy_mid_zhatthetahat_MVN
 DIC7_MVN
-#[1] 9818.368 still prefer mald
+#[1] 9818.368 still prefer mald (9714.333 on 06/08)
 
 #----SVLD
 
