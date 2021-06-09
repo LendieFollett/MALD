@@ -198,7 +198,7 @@ $\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overse
                         \hlkwc{labels} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"BTC jump"}\hlstd{,} \hlstr{"S&P jump"}\hlstd{,} \hlstr{"Joint jump"}\hlstd{,} \hlstr{"No jump"}\hlstd{)))} \hlopt{%>%}
   \hlkwd{ggplot}\hlstd{()} \hlopt{+}
   \hlkwd{geom_bar}\hlstd{(}\hlkwd{aes}\hlstd{(}\hlkwc{x} \hlstd{= Var2,} \hlkwc{fill} \hlstd{= value),} \hlkwc{position} \hlstd{=} \hlstr{"fill"}\hlstd{)} \hlopt{+}
-  \hlkwd{scale_fill_brewer}\hlstd{(}\hlstr{"Type"}\hlstd{,}\hlkwc{type} \hlstd{=} \hlstr{"qual"}\hlstd{)}
+  \hlkwd{scale_fill_brewer}\hlstd{(}\hlstr{"Type"}\hlstd{,}\hlkwc{type} \hlstd{=} \hlstr{"qual"}\hlstd{)} \hlopt{+}\hlkwd{labs}\hlstd{(}\hlkwc{x} \hlstd{=} \hlstr{"Time"}\hlstd{,} \hlkwc{y} \hlstd{=} \hlstr{"Proportion"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \includegraphics[width=6in,height=5in]{figure/unnamed-chunk-5-1} 
@@ -216,10 +216,11 @@ $\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overse
  $$DIC_7 = -4E_{\theta,\boldsymbol{z} | \boldsymbol{y}}(ln(p(\boldsymbol{y}|\theta,\boldsymbol{z}))) + 2ln(p(\boldsymbol{y}|\hat{\theta}, \hat{\boldsymbol{z}})).$$ 
  
 \begin{table}[]
-\begin{tabular}{lllll}
-                   & SVMALD  & SVLD    & SVMVN   & SVIND \\
-Diffuse priors     &9813.312 &\textbf{9796.879} &9818.368 &10953.52 \\
-Fulop-style priors &9827.731 &         &9714.333 &10884.23
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+                   & SVMALD  & SVLD    & SVMVN   & SVIND \\ \hline
+Diffuse priors     &9813.312 &\textbf{9796.879} &9818.368 &10953.52 \\ \hline
+Fulop-style priors &9827.731 &9854.88 &\textbf{9714.333} &10884.23 \\ \hline
 \end{tabular}
 \caption{\label{tab:dic7} Resulting DIC from runs with diffuse priors and runs with more informative priors. }
 \end{table}
@@ -231,5 +232,14 @@ First, a lineup to motivate. Posterior predictive p-values operate on the assump
 
 \includegraphics[width = .9\linewidth]{"lineup_BTC.pdf"}
 
+\newpage
+\clearpage
+
+\includegraphics[width = .9\linewidth]{"lineup_SP.pdf"}
+
+\newpage
+\clearpage
+
+\includegraphics[width = .9\linewidth]{"ppp_joint_jumps.pdf"}
 
 \end{document}

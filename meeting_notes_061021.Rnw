@@ -17,9 +17,9 @@ M_{y_1,t+1},M_{y_2,t+1},M_{c,t+1} \sim Multinomial(1;\frac{\lambda_{y_1}}{\lambd
 \subsection{SVLD}
 
 \begin{align}
-    \begin{bmatrix} Y_{1,t + 1} - Y_{1,t} \\ Y_{2,t + 1} - Y_{1,t} \\ V_{1,t + 1} - V_{1,t} \\ V_{2,t + 1} - V_{2,t} \end{bmatrix} = \begin{bmatrix} \mu_1 \Delta \\ \mu_2 \Delta \\ \kappa_1(\theta_1 - V_{1,t}) \Delta \\ \kappa_2(\theta_2 - V_{2,t}) \Delta \end{bmatrix} + \sqrt{\Delta}\Sigma_t^{\frac{1}{2}} \begin{bmatrix} \epsilon_{y_1,t+1} \\ \epsilon_{y_2,t+1} \\ \epsilon_{v_1,t+1} \\ \epsilon_{v_2,t+1} \end{bmatrix} + \begin{bmatrix} N_{t+1}(M_{y_1,t+1} \xi_{y_1, t+1} + M_{c,t+1} \xi_{y_1,c,t+1}) \\ N_{t+1}(M_{y_2,t+1} \xi_{y_2, t+1} + M_{c,t+1} \xi_{y_2,c,t+1}) \\ 0 \\ 0 \end{bmatrix}, \label{S_tdisc_2d}
+    \begin{bmatrix} Y_{1,t + 1} - Y_{1,t} \\ Y_{2,t + 1} - Y_{1,t} \\ V_{1,t + 1} - V_{1,t} \\ V_{2,t + 1} - V_{2,t} \end{bmatrix} = \begin{bmatrix} \mu_1 \Delta \\ \mu_2 \Delta \\ \kappa_1(\theta_1 - V_{1,t}) \Delta \\ \kappa_2(\theta_2 - V_{2,t}) \Delta \end{bmatrix} + \sqrt{\Delta}\Sigma_t^{\frac{1}{2}} \begin{bmatrix} \epsilon_{y_1,t+1} \\ \epsilon_{y_2,t+1} \\ \epsilon_{v_1,t+1} \\ \epsilon_{v_2,t+1} \end{bmatrix} + \begin{bmatrix} N_{t+1}(M_{y_1,t+1} \xi_{y_1, t+1} ) \\ N_{t+1}(M_{y_2,t+1} \xi_{y_2, t+1} ) \\ 0 \\ 0 \end{bmatrix}, \label{S_tdisc_2d}
 \end{align}
-where $\Sigma_{t} = \begin{bmatrix} V_{1,t} & \rho_y \sqrt{V_{1,t}V_{2,t}} & \rho_1 \sigma_{v,1} V_{1,t} & 0 \\ \rho_y \sqrt{V_{1,t}V_{2,t}} & V_{2,t} & 0 & \rho_2 \sigma_{v,2} V_{2,t} \\ \rho_1 \sigma_{v,1} V_{1,t} & 0 & \sigma_{v,1}^2 V_{1,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} \\ 0 & \rho_2 \sigma_{v,2} V_{2,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} & \sigma_{v,2}^2 V_{2,t} \end{bmatrix}$, \\$\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y_1,y_2,v_1,v_2\}$, $\xi_{y_1,t+1} \overset{iid}{\sim} \mathcal{AL}_1(0, \nu_{y_1}^2)$, $\xi_{y_2,t+1} \overset{iid}{\sim} \mathcal{AL}_1(0, \nu_{y_2}^2)$, $\boldsymbol{\xi}_{c,t+1} = [\xi_{y_1,c,t+1}, \xi_{y_2,c,t+1}]' \overset{iid}{\sim} \mathcal{AL}_2(\boldsymbol{0}, \boldsymbol{\nu}_c)$, $\begin{bmatrix}
+where $\Sigma_{t} = \begin{bmatrix} V_{1,t} & \rho_y \sqrt{V_{1,t}V_{2,t}} & \rho_1 \sigma_{v,1} V_{1,t} & 0 \\ \rho_y \sqrt{V_{1,t}V_{2,t}} & V_{2,t} & 0 & \rho_2 \sigma_{v,2} V_{2,t} \\ \rho_1 \sigma_{v,1} V_{1,t} & 0 & \sigma_{v,1}^2 V_{1,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} \\ 0 & \rho_2 \sigma_{v,2} V_{2,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} & \sigma_{v,2}^2 V_{2,t} \end{bmatrix}$, \\$\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y_1,y_2,v_1,v_2\}$, $\xi_{y_1,t+1} \overset{iid}{\sim} \mathcal{AL}_1(0, \nu_{y_1}^2)$, $\xi_{y_2,t+1} \overset{iid}{\sim} \mathcal{AL}_1(0, \nu_{y_2}^2)$, $\begin{bmatrix}
 M_{y_1,t+1},M_{y_2,t+1},M_{c,t+1} \sim Multinomial(1;\frac{\lambda_{y_1}}{\lambda},\frac{\lambda_{y_2}}{\lambda},\frac{\lambda_c}{\lambda})
 \end{bmatrix}$, and $N_{t+1} \sim Bernoulli(\lambda\Delta)$
 
@@ -116,7 +116,7 @@ keepsBTCSP$delta %>%
                         labels = c("BTC jump", "S&P jump", "Joint jump", "No jump"))) %>%
   ggplot() +
   geom_bar(aes(x = Var2, fill = value), position = "fill") +
-  scale_fill_brewer("Type",type = "qual")
+  scale_fill_brewer("Type",type = "qual") +labs(x = "Time", y = "Proportion")
 #it's worth noting the MVN plot looks almost identical - same patterns
 @
 
@@ -128,10 +128,11 @@ keepsBTCSP$delta %>%
  $$DIC_7 = -4E_{\theta,\boldsymbol{z} | \boldsymbol{y}}(ln(p(\boldsymbol{y}|\theta,\boldsymbol{z}))) + 2ln(p(\boldsymbol{y}|\hat{\theta}, \hat{\boldsymbol{z}})).$$ 
  
 \begin{table}[]
-\begin{tabular}{lllll}
-                   & SVMALD  & SVLD    & SVMVN   & SVIND \\
-Diffuse priors     &9813.312 &\textbf{9796.879} &9818.368 &10953.52 \\
-Fulop-style priors &9827.731 &9854.88 &9714.333 &10884.23
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+                   & SVMALD  & SVLD    & SVMVN   & SVIND \\ \hline
+Diffuse priors     &9813.312 &\textbf{9796.879} &9818.368 &10953.52 \\ \hline
+Fulop-style priors &9827.731 &9854.88 &\textbf{9714.333} &10884.23 \\ \hline
 \end{tabular}
 \caption{\label{tab:dic7} Resulting DIC from runs with diffuse priors and runs with more informative priors. }
 \end{table}
@@ -150,5 +151,7 @@ First, a lineup to motivate. Posterior predictive p-values operate on the assump
 
 \newpage
 \clearpage
+
+\includegraphics[width = .9\linewidth]{"ppp_joint_jumps.pdf"}
 
 \end{document}

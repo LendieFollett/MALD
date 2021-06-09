@@ -66,8 +66,8 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     0,(keepsBTCSP_MALD$rho[r,4])*(keepsBTCSP_MALD$sigma_v[r,2])*V_MALD[i,2],(keepsBTCSP_MALD$rho[r,2])*prod(keepsBTCSP_MALD$sigma_v[r,])*sqrt(prod(V_MALD[i,])),(keepsBTCSP_MALD$sigma_v[r,2])^2*V_MALD[i,2]),nrow=4)
 
   temp <- mvrnorm(n = 1, mu =c(x[i,] + keepsBTCSP_MALD$mu[r,]+ keepsBTCSP_MALD$J[r,i,] + 
-                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_MALD[i+1,] - (keepsBTCSP_MALD$theta[r,] + keepsBTCSP_MALD$phi[r,]*(V_MALD[i,] - keepsBTCSP_MALD$theta[r,]))),
-                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2]))
+                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_MALD[i+1,] - (keepsBTCSP_MALD$theta[r,] + keepsBTCSP_MALD$phi[r,]*(V_MALD[i,] - keepsBTCSP_MALD$theta[r,])))),
+                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2])
   
   #V_MALD[i+1,] <- keepsBTCSP_MALD$v[r,i,]#pmax(temp[3:4], c(0.001,0.001))
   y_MALD[i,,r2] <- temp[1:2]
@@ -80,8 +80,8 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     0,(keepsIND$rho[r,4])*(keepsIND$sigma_v[r,2])*V_IND[i,2],(keepsIND$rho[r,2])*prod(keepsIND$sigma_v[r,])*sqrt(prod(V_IND[i,])),(keepsIND$sigma_v[r,2])^2*V_IND[i,2]),nrow=4)
   
   temp <- mvrnorm(n = 1, mu =c(x[i,] + keepsIND$mu[r,]+ keepsIND$J[r,i,] + 
-                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_IND[i+1,] - (keepsIND$theta[r,] + keepsIND$phi[r,]*(V_IND[i,] - keepsIND$theta[r,]))),
-                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2]))
+                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_IND[i+1,] - (keepsIND$theta[r,] + keepsIND$phi[r,]*(V_IND[i,] - keepsIND$theta[r,])))),
+                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2])
   #V_IND[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
   y_IND[i,,r2] <- temp[1:2]
   
@@ -92,8 +92,8 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     0,(keepsBTCSP_MVN$rho[r,4])*(keepsBTCSP_MVN$sigma_v[r,2])*V_MVN[i,2],(keepsBTCSP_MVN$rho[r,2])*prod(keepsBTCSP_MVN$sigma_v[r,])*sqrt(prod(V_MVN[i,])),(keepsBTCSP_MVN$sigma_v[r,2])^2*V_MVN[i,2]),nrow=4)
   
   temp <- mvrnorm(n = 1, mu =c(x[i,] + keepsBTCSP_MVN$mu[r,]+ keepsBTCSP_MVN$J[r,i,] + 
-                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_MVN[i+1,] - (keepsBTCSP_MVN$theta[r,] + keepsBTCSP_MVN$phi[r,]*(V_MVN[i,] - keepsBTCSP_MVN$theta[r,]))),
-                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2]))
+                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_MVN[i+1,] - (keepsBTCSP_MVN$theta[r,] + keepsBTCSP_MVN$phi[r,]*(V_MVN[i,] - keepsBTCSP_MVN$theta[r,])))),
+                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2])
   #V_MVN[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
   y_MVN[i,,r2] <- temp[1:2]
   
@@ -104,8 +104,8 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     0,(keepsBTCSP_LD$rho[r,4])*(keepsBTCSP_LD$sigma_v[r,2])*V_LD[i,2],(keepsBTCSP_LD$rho[r,2])*prod(keepsBTCSP_LD$sigma_v[r,])*sqrt(prod(V_LD[i,])),(keepsBTCSP_LD$sigma_v[r,2])^2*V_LD[i,2]),nrow=4)
   
   temp <- mvrnorm(n = 1, mu =c(x[i,] + keepsBTCSP_LD$mu[r,]+ keepsBTCSP_LD$J[r,i,] + 
-                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_LD[i+1,] - (keepsBTCSP_LD$theta[r,] + keepsBTCSP_LD$phi[r,]*(V_LD[i,] - keepsBTCSP_LD$theta[r,]))),
-                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2]))
+                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_LD[i+1,] - (keepsBTCSP_LD$theta[r,] + keepsBTCSP_LD$phi[r,]*(V_LD[i,] - keepsBTCSP_LD$theta[r,])))),
+                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2])
   
   #V_LD[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
   y_LD[i,,r2] <- temp[1:2]
@@ -210,13 +210,24 @@ apply(keepsIND$v, 2:3, mean) %>%
 
 
 #count number of positive jumps larger  than percent%
-njumps_pos <- function(y, percent=.25){
+njumps_pos <- function(y, percent=.5){
   sum(exp(y) <  1 -percent | exp(y ) > 1+percent ) #how many times was y_t/y_{t-1} > 1.25?
 }
 
+
 #count number of JOINT positive jumps where both were larger than percent%
-njumps_pos_joint <- function(y1, y2, percent=.25){
+njumps_joint <- function(y1, y2, percent=.5){
   sum((exp(y1) <  1 -percent| exp(y1) >  1 +percent) &  (exp(y2) <  1 -percent|exp(y2) >  1 +percent)) #how many times was y_t/y_{t-1} > 1.25?
+}
+
+#count number of JOINT positive jumps where both were larger than percent%
+njumps_pos_joint <- function(y1, y2, percent=.5){
+  sum((exp(y1) >  1 +percent) &  (exp(y2) >  1 +percent)) #how many times was y_t/y_{t-1} > 1.25?
+}
+
+#count number of JOINT positive jumps where both were larger than percent%
+njumps_neg_joint <- function(y1, y2, percent=.5){
+  sum((exp(y1) <  1 -percent) &  (exp(y2) <  1 -percent)) #how many times was y_t/y_{t-1} > 1.25?
 }
 
 
@@ -231,23 +242,34 @@ for(r in Rsequence){
 
 T_stats[[r2]] <- data.frame(n_BTC = njumps_pos(QQdatBTCSP$S1),
                            n_SP = njumps_pos(QQdatBTCSP$S2 ),
-                           n_both =  njumps_pos_joint(QQdatBTCSP$S1,QQdatBTCSP$S2 ),
+                           n_both =  njumps_joint(QQdatBTCSP$S1,QQdatBTCSP$S2 ),
+                           n_both_pos =  njumps_pos_joint(QQdatBTCSP$S1,QQdatBTCSP$S2 ),
+                           n_both_neg =  njumps_neg_joint(QQdatBTCSP$S1,QQdatBTCSP$S2 ),
                           
                            n_MALD_BTC = njumps_pos(y_MALD[,1,r2]),
                            n_MALD_SP = njumps_pos(y_MALD[,2,r2] ),
-                           n_MALD_both =  njumps_pos_joint(y_MALD[,1,r2],y_MALD[,2,r2] ),
+                           n_MALD_both =  njumps_joint(y_MALD[,1,r2],y_MALD[,2,r2] ),
+                           n_MALD_both_pos =  njumps_pos_joint(y_MALD[,1,r2],y_MALD[,2,r2] ),
+                           n_MALD_both_neg =  njumps_neg_joint(y_MALD[,1,r2],y_MALD[,2,r2] ),
                            
                            n_LD_BTC = njumps_pos(y_LD[,1,r2]),
                            n_LD_SP = njumps_pos(y_LD[,2,r2] ),
-                           n_LD_both = njumps_pos_joint(y_LD[,1,r2],y_LD[,2,r2] ) ,
+                           n_LD_both =  njumps_joint(y_LD[,1,r2],y_LD[,2,r2] ),
+                           n_LD_both_pos =  njumps_pos_joint(y_LD[,1,r2],y_LD[,2,r2] ),
+                           n_LD_both_neg =  njumps_neg_joint(y_LD[,1,r2],y_LD[,2,r2] ),
                            
                            n_IND_BTC = njumps_pos(y_IND[,1,r2]),
                            n_IND_SP = njumps_pos(y_IND[,2,r2] ),
-                           n_IND_both =  njumps_pos_joint(y_IND[,1,r2],y_IND[,2,r2] ),
+                           n_IND_both =  njumps_joint(y_IND[,1,r2],y_IND[,2,r2] ),
+                           n_IND_both_pos =  njumps_pos_joint(y_IND[,1,r2],y_IND[,2,r2] ),
+                           n_IND_both_neg =  njumps_neg_joint(y_IND[,1,r2],y_IND[,2,r2] ),
                             
                            n_MVN_BTC = njumps_pos(y_MVN[,1,r2]),
                            n_MVN_SP = njumps_pos(y_MVN[,2,r2] ),
-                           n_MVN_both =  njumps_pos_joint(y_MVN[,1,r2],y_MVN[,2,r2] ) ,
+                           n_MVN_both =  njumps_joint(y_MVN[,1,r2],y_MVN[,2,r2] ),
+                           n_MVN_both_pos =  njumps_pos_joint(y_MVN[,1,r2],y_MVN[,2,r2] ),
+                           n_MVN_both_neg =  njumps_neg_joint(y_MVN[,1,r2],y_MVN[,2,r2] ),
+                           
                            iteration = r2)
   
 
@@ -263,7 +285,7 @@ do.call(rbind,T_stats) %>%
   geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
   geom_vline(aes(xintercept = n_BTC)) +
   labs(x = "Simulated Counts", y = "Density")+
-  ggtitle("# of BTC jumps greater than 25%")
+  ggtitle("# of BTC jumps greater than 50%")
 
 #ppp
 (do.call(rbind,T_stats)$n_MALD_BTC > do.call(rbind,T_stats)$n_BTC) %>%mean
@@ -276,7 +298,7 @@ do.call(rbind,T_stats) %>%
   ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
   geom_vline(aes(xintercept = n_SP)) +
   labs(x = "Simulated Counts", y = "Density")+
-  ggtitle("# of S&P jumps greater than 25%")
+  ggtitle("# of S&P jumps greater than 50%")
 
 #ppp
 (do.call(rbind,T_stats)$n_MALD_SP > do.call(rbind,T_stats)$n_SP) %>%mean
@@ -284,15 +306,33 @@ do.call(rbind,T_stats) %>%
 
 
 
-do.call(rbind,T_stats) %>%
+p1 <- do.call(rbind,T_stats) %>%
   select(c( "n_MALD_both", "n_MVN_both", "n_LD_both", "n_IND_both", "iteration","n_both"))%>%
   melt(id.var = c("iteration", "n_both")) %>%
   ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
   geom_vline(aes(xintercept = n_both)) +
   labs(x = "Simulated Counts", y = "Density")+
-  ggtitle("# of joint jumps where both greater than 25%")
+  ggtitle("# of joint jumps where both greater than 50% (+ or -)")
+
+p2 <- do.call(rbind,T_stats) %>%
+  select(c( "n_MALD_both_pos", "n_MVN_both_pos", "n_LD_both_pos", "n_IND_both_pos", "iteration","n_both_pos"))%>%
+  melt(id.var = c("iteration", "n_both_pos")) %>%
+  ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
+  geom_vline(aes(xintercept = n_both_pos)) +
+  labs(x = "Simulated Counts", y = "Density")+
+  ggtitle("# of joint jumps where both greater than 50%")
+
+p3 <- do.call(rbind,T_stats) %>%
+  select(c( "n_MALD_both_neg", "n_MVN_both_neg", "n_LD_both_neg", "n_IND_both_neg", "iteration","n_both_neg"))%>%
+  melt(id.var = c("iteration", "n_both_neg")) %>%
+  ggplot() + geom_density(aes(x = value, fill = variable),  alpha = I(.3)) +
+  geom_vline(aes(xintercept = n_both_neg)) +
+  labs(x = "Simulated Counts", y = "Density")+
+  ggtitle("# of joint jumps where both less than 50%")
 
 
+p4 <- grid.arrange(p2, p3, p1, nrow = 3)
+ggsave("ppp_joint_jumps.pdf", p4, width = 8, height = 12)
 
 #ppp
 (do.call(rbind,T_stats)$n_MALD_both > do.call(rbind,T_stats)$n_both) %>%mean
