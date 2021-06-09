@@ -65,10 +65,9 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     (keepsBTCSP_MALD$rho[r,3])*(keepsBTCSP_MALD$sigma_v[r,1])*V_MALD[i,1],0,(keepsBTCSP_MALD$sigma_v[r,1])^2*V_MALD[i,1],(keepsBTCSP_MALD$rho[r,2])*prod(keepsBTCSP_MALD$sigma_v[r,])*sqrt(prod(V_MALD[i,])),
                     0,(keepsBTCSP_MALD$rho[r,4])*(keepsBTCSP_MALD$sigma_v[r,2])*V_MALD[i,2],(keepsBTCSP_MALD$rho[r,2])*prod(keepsBTCSP_MALD$sigma_v[r,])*sqrt(prod(V_MALD[i,])),(keepsBTCSP_MALD$sigma_v[r,2])^2*V_MALD[i,2]),nrow=4)
 
-  temp <- mvrnorm(n = 1, 
-                   mu = c(x[i,] + keepsBTCSP_MALD$mu[r,]+ keepsBTCSP_MALD$J[r,i,]) ,
-                            #keepsBTCSP_MALD$theta[r,] + keepsBTCSP_MALD$phi[r,]*(V_MALD[i,] - keepsBTCSP_MALD$theta[r,])),
-                   Sigma = Sigma[1:2,1:2])#, lower=c(-Inf,-Inf,0,0))
+  temp <- mvrnorm(n = 1, mu =c(x[i,] + keepsBTCSP_MALD$mu[r,]+ keepsBTCSP_MALD$J[r,i,] + 
+                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_MALD[i+1,] - (keepsBTCSP_MALD$theta[r,] + keepsBTCSP_MALD$phi[r,]*(V_MALD[i,] - keepsBTCSP_MALD$theta[r,]))),
+                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2]))
   
   #V_MALD[i+1,] <- keepsBTCSP_MALD$v[r,i,]#pmax(temp[3:4], c(0.001,0.001))
   y_MALD[i,,r2] <- temp[1:2]
@@ -80,10 +79,9 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     (keepsIND$rho[r,3])*(keepsIND$sigma_v[r,1])*V_IND[i,1],0,(keepsIND$sigma_v[r,1])^2*V_IND[i,1],(keepsIND$rho[r,2])*prod(keepsIND$sigma_v[r,])*sqrt(prod(V_IND[i,])),
                     0,(keepsIND$rho[r,4])*(keepsIND$sigma_v[r,2])*V_IND[i,2],(keepsIND$rho[r,2])*prod(keepsIND$sigma_v[r,])*sqrt(prod(V_IND[i,])),(keepsIND$sigma_v[r,2])^2*V_IND[i,2]),nrow=4)
   
-  temp <- mvrnorm(n = 1, 
-                   mu = c(x[i,] + keepsIND$mu[r,]+ keepsIND$J[r,i,]) ,
-                            #keepsIND$theta[r,] + keepsIND$phi[r,]*(V_IND[i,] - keepsIND$theta[r,])),
-                   Sigma = Sigma[1:2,1:2])#, lower=c(-Inf,-Inf,0,0))
+  temp <- mvrnorm(n = 1, mu =c(x[i,] + keepsIND$mu[r,]+ keepsIND$J[r,i,] + 
+                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_IND[i+1,] - (keepsIND$theta[r,] + keepsIND$phi[r,]*(V_IND[i,] - keepsIND$theta[r,]))),
+                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2]))
   #V_IND[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
   y_IND[i,,r2] <- temp[1:2]
   
@@ -93,10 +91,9 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     (keepsBTCSP_MVN$rho[r,3])*(keepsBTCSP_MVN$sigma_v[r,1])*V_MVN[i,1],0,(keepsBTCSP_MVN$sigma_v[r,1])^2*V_MVN[i,1],(keepsBTCSP_MVN$rho[r,2])*prod(keepsBTCSP_MVN$sigma_v[r,])*sqrt(prod(V_MVN[i,])),
                     0,(keepsBTCSP_MVN$rho[r,4])*(keepsBTCSP_MVN$sigma_v[r,2])*V_MVN[i,2],(keepsBTCSP_MVN$rho[r,2])*prod(keepsBTCSP_MVN$sigma_v[r,])*sqrt(prod(V_MVN[i,])),(keepsBTCSP_MVN$sigma_v[r,2])^2*V_MVN[i,2]),nrow=4)
   
-  temp <- mvrnorm(n = 1, 
-                   mu = c(x[i,] + keepsBTCSP_MVN$mu[r,]+ keepsBTCSP_MVN$J[r,i,] ) ,
-                          #  keepsBTCSP_MVN$theta[r,] + keepsBTCSP_MVN$phi[r,]*(V_MVN[i,] - keepsBTCSP_MVN$theta[r,])),
-                   Sigma = Sigma[1:2,1:2])#, lower=c(-Inf,-Inf,0,0))
+  temp <- mvrnorm(n = 1, mu =c(x[i,] + keepsBTCSP_MVN$mu[r,]+ keepsBTCSP_MVN$J[r,i,] + 
+                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_MVN[i+1,] - (keepsBTCSP_MVN$theta[r,] + keepsBTCSP_MVN$phi[r,]*(V_MVN[i,] - keepsBTCSP_MVN$theta[r,]))),
+                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2]))
   #V_MVN[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
   y_MVN[i,,r2] <- temp[1:2]
   
@@ -106,10 +103,9 @@ for(r in Rsequence){ #loop over posterior draws -->posterior predictive distribu
                     (keepsBTCSP_LD$rho[r,3])*(keepsBTCSP_LD$sigma_v[r,1])*V_LD[i,1],0,(keepsBTCSP_LD$sigma_v[r,1])^2*V_LD[i,1],(keepsBTCSP_LD$rho[r,2])*prod(keepsBTCSP_LD$sigma_v[r,])*sqrt(prod(V_LD[i,])),
                     0,(keepsBTCSP_LD$rho[r,4])*(keepsBTCSP_LD$sigma_v[r,2])*V_LD[i,2],(keepsBTCSP_LD$rho[r,2])*prod(keepsBTCSP_LD$sigma_v[r,])*sqrt(prod(V_LD[i,])),(keepsBTCSP_LD$sigma_v[r,2])^2*V_LD[i,2]),nrow=4)
   
-  temp <- mvrnorm(n = 1, 
-                   mu = c(x[i,] + keepsBTCSP_LD$mu[r,]+ keepsBTCSP_LD$J[r,i,]),
-                          #  keepsBTCSP_LD$theta[r,] + keepsBTCSP_LD$phi[r,]*(V_LD[i,] - keepsBTCSP_LD$theta[r,])),
-                   Sigma = Sigma[1:2,1:2])#, lower=c(-Inf,-Inf,0,0))
+  temp <- mvrnorm(n = 1, mu =c(x[i,] + keepsBTCSP_LD$mu[r,]+ keepsBTCSP_LD$J[r,i,] + 
+                                 Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% c(V_LD[i+1,] - (keepsBTCSP_LD$theta[r,] + keepsBTCSP_LD$phi[r,]*(V_LD[i,] - keepsBTCSP_LD$theta[r,]))),
+                               Sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2]))
   
   #V_LD[i+1,] <-  pmax(temp[3:4], c(0.001,0.001))
   y_LD[i,,r2] <- temp[1:2]
