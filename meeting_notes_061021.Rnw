@@ -7,12 +7,18 @@
 
 \subsection{SVMALD}
 
+
+
+\subsection{SVLD}
 \begin{align}
     \begin{bmatrix} Y_{t+1} - Y_t \\ V_{t+1} - V_t \end{bmatrix} = \begin{bmatrix}\mu\Delta \\ \kappa(\theta - V_{t})\Delta\end{bmatrix}  + \sqrt{V_{t}\Delta} \begin{bmatrix} 1 & 0 \\ \rho \sigma_v & \sqrt{1 - \rho^2} \sigma_v \end{bmatrix} \begin{bmatrix} \epsilon_{y,t+1} \\ \epsilon_{v,t+1} \end{bmatrix} + \begin{bmatrix} N_{y,t+1} \xi_{y,t+1} \\0  \end{bmatrix}, \label{S_tdisc}
 \end{align}
 
-\subsection{SVLD}
+$$\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$$
 
+$$\xi_{y,t+1} \overset{iid}{\sim} \mathcal{AL}_1(\mu_y, \nu_y^2)$$
+
+$$N_{y,t+1} \sim Bernoulli(\lambda\Delta)$$
 \subsection{SVMVN}
 
 \subsection{SVIND}
