@@ -29,4 +29,13 @@ $$\xi_{y,t+1} \overset{iid}{\sim} \mathcal{AL}_1(\mu_y, \nu_y^2)$$
 
 $$N_{y,t+1} \sim Bernoulli(\lambda\Delta)$$
 
+
+\section{Empirical study: S\&P and BTC jointly}
+
+\subsection{Some results}
+
+\subsection{DIC}
+
+\subsection{Posterior predictive p-values}
+
 \end{document}
