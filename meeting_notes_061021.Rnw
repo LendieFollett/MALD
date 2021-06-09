@@ -7,7 +7,12 @@
 
 \subsection{SVMALD}
 
-
+\begin{align}
+    \begin{bmatrix} Y_{1,t + 1} - Y_{1,t} \\ Y_{2,t + 1} - Y_{1,t} \\ V_{1,t + 1} - V_{1,t} \\ V_{2,t + 1} - V_{2,t} \end{bmatrix} = \begin{bmatrix} \mu_1 \Delta \\ \mu_2 \Delta \\ \kappa_1(\theta_1 - V_{1,t}) \Delta \\ \kappa_2(\theta_2 - V_{2,t}) \Delta \end{bmatrix} + \sqrt{\Delta}\Sigma_t^{\frac{1}{2}} \begin{bmatrix} \epsilon_{y_1,t+1} \\ \epsilon_{y_2,t+1} \\ \epsilon_{v_1,t+1} \\ \epsilon_{v_2,t+1} \end{bmatrix} + \begin{bmatrix} N_{t+1}(M_{y_1,t+1} \xi_{y_1, t+1} + M_{c,t+1} \xi_{y_1,c,t+1}) \\ N_{t+1}(M_{y_2,t+1} \xi_{y_2, t+1} + M_{c,t+1} \xi_{y_2,c,t+1}) \\ 0 \\ 0 \end{bmatrix}, \label{S_tdisc_2d}
+\end{align}
+where $\Sigma_{t} = \begin{bmatrix} V_{1,t} & \rho_y \sqrt{V_{1,t}V_{2,t}} & \rho_1 \sigma_{v,1} V_{1,t} & 0 \\ \rho_y \sqrt{V_{1,t}V_{2,t}} & V_{2,t} & 0 & \rho_2 \sigma_{v,2} V_{2,t} \\ \rho_1 \sigma_{v,1} V_{1,t} & 0 & \sigma_{v,1}^2 V_{1,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} \\ 0 & \rho_2 \sigma_{v,2} V_{2,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} & \sigma_{v,2}^2 V_{2,t} \end{bmatrix}$, \\$\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y_1,y_2,v_1,v_2\}$, $\xi_{y_1,t+1} \overset{iid}{\sim} \mathcal{AL}_1(\mu_{y_1}, \nu_{y_1}^2)$, $\xi_{y_2,t+1} \overset{iid}{\sim} \mathcal{AL}_1(\mu_{y_2}, \nu_{y_2}^2)$, $\boldsymbol{\xi}_{c,t+1} = [\xi_{y_1,c,t+1}, \xi_{y_2,c,t+1}]' \overset{iid}{\sim} \mathcal{AL}_2(\boldsymbol{\mu}_c, \boldsymbol{\nu}_c)$, $\begin{bmatrix}
+M_{y_1,t+1},M_{y_2,t+1},M_{c,t+1} \sim Multinomial(1;\frac{\lambda_{y_1}}{\lambda},\frac{\lambda_{y_2}}{\lambda},\frac{\lambda_c}{\lambda})
+\end{bmatrix}$, and $N_{t+1} \sim Bernoulli(\lambda\Delta)$
 
 \subsection{SVLD}
 \begin{align}
