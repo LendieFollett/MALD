@@ -13,7 +13,7 @@ library(Rcpp)
 library(MCMCpack)
 library(quantmod)
 library(reshape2)
-
+filepath <- "keeps_060821/" #contains runs with semi-informative priors on jump sizes (N(.5, 1) on eta and sigma_c)
 
 keepsIND <- readRDS(paste0(filepath,"keepsBTCSP_IND.rds")) #independence
 keepsBTCSP_MALD <- readRDS(paste0(filepath,"keepsBTCSP.rds")) #MALD jump;s
@@ -150,7 +150,7 @@ y_MALD[,,1] %>%as.data.frame()%>%
 
 lu_fun <- function(y, index,title){
 as.data.frame.table(y) %>%
-  mutate(Date = rep(as.Date(S$Date[-1]), 200)) %>%
+  mutate(Date = rep(as.Date(S$Date[-1]), 400)) %>%
   rename(variable = Var2,
            iteration= Var3,
            value = Freq) %>%
@@ -167,27 +167,29 @@ as.data.frame.table(y) %>%
            iteration %in% c("truth", toupper(letters)[16:26])&
          Date > "2020-01-01")%>%
   ggplot() +
-  geom_point(aes(x = Date, y = value, colour = exp(value)<1-.5 )) +
+  geom_line(aes(x = Date, y = value, colour = value )) +
     geom_hline(aes(yintercept = 0))+
   facet_wrap(~iteration) +
     scale_x_date(date_labels = "%b-%y",date_breaks = "4 month")+
-    #scale_colour_distiller("Effect",palette = "RdYlGn")+
+    scale_colour_distiller("Effect",palette = "RdYlGn")+
     theme(legend.position = "none")+
   ggtitle(title)
   }
 
-grid.arrange(lu_fun(y=y_MALD, index="BTC",title= "SVMALD, BTC"),
+p <- grid.arrange(lu_fun(y=y_MALD, index="BTC",title= "SVMALD, BTC"),
              lu_fun(y=y_IND, index="BTC",title= "SVIND, BTC"),
              lu_fun(y=y_MVN, index="BTC",title= "SVMVN, BTC"),
              lu_fun(y=y_LD, index="BTC",title= "SVLD, BTC")
 )
 
-grid.arrange(lu_fun(y=y_MALD, index="SP",title= "SVMALD, SP"),
+ggsave("lineup_BTC.pdf",p, width = 12, height = 12)
+
+p2 <- grid.arrange(lu_fun(y=y_MALD, index="SP",title= "SVMALD, SP"),
              lu_fun(y=y_IND, index="SP",title= "SVIND, SP"),
              lu_fun(y=y_MVN, index="SP",title= "SVMVN, SP"),
              lu_fun(y=y_LD, index="SP",title= "SVLD, SP")
 )
-
+ggsave("lineup_SP.pdf",p2, width = 12, height = 12)
 
 #notes:
 #SVIND clearly misses the large negative jump in BTC in early 2020
@@ -213,12 +215,12 @@ apply(keepsIND$v, 2:3, mean) %>%
 
 #count number of positive jumps larger  than percent%
 njumps_pos <- function(y, percent=.25){
-  sum(exp(y) <  1 -percent | exp(y ) < 1-percent ) #how many times was y_t/y_{t-1} > 1.25?
+  sum(exp(y) <  1 -percent | exp(y ) > 1+percent ) #how many times was y_t/y_{t-1} > 1.25?
 }
 
 #count number of JOINT positive jumps where both were larger than percent%
 njumps_pos_joint <- function(y1, y2, percent=.25){
-  sum((exp(y1) <  1 -percent| exp(y1) <  1 -percent) &  (exp(y2) <  1 -percent|exp(y2) -  1 -percent)) #how many times was y_t/y_{t-1} > 1.25?
+  sum((exp(y1) <  1 -percent| exp(y1) >  1 +percent) &  (exp(y2) <  1 -percent|exp(y2) >  1 +percent)) #how many times was y_t/y_{t-1} > 1.25?
 }
 
 

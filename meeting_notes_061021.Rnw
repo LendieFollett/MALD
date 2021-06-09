@@ -109,7 +109,7 @@ keepsBTCSP$sigma_c %>%
 \clearpage
 \newpage
 
-<<>>=
+<<out.width = '6in', out.height = '5in' >>=
 keepsBTCSP$delta %>%
   melt() %>%
   mutate(value = factor(value, levels = c(0:3),
@@ -117,13 +117,38 @@ keepsBTCSP$delta %>%
   ggplot() +
   geom_bar(aes(x = Var2, fill = value), position = "fill") +
   scale_fill_brewer("Type",type = "qual")
+#it's worth noting the MVN plot looks almost identical - same patterns
 @
+
 
 \clearpage
 \newpage
 
 \subsection{DIC}
+ $$DIC_7 = -4E_{\theta,\boldsymbol{z} | \boldsymbol{y}}(ln(p(\boldsymbol{y}|\theta,\boldsymbol{z}))) + 2ln(p(\boldsymbol{y}|\hat{\theta}, \hat{\boldsymbol{z}})).$$ 
+ 
+\begin{table}[]
+\begin{tabular}{lllll}
+                   & SVMALD  & SVLD    & SVMVN   & SVIND \\
+Diffuse priors     &9813.312 &\textbf{9796.879} &9818.368 &10953.52 \\
+Fulop-style priors &9827.731 &9854.88 &9714.333 &10884.23
+\end{tabular}
+\caption{\label{tab:dic7} Resulting DIC from runs with diffuse priors and runs with more informative priors. }
+\end{table}
+ 
 
 \subsection{Posterior predictive p-values}
+
+First, a lineup to motivate. Posterior predictive p-values operate on the assumption that $p(y^* \mid Y) = \int p(y^* \mid \theta)p(\theta \mid Y) d \theta$ should be consistent with what we observed in $Y$.
+
+\includegraphics[width = .9\linewidth]{"lineup_BTC.pdf"}
+
+\newpage
+\clearpage
+
+\includegraphics[width = .9\linewidth]{"lineup_SP.pdf"}
+
+\newpage
+\clearpage
 
 \end{document}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.6.1)  9 JUN 2021 09:59
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.6.1)  9 JUN 2021 10:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -294,24 +294,31 @@ Package color Info: Redefining color shadecolor on input line 193.
 File: figure/unnamed-chunk-5-1.pdf Graphic file (type pdf)
 <use figure/unnamed-chunk-5-1.pdf>
 Package pdftex.def Info: figure/unnamed-chunk-5-1.pdf  used on input line 204.
-(pdftex.def)             Requested size: 469.75502pt x 469.76265pt.
+(pdftex.def)             Requested size: 433.62885pt x 361.35352pt.
+ [6
 
-Overfull \hbox (15.0pt too wide) in paragraph at lines 204--206
-[][]
- []
+ <./figure/unnamed-chunk-5-1.pdf>]
 
-[6
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 218.
 
- <./figure/unnamed-chunk-5-1.pdf>] (./meeting_notes_061021.aux)
+<lineup_BTC.pdf, id=59, 867.24pt x 867.24pt>
+File: lineup_BTC.pdf Graphic file (type pdf)
+<use lineup_BTC.pdf>
+Package pdftex.def Info: lineup_BTC.pdf  used on input line 232.
+(pdftex.def)             Requested size: 422.77664pt x 422.78111pt.
+[7
+
+ <./lineup_BTC.pdf>] (./meeting_notes_061021.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 2268 strings out of 480694
- 33900 string characters out of 5901473
- 368427 words of memory out of 5000000
- 19738 multiletter control sequences out of 15000+600000
+ 2277 strings out of 480694
+ 34091 string characters out of 5901473
+ 368435 words of memory out of 5000000
+ 19746 multiletter control sequences out of 15000+600000
  408187 words of font info for 44 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  57i,14n,66p,879b,278s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -324,17 +331,18 @@ pe1/public/amsfonts/cm/cmitt10.pfb></Users/000766412/Library/TinyTeX/texmf-dist
 xmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></Users/000766412/Library/Tin
 yTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></Users/000766412/Libr
 ary/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></Users/00076
-6412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></User
-s/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb>
+6412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb>
 </Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
-7.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmsy10.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/a
-msfonts/cm/cmsy7.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/p
-ublic/amsfonts/cm/cmtt10.pfb>
-Output written on meeting_notes_061021.pdf (6 pages, 213616 bytes).
+10.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts
+/cm/cmr5.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmr7.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/pub
+lic/amsfonts/cm/cmsy10.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmsy7.pfb></Users/000766412/Library/TinyTeX/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on meeting_notes_061021.pdf (7 pages, 352089 bytes).
 PDF statistics:
- 103 PDF objects out of 1000 (max. 8388607)
- 72 compressed objects within 1 object stream
+ 118 PDF objects out of 1000 (max. 8388607)
+ 83 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 21 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 26 words of extra memory for PDF output out of 10000 (max. 10000000)
 

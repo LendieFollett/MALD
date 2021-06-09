@@ -201,11 +201,35 @@ $\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overse
   \hlkwd{scale_fill_brewer}\hlstd{(}\hlstr{"Type"}\hlstd{,}\hlkwc{type} \hlstd{=} \hlstr{"qual"}\hlstd{)}
 \end{alltt}
 \end{kframe}
-\includegraphics[width=\maxwidth]{figure/unnamed-chunk-5-1} 
+\includegraphics[width=6in,height=5in]{figure/unnamed-chunk-5-1} 
+\begin{kframe}\begin{alltt}
+\hlcom{#it's worth noting the MVN plot looks almost identical - same patterns}
+\end{alltt}
+\end{kframe}
 \end{knitrout}
 
+
+\clearpage
+\newpage
+
 \subsection{DIC}
+ $$DIC_7 = -4E_{\theta,\boldsymbol{z} | \boldsymbol{y}}(ln(p(\boldsymbol{y}|\theta,\boldsymbol{z}))) + 2ln(p(\boldsymbol{y}|\hat{\theta}, \hat{\boldsymbol{z}})).$$ 
+ 
+\begin{table}[]
+\begin{tabular}{lllll}
+                   & SVMALD  & SVLD    & SVMVN   & SVIND \\
+Diffuse priors     &9813.312 &\textbf{9796.879} &9818.368 &10953.52 \\
+Fulop-style priors &9827.731 &         &9714.333 &10884.23
+\end{tabular}
+\caption{\label{tab:dic7} Resulting DIC from runs with diffuse priors and runs with more informative priors. }
+\end{table}
+ 
 
 \subsection{Posterior predictive p-values}
+
+First, a lineup to motivate. Posterior predictive p-values operate on the assumption that $p(y^* \mid Y) = \int p(y^* \mid \theta)p(\theta \mid Y) d \theta$ should be consistent with what we observed in $Y$.
+
+\includegraphics[width = .9\linewidth]{"lineup_BTC.pdf"}
+
 
 \end{document}

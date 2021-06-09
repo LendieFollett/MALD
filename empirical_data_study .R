@@ -156,3 +156,5 @@ starting_values$delta <- apply(starting_values$delta , 2, round)
 starting_values$xi_y1 <- starting_values$xi_y1c <- starting_values$J[,1] + rnorm(length(starting_values$xi_y1), 0, .001)
 starting_values$xi_y2 <- starting_values$xi_y2c <- starting_values$J[,2]+ rnorm(length(starting_values$xi_y1), 0, .001)
 saveRDS(starting_values,"starting_values_MALD.rds")
+
+

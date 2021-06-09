@@ -142,9 +142,9 @@ Elnpy_mid_ztheta_LD <- partial_likelihood1(keepsBTCSP_LD, y)
 #[1] 
 lnpy_mid_zhatthetahat_LD <- partial_likelihood2(keepsBTCSP_LD, y) 
 #[1] 
-DIC7_LD= -4*Elnpy_mid_ztheta_LD + 2*lnpy_mid_zhatthetahat
+DIC7_LD= -4*Elnpy_mid_ztheta_LD + 2*lnpy_mid_zhatthetahat_LD
 DIC7_LD
-#[1]  9796.879 
+#[1]  9796.879 (9854.88 on 06/08)
 
 
 data.frame(model = c("SVMALD", "SVIND", "SVLD", "SVMVN"),
