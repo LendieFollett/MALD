@@ -40,6 +40,12 @@ for (chn in 1:n_chns){
 source("starting_values_2d.R") #initialize values
 #(in total, we're running R + B iterations)
   
+  if (ind == TRUE){
+   rho <- rep(0,4)
+   rhoc <- 0
+  }
+  
+  
 for (i in 1:(R + B)){
   print(i)
   #update stochastic volatility using pgas
