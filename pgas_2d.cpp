@@ -221,15 +221,15 @@ double log_pyv(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec
 }
 
 // [[Rcpp::export]]
-double log_pxi(arma::vec xi, arma::vec xi_s, double w, double eta){
+double log_pxi(arma::vec xi, arma::vec xi_s, double w, double eta, arma::vec w_prior_param, arma::vec eta_prior_param){
   int T = xi.n_rows;
   double target = 0;
   
   for (int t = 0;t < T; t++){
     target += R::dnorm(xi(t),w*xi_s(t),eta*sqrt(xi_s(t)),true);
   }
-  target += R::dnorm(w, 0, 2.5, true); // w ~ norm(0,5) Prior
-  target += R::dnorm(eta, .5, 1, true); // eta ~ norm(0,5) Prior
+  target += R::dnorm(w, w_prior_param[0], w_prior_param[1], true); // w ~ norm(0,.25 or 2.5) Prior
+  target += R::dnorm(eta,eta_prior_param[0], eta_prior_param[1] , true); // eta ~ norm(.5,1) Prior
   return target;  
 }
 
@@ -252,11 +252,11 @@ double log_pxi_c(arma::mat xi_c, arma::vec xi_cs, arma::vec xi_cw, arma::vec sig
     target += dmvnorm_arma(eps_xic,  arma::trans(arma::zeros(2)),  Sigma_xic, true)[0];
     
   }
-  target += R::dnorm(xi_cw(0), 0, 2.5, true); // w_c ~ norm(0,5) Prior
-  target += R::dnorm(xi_cw(1), 0, 2.5, true); // w_c ~ norm(0,5) Prior
+  target += R::dnorm(xi_cw(0), 0, 2.5, true); // w_c ~ norm(0,2.5) Prior (BTC)
+  target += R::dnorm(xi_cw(1), 0, .25, true); // w_c ~ norm(0,0.25) Prior (S&P)
   target += R::dnorm(sigma_c(0), .5, 1, true); // sigma_c ~ norm(.5, 1) Prior
   target += R::dnorm(sigma_c(1), .5, 1, true); // sigma_c ~ norm(.5, 1) Prior
-  // rhoc ~ Unif(-1,1)
+  target += R::dnorm(rhoc, 0, .25, true); // rhoc ~ Unif(-1,1)
   return target;  
 }
 
@@ -1394,13 +1394,13 @@ double update_rho(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::
 }
 
 // [[Rcpp::export]]
-double update_w(arma::vec xi, arma::vec xi_s, double xi_w, double xi_eta, double hat, double sd) {
+double update_w(arma::vec xi, arma::vec xi_s, double xi_w, double xi_eta, double hat, double sd, arma::vec w_prior_param, arma::vec eta_prior_param) {
   double proposal;
   double a;
   double final;
   proposal = R::rt(6) * sd + hat;
-  a = log_pxi(xi, xi_s, proposal, xi_eta);
-  a += -log_pxi(xi, xi_s, xi_w, xi_eta);
+  a = log_pxi(xi, xi_s, proposal, xi_eta, w_prior_param, eta_prior_param);
+  a += -log_pxi(xi, xi_s, xi_w, xi_eta, w_prior_param, eta_prior_param);
   a += -R::dt((proposal - hat)/sd,6,true) + R::dt((xi_w - hat)/sd,6,true);
   if (a > log(R::runif(0,1)))  {
     final = proposal;
@@ -1412,7 +1412,7 @@ double update_w(arma::vec xi, arma::vec xi_s, double xi_w, double xi_eta, double
 }
 
 // [[Rcpp::export]]
-double update_eta(arma::vec xi, arma::vec xi_s, double xi_w, double xi_eta, double hat, double sd) {
+double update_eta(arma::vec xi, arma::vec xi_s, double xi_w, double xi_eta, double hat, double sd, arma::vec w_prior_param, arma::vec eta_prior_param) {
   double proposal;
   double a;
   double final;
@@ -1420,8 +1420,8 @@ double update_eta(arma::vec xi, arma::vec xi_s, double xi_w, double xi_eta, doub
   if (proposal < 0){
     a = R_NegInf;
   } else {
-    a = log_pxi(xi, xi_s, xi_w, proposal);
-    a += -log_pxi(xi, xi_s, xi_w, xi_eta);
+    a = log_pxi(xi, xi_s, xi_w, proposal, w_prior_param,eta_prior_param);
+    a += -log_pxi(xi, xi_s, xi_w, xi_eta, w_prior_param,eta_prior_param);
     a += -R::dt((proposal - hat)/sd,6,true) + R::dt((xi_eta - hat)/sd,6,true);
   }
   if (a > log(R::runif(0,1)))  {

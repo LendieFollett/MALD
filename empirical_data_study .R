@@ -46,7 +46,7 @@ yprim <- array(0,dim=dim(y))
 #source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
 exp_jumps <- norm_jumps <- ind <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps_060821/keepsBTCSP.rds"))
+saveRDS(keeps,paste0("keeps_061021/keepsBTCSP.rds"))
 
 #################################################### 
 # SVALD INDEPENDENCE (1d) MODEL ---------- LRF RUNS
@@ -123,17 +123,18 @@ domean<- function(x, total){
 }
 
 #SVMALD
-lapply(keepsBTCSP[c(4,6:17)], doESS, total = 20000) %>% str()
+lapply(keeps[c(4,6:17)], doESS, total = 20000) %>% str()
+lapply(keepsBTCSP[c(4,6:17)], domean, total = 20000) %>% str()
 
-plot(keepsBTCSP$sigma_c[,1])
-plot(keepsBTCSP$sigma_c[,2])
-plot(keepsBTCSP$rhoc)
-plot(keepsBTCSP$xi_cw[,1])
-plot(keepsBTCSP$xi_cw[,2])
-plot(keepsBTCSP$xi_y1eta)
-plot(keepsBTCSP$xi_y2eta)
-plot(keepsBTCSP$xi_y1w)
-plot(keepsBTCSP$xi_y2w)
+plot(keeps$sigma_c[,1], type = "l")
+plot(keeps$sigma_c[,2], type = "l")
+plot(keeps$rhoc, type = "l")
+plot(keeps$xi_cw[,1], type = "l")
+plot(keeps$xi_cw[,2], type = "l")
+plot(keeps$xi_y1eta, type = "l")
+plot(keeps$xi_y2eta, type = "l")
+plot(keeps$xi_y1w, type = "l")
+plot(keeps$xi_y2w, type = "l")
 #SVALD
 lapply(keepsIND[c(4,6:17)], doESS, total = total) %>% str()
 #SVMVN

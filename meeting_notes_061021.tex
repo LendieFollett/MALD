@@ -70,7 +70,7 @@ M_{y_1,t+1},M_{y_2,t+1},M_{c,t+1} \sim Multinomial(1;\frac{\lambda_{y_1}}{\lambd
 \begin{align}
     \begin{bmatrix} Y_{1,t + 1} - Y_{1,t} \\ Y_{2,t + 1} - Y_{1,t} \\ V_{1,t + 1} - V_{1,t} \\ V_{2,t + 1} - V_{2,t} \end{bmatrix} = \begin{bmatrix} \mu_1 \Delta \\ \mu_2 \Delta \\ \kappa_1(\theta_1 - V_{1,t}) \Delta \\ \kappa_2(\theta_2 - V_{2,t}) \Delta \end{bmatrix} + \sqrt{\Delta}\Sigma_t^{\frac{1}{2}} \begin{bmatrix} \epsilon_{y_1,t+1} \\ \epsilon_{y_2,t+1} \\ \epsilon_{v_1,t+1} \\ \epsilon_{v_2,t+1} \end{bmatrix} + \begin{bmatrix} N_{t+1}(M_{y_1,t+1} \xi_{y_1, t+1} ) \\ N_{t+1}(M_{y_2,t+1} \xi_{y_2, t+1} ) \\ 0 \\ 0 \end{bmatrix}, \label{S_tdisc_2d}
 \end{align}
-where $\Sigma_{t} = \begin{bmatrix} V_{1,t} & \rho_y \sqrt{V_{1,t}V_{2,t}} & \rho_1 \sigma_{v,1} V_{1,t} & 0 \\ \rho_y \sqrt{V_{1,t}V_{2,t}} & V_{2,t} & 0 & \rho_2 \sigma_{v,2} V_{2,t} \\ \rho_1 \sigma_{v,1} V_{1,t} & 0 & \sigma_{v,1}^2 V_{1,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} \\ 0 & \rho_2 \sigma_{v,2} V_{2,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} & \sigma_{v,2}^2 V_{2,t} \end{bmatrix}$, \\$\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y_1,y_2,v_1,v_2\}$, $\xi_{y_1,t+1} \overset{iid}{\sim} \mathcal{AL}_1(0, \nu_{y_1}^2)$, $\xi_{y_2,t+1} \overset{iid}{\sim} \mathcal{AL}_1(0, \nu_{y_2}^2)$, $\begin{bmatrix}
+where $\Sigma_{t} = \begin{bmatrix} V_{1,t} & \rho_y \sqrt{V_{1,t}V_{2,t}} & \rho_1 \sigma_{v,1} V_{1,t} & 0 \\ \rho_y \sqrt{V_{1,t}V_{2,t}} & V_{2,t} & 0 & \rho_2 \sigma_{v,2} V_{2,t} \\ \rho_1 \sigma_{v,1} V_{1,t} & 0 & \sigma_{v,1}^2 V_{1,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} \\ 0 & \rho_2 \sigma_{v,2} V_{2,t} & \rho_v \sigma_{v,1}\sigma_{v,2} \sqrt{V_{1,t} V_{2,t}} & \sigma_{v,2}^2 V_{2,t} \end{bmatrix}$, \\$\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y_1,y_2,v_1,v_2\}$, $\xi_{y_1,t+1} \overset{iid}{\sim} \mathcal{AL}_1(0, \nu_{y_1}^2)$, $\xi_{y_2,t+1} \overset{iid}{\sim} \mathcal{AL}_1(0, \nu_{y_2}^2)$, $\boldsymbol{\xi}_{c,t+1} = [\xi_{y_1,c,t+1}, \xi_{y_2,c,t+1}]' \overset{iid}{\sim} \mathcal{AL}_2(\boldsymbol{0}, \boldsymbol{\nu}_c)$, $\begin{bmatrix}
 M_{y_1,t+1},M_{y_2,t+1},M_{c,t+1} \sim Multinomial(1;\frac{\lambda_{y_1}}{\lambda},\frac{\lambda_{y_2}}{\lambda},\frac{\lambda_c}{\lambda})
 \end{bmatrix}$, and $N_{t+1} \sim Bernoulli(\lambda\Delta)$
 
@@ -98,11 +98,51 @@ $\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overse
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 
 
-{\ttfamily\noindent\itshape\color{messagecolor}{\#\# \\\#\# Attaching package: 'dplyr'}}
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in getSymbols("{}BTC-USD"{}, from = "{}2014-09-15"{}, to = "{}2020-09-30"{}): could not find function "{}getSymbols"{}}}
 
-{\ttfamily\noindent\itshape\color{messagecolor}{\#\# The following objects are masked from 'package:stats':\\\#\# \\\#\# \ \ \ \ filter, lag}}
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in as.data.frame(`BTC-USD`): object 'BTC-USD' not found}}
 
-{\ttfamily\noindent\itshape\color{messagecolor}{\#\# The following objects are masked from 'package:base':\\\#\# \\\#\# \ \ \ \ intersect, setdiff, setequal, union}}\begin{verbatim}
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in BTC\$Date <- seq(as.Date("{}2014-09-17"{}), as.Date("{}2020-09-30"{}), : object 'BTC' not found}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in BTC\$`BTC-USD.Close`[BTC\$Date == "{}2020-04-17"{}] <- 7096.18: object 'BTC' not found}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in getSymbols("{}\textasciicircum{}GSPC"{}, from = "{}2014-09-15"{}, to = "{}2020-09-30"{}): could not find function "{}getSymbols"{}}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in as.data.frame(GSPC): object 'GSPC' not found}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in rownames(SP500): object 'SP500' not found}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in merge(BTC, SP500): object 'BTC' not found}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in nrow(S): object 'S' not found}}\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#Posterior Means}
+\hlkwd{lapply}\hlstd{(keepsBTCSP0[}\hlkwd{c}\hlstd{(}\hlnum{4}\hlstd{,}\hlnum{6}\hlopt{:}\hlnum{17}\hlstd{)], domean,} \hlkwc{total} \hlstd{=} \hlnum{10000}\hlstd{)} \hlopt{%>%} \hlkwd{str}\hlstd{()} \hlcom{#diffuse priors}
+\end{alltt}
+\begin{verbatim}
+## List of 13
+##  $ lambda  : num [1:4] 0.1156 0.0398 0.0469 0.7977
+##  $ sigma_v : num [1:2] 0.441 0.202
+##  $ sigma_c : num [1:2] 9.02 0.71
+##  $ rhoc    : num -0.0308
+##  $ xi_cw   : num [1:2] -2.23 -1.02
+##  $ xi_y1eta: num 7.63
+##  $ xi_y1w  : num 0.566
+##  $ xi_y2eta: num 0.358
+##  $ xi_y2w  : num -0.165
+##  $ phi     : num [1:2] 0.984 0.98
+##  $ theta   : num [1:2] 7.03 1.22
+##  $ mu      : num [1:2] 0.175 0.0489
+##  $ rho     : num [1:4] 0.028 0.0456 0.4226 -0.7189
+\end{verbatim}
+\begin{alltt}
+\hlkwd{lapply}\hlstd{(keepsBTCSP[}\hlkwd{c}\hlstd{(}\hlnum{4}\hlstd{,}\hlnum{6}\hlopt{:}\hlnum{17}\hlstd{)], domean,} \hlkwc{total} \hlstd{=} \hlnum{20000}\hlstd{)} \hlopt{%>%} \hlkwd{str}\hlstd{()} \hlcom{#fulop priors 1}
+\end{alltt}
+\begin{verbatim}
 ## List of 13
 ##  $ lambda  : num [1:4] 0.097 0.0367 0.085 0.7813
 ##  $ sigma_v : num [1:2] 0.436 0.212
@@ -118,6 +158,28 @@ $\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overse
 ##  $ mu      : num [1:2] 0.165 0.0547
 ##  $ rho     : num [1:4] 0.00665 0.07259 0.45863 -0.70195
 \end{verbatim}
+\begin{alltt}
+\hlkwd{lapply}\hlstd{(keepsBTCSP2[}\hlkwd{c}\hlstd{(}\hlnum{4}\hlstd{,}\hlnum{6}\hlopt{:}\hlnum{17}\hlstd{)], domean,} \hlkwc{total} \hlstd{=} \hlnum{20000}\hlstd{)} \hlopt{%>%} \hlkwd{str}\hlstd{()} \hlcom{#fulop priors 2}
+\end{alltt}
+\begin{verbatim}
+## List of 13
+##  $ lambda  : num [1:4] 0.1027 0.0361 0.0803 0.7809
+##  $ sigma_v : num [1:2] 0.435 0.213
+##  $ sigma_c : num [1:2] 0.739 0.17
+##  $ rhoc    : num 0.0455
+##  $ xi_cw   : num [1:2] -5.828 -0.165
+##  $ xi_y1eta: num 0.946
+##  $ xi_y1w  : num 4.57
+##  $ xi_y2eta: num 0.653
+##  $ xi_y2w  : num -0.659
+##  $ phi     : num [1:2] 0.985 0.976
+##  $ theta   : num [1:2] 6.96 1.11
+##  $ mu      : num [1:2] 0.1591 0.0507
+##  $ rho     : num [1:4] 0.00894 0.07028 0.4568 -0.70367
+\end{verbatim}
+\begin{alltt}
+\hlkwd{rm}\hlstd{(keepsBTCSP0);}\hlkwd{rm}\hlstd{(keepsBTCSP2)}
+\end{alltt}
 \end{kframe}
 \end{knitrout}
 
@@ -143,7 +205,7 @@ $\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overse
 {\ttfamily\noindent\itshape\color{messagecolor}{\#\# No id variables; using all as measure variables}}
 
 {\ttfamily\noindent\itshape\color{messagecolor}{\#\# `stat\_bin()` using `bins = 30`. Pick better value with `binwidth`.}}\end{kframe}
-\includegraphics[width=6in,height=5in]{figure/unnamed-chunk-2-1} 
+\includegraphics[width=6in,height=5in]{figure/unnamed-chunk-3-1} 
 \end{knitrout}
 \clearpage
 \newpage
@@ -167,7 +229,7 @@ $\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overse
 {\ttfamily\noindent\itshape\color{messagecolor}{\#\# No id variables; using all as measure variables}}
 
 {\ttfamily\noindent\itshape\color{messagecolor}{\#\# `stat\_bin()` using `bins = 30`. Pick better value with `binwidth`.}}\end{kframe}
-\includegraphics[width=6in,height=5in]{figure/unnamed-chunk-3-1} 
+\includegraphics[width=6in,height=5in]{figure/unnamed-chunk-4-1} 
 \end{knitrout}
 
 \clearpage
@@ -183,7 +245,7 @@ $\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overse
 
 
 {\ttfamily\noindent\itshape\color{messagecolor}{\#\# `stat\_bin()` using `bins = 30`. Pick better value with `binwidth`.}}\end{kframe}
-\includegraphics[width=5in,height=5in]{figure/unnamed-chunk-4-1} 
+\includegraphics[width=5in,height=5in]{figure/unnamed-chunk-5-1} 
 \end{knitrout}
 
 \clearpage
@@ -197,14 +259,24 @@ $\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overse
   \hlkwd{mutate}\hlstd{(}\hlkwc{value} \hlstd{=} \hlkwd{factor}\hlstd{(value,} \hlkwc{levels} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{0}\hlopt{:}\hlnum{3}\hlstd{),}
                         \hlkwc{labels} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"BTC jump"}\hlstd{,} \hlstr{"S&P jump"}\hlstd{,} \hlstr{"Joint jump"}\hlstd{,} \hlstr{"No jump"}\hlstd{)))} \hlopt{%>%}
   \hlkwd{ggplot}\hlstd{()} \hlopt{+}
-  \hlkwd{geom_bar}\hlstd{(}\hlkwd{aes}\hlstd{(}\hlkwc{x} \hlstd{= Var2,} \hlkwc{fill} \hlstd{= value),} \hlkwc{position} \hlstd{=} \hlstr{"fill"}\hlstd{)} \hlopt{+}
-  \hlkwd{scale_fill_brewer}\hlstd{(}\hlstr{"Type"}\hlstd{,}\hlkwc{type} \hlstd{=} \hlstr{"qual"}\hlstd{)} \hlopt{+}\hlkwd{labs}\hlstd{(}\hlkwc{x} \hlstd{=} \hlstr{"Time"}\hlstd{,} \hlkwc{y} \hlstd{=} \hlstr{"Proportion"}\hlstd{)}
+  \hlkwd{geom_bar}\hlstd{(}\hlkwd{aes}\hlstd{(}\hlkwc{x} \hlstd{= Var2,} \hlkwc{fill} \hlstd{= value,} \hlkwc{colour} \hlstd{= value),} \hlkwc{position} \hlstd{=} \hlstr{"fill"}\hlstd{)} \hlopt{+}
+  \hlkwd{scale_fill_brewer}\hlstd{(}\hlstr{"Type"}\hlstd{,}\hlkwc{type} \hlstd{=} \hlstr{"qual"}\hlstd{)} \hlopt{+}
+    \hlkwd{scale_colour_brewer}\hlstd{(}\hlstr{"Type"}\hlstd{,}\hlkwc{type} \hlstd{=} \hlstr{"qual"}\hlstd{)} \hlopt{+}
+  \hlkwd{labs}\hlstd{(}\hlkwc{x} \hlstd{=} \hlstr{"Time"}\hlstd{,} \hlkwc{y} \hlstd{=} \hlstr{"Proportion"}\hlstd{)}
 \end{alltt}
 \end{kframe}
-\includegraphics[width=6in,height=5in]{figure/unnamed-chunk-5-1} 
+\includegraphics[width=.95\linewidth,height=4in]{figure/unnamed-chunk-6-1} 
 \begin{kframe}\begin{alltt}
 \hlcom{#it's worth noting the MVN plot looks almost identical - same patterns}
+
+\hlcom{#proportion of dates that had each of the classes}
+\hlkwd{apply}\hlstd{(keepsBTCSP}\hlopt{$}\hlstd{delta,} \hlnum{2}\hlstd{, Mode)} \hlopt{%>%} \hlkwd{table}\hlstd{()}
 \end{alltt}
+\begin{verbatim}
+## .
+##    0    1    2    3 
+##   73    9   56 1374
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -215,12 +287,12 @@ $\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overse
 \subsection{DIC}
  $$DIC_7 = -4E_{\theta,\boldsymbol{z} | \boldsymbol{y}}(ln(p(\boldsymbol{y}|\theta,\boldsymbol{z}))) + 2ln(p(\boldsymbol{y}|\hat{\theta}, \hat{\boldsymbol{z}})).$$ 
  
-\begin{table}[]
+\begin{table}[h!]
 \begin{tabular}{|l|l|l|l|l|}
 \hline
                    & SVMALD  & SVLD    & SVMVN   & SVIND \\ \hline
 Diffuse priors     &9813.312 &\textbf{9796.879} &9818.368 &10953.52 \\ \hline
-Fulop-style priors &9827.731 &9854.88 &\textbf{9714.333} &10884.23 \\ \hline
+Fulop-style priors &9827.731 &9843.06 &\textbf{9714.333} &10884.23 \\ \hline
 \end{tabular}
 \caption{\label{tab:dic7} Resulting DIC from runs with diffuse priors and runs with more informative priors. }
 \end{table}
@@ -239,7 +311,15 @@ First, a lineup to motivate. Posterior predictive p-values operate on the assump
 
 \newpage
 \clearpage
+Goal: compare models in terms of a data-characteristic that is important to model well. We look at number of \textit{joint} jumps in the time series of length 1519.
 
-\includegraphics[width = .9\linewidth]{"ppp_joint_jumps.pdf"}
+
+\includegraphics[width = .75\linewidth]{"ppp_joint_jumps.pdf"}
+
+Thoughts:
+\begin{itemize}
+\item Different priors for S\&P vs BTC jumps? Their scales are pretty different.
+\item Little evidence in favor of MALD for these particular series. 
+\end{itemize}
 
 \end{document}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.6.1)  9 JUN 2021 11:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.6.1)  10 JUN 2021 14:02
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -235,13 +235,13 @@ m/m/it/10 ^^X[] [] [][]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 ^^V[]; ^^W[]\OT1/cmr/m
  []
 
 
-Overfull \hbox (145.44646pt too wide) in paragraph at lines 72--76
+Overfull \hbox (20.97577pt too wide) in paragraph at lines 72--76
 \OML/cmm/m/it/10 ^^O[] [] N\OT1/cmr/m/n/10 (0\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10
  1)\OML/cmm/m/it/10 ; k \OT1/cmr/m/n/10 = \OMS/cmsy/m/n/10 f\OML/cmm/m/it/10 y[
 ]; y[]; v[]; v[]\OMS/cmsy/m/n/10 g$\OT1/cmr/m/n/10 , $\OML/cmm/m/it/10 ^^X[] []
  [][]\OT1/cmr/m/n/10 (0\OML/cmm/m/it/10 ; ^^W[]\OT1/cmr/m/n/10 )$, $\OML/cmm/m/
 it/10 ^^X[] [] [][]\OT1/cmr/m/n/10 (0\OML/cmm/m/it/10 ; ^^W[]\OT1/cmr/m/n/10 )$
-, $[]$,
+, $[][] = [\OML/cmm/m/it/10 ^^X[]; ^^X[]\OT1/cmr/m/n/10 ][] []
  []
 
 
@@ -259,107 +259,147 @@ Overfull \hbox (19.4573pt too wide) in paragraph at lines 81--85
 {/Users/000766412/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 ]
 Package color Info: Redefining color shadecolor on input line 98.
- [2]
-Package color Info: Redefining color shadecolor on input line 128.
 LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 133.
-<figure/unnamed-chunk-2-1.pdf, id=22, 505.89pt x 505.89pt>
-File: figure/unnamed-chunk-2-1.pdf Graphic file (type pdf)
-<use figure/unnamed-chunk-2-1.pdf>
-Package pdftex.def Info: figure/unnamed-chunk-2-1.pdf  used on input line 146.
-(pdftex.def)             Requested size: 433.62885pt x 361.35352pt.
- [3
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 101.
 
- <./figure/unnamed-chunk-2-1.pdf>]
-Package color Info: Redefining color shadecolor on input line 154.
-<figure/unnamed-chunk-3-1.pdf, id=31, 505.89pt x 505.89pt>
+Overfull \hbox (2.74086pt too wide) in paragraph at lines 101--102
+[]\OT1/cmtt/m/n/10 ## Error in getSymbols("BTC-USD", from = "2014-09-15", to = 
+"2020-09-30"): could not find
+ []
+
+LaTeX Font Info:    Trying to load font information for TS1+cmtt on input line 
+105.
+(/Users/000766412/Library/TinyTeX/texmf-dist/tex/latex/base/ts1cmtt.fd
+File: ts1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
+)
+
+LaTeX Font Warning: Font shape `TS1/cmtt/bx/n' undefined
+(Font)              using `TS1/cmtt/m/n' instead
+(Font)              for symbol `textdollar' on input line 105.
+
+
+Overfull \hbox (18.48949pt too wide) in paragraph at lines 105--106
+[]\OT1/cmtt/m/n/10 ## Error in BTC\TS1/cmtt/m/n/10 $\OT1/cmtt/m/n/10 Date <- se
+q(as.Date("2014-09-17"), as.Date("2020-09-30"), : object 'BTC' not
+ []
+
+
+Overfull \hbox (18.48825pt too wide) in paragraph at lines 107--108
+[]\OT1/cmtt/m/n/10 ## Error in BTC\TS1/cmtt/bx/n/10 $\OT1/cmtt/m/n/10 `BTC-USD.
+Close`[BTC\TS1/cmtt/bx/n/10 $\OT1/cmtt/m/n/10 Date == "2020-04-17"] <- 7096.18:
+ object 'BTC' not found[] 
+ []
+
+
+Overfull \hbox (39.49054pt too wide) in paragraph at lines 109--110
+[]\OT1/cmtt/m/n/10 ## Error in getSymbols("^GSPC", from = "2014-09-15", to = "2
+020-09-30"): could not find function
+ []
+
+Package color Info: Redefining color shadecolor on input line 121.
+[2] [3]
+Package color Info: Redefining color shadecolor on input line 190.
+<figure/unnamed-chunk-3-1.pdf, id=27, 505.89pt x 505.89pt>
 File: figure/unnamed-chunk-3-1.pdf Graphic file (type pdf)
 <use figure/unnamed-chunk-3-1.pdf>
-Package pdftex.def Info: figure/unnamed-chunk-3-1.pdf  used on input line 170.
+Package pdftex.def Info: figure/unnamed-chunk-3-1.pdf  used on input line 208.
 (pdftex.def)             Requested size: 433.62885pt x 361.35352pt.
  [4
 
  <./figure/unnamed-chunk-3-1.pdf>]
-Package color Info: Redefining color shadecolor on input line 177.
-<figure/unnamed-chunk-4-1.pdf, id=40, 505.89pt x 505.89pt>
+Package color Info: Redefining color shadecolor on input line 216.
+<figure/unnamed-chunk-4-1.pdf, id=36, 505.89pt x 505.89pt>
 File: figure/unnamed-chunk-4-1.pdf Graphic file (type pdf)
 <use figure/unnamed-chunk-4-1.pdf>
-Package pdftex.def Info: figure/unnamed-chunk-4-1.pdf  used on input line 186.
-(pdftex.def)             Requested size: 361.35352pt x 361.35352pt.
+Package pdftex.def Info: figure/unnamed-chunk-4-1.pdf  used on input line 232.
+(pdftex.def)             Requested size: 433.62885pt x 361.35352pt.
  [5
 
  <./figure/unnamed-chunk-4-1.pdf>]
-Package color Info: Redefining color shadecolor on input line 193.
-<figure/unnamed-chunk-5-1.pdf, id=49, 505.89pt x 505.89pt>
+Package color Info: Redefining color shadecolor on input line 239.
+<figure/unnamed-chunk-5-1.pdf, id=45, 505.89pt x 505.89pt>
 File: figure/unnamed-chunk-5-1.pdf Graphic file (type pdf)
 <use figure/unnamed-chunk-5-1.pdf>
-Package pdftex.def Info: figure/unnamed-chunk-5-1.pdf  used on input line 204.
-(pdftex.def)             Requested size: 433.62885pt x 361.35352pt.
+Package pdftex.def Info: figure/unnamed-chunk-5-1.pdf  used on input line 248.
+(pdftex.def)             Requested size: 361.35352pt x 361.35352pt.
  [6
 
  <./figure/unnamed-chunk-5-1.pdf>]
+Package color Info: Redefining color shadecolor on input line 255.
+<figure/unnamed-chunk-6-1.pdf, id=54, 505.89pt x 505.89pt>
+File: figure/unnamed-chunk-6-1.pdf Graphic file (type pdf)
+<use figure/unnamed-chunk-6-1.pdf>
+Package pdftex.def Info: figure/unnamed-chunk-6-1.pdf  used on input line 268.
+(pdftex.def)             Requested size: 446.27298pt x 289.08589pt.
+ [7
 
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 218.
-
-<lineup_BTC.pdf, id=58, 867.24pt x 867.24pt>
+ <./figure/unnamed-chunk-6-1.pdf>]
+<lineup_BTC.pdf, id=64, 867.24pt x 867.24pt>
 File: lineup_BTC.pdf Graphic file (type pdf)
 <use lineup_BTC.pdf>
-Package pdftex.def Info: lineup_BTC.pdf  used on input line 233.
+Package pdftex.def Info: lineup_BTC.pdf  used on input line 305.
 (pdftex.def)             Requested size: 422.77664pt x 422.78111pt.
-[7
+
+[8
 
  <./lineup_BTC.pdf>]
-<lineup_SP.pdf, id=70, 867.24pt x 867.24pt>
+<lineup_SP.pdf, id=74, 867.24pt x 867.24pt>
 File: lineup_SP.pdf Graphic file (type pdf)
 <use lineup_SP.pdf>
-Package pdftex.def Info: lineup_SP.pdf  used on input line 238.
+Package pdftex.def Info: lineup_SP.pdf  used on input line 310.
 (pdftex.def)             Requested size: 422.77664pt x 422.78111pt.
- [8
+ [9
 
  <./lineup_SP.pdf>]
-<ppp_joint_jumps.pdf, id=79, 578.16pt x 867.24pt>
+<ppp_joint_jumps.pdf, id=83, 578.16pt x 867.24pt>
 File: ppp_joint_jumps.pdf Graphic file (type pdf)
 <use ppp_joint_jumps.pdf>
-Package pdftex.def Info: ppp_joint_jumps.pdf  used on input line 243.
-(pdftex.def)             Requested size: 422.77664pt x 634.16505pt.
- [9
+Package pdftex.def Info: ppp_joint_jumps.pdf  used on input line 317.
+(pdftex.def)             Requested size: 352.31625pt x 528.47308pt.
+ [10
 
  <./ppp_joint_jumps.pdf>]
 (./meeting_notes_061021.aux)
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 2293 strings out of 480694
- 34485 string characters out of 5901473
- 367435 words of memory out of 5000000
- 19760 multiletter control sequences out of 15000+600000
- 408187 words of font info for 44 fonts, out of 8000000 for 9000
+ 2318 strings out of 480694
+ 35139 string characters out of 5901473
+ 368437 words of memory out of 5000000
+ 19779 multiletter control sequences out of 15000+600000
+ 409165 words of font info for 47 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 57i,14n,66p,879b,278s stack positions out of 5000i,500n,10000p,200000b,80000s
-</Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/c
-mbx10.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmbx12.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/publ
-ic/amsfonts/cm/cmex10.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/ty
-pe1/public/amsfonts/cm/cmitt10.pfb></Users/000766412/Library/TinyTeX/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmmi10.pfb></Users/000766412/Library/TinyTeX/te
-xmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></Users/000766412/Library/Tin
-yTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></Users/000766412/Libr
-ary/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></Users/00076
-6412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb>
-</Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
-10.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts
-/cm/cmr5.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/am
-sfonts/cm/cmr7.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/pub
-lic/amsfonts/cm/cmsy10.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/t
-ype1/public/amsfonts/cm/cmsy7.pfb></Users/000766412/Library/TinyTeX/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on meeting_notes_061021.pdf (9 pages, 512572 bytes).
+ 57i,14n,66p,879b,258s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/Users/000766412/Library/TinyTeX/texmf-dist/fonts/enc/dvips/cm-super/cm-supe
+r-ts1.enc}</Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmbx10.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmbx12.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmex10.pfb></Users/000766412/Library/TinyTeX/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmitt10.pfb></Users/000766412/Library/TinyTeX/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></Users/000766412/Library/Ti
+nyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></Users/000766412/Lib
+rary/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></Users/000766
+412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></Use
+rs/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmm
+ib7.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmr10.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmr5.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmr7.pfb></Users/000766412/Library/TinyTeX/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmsy10.pfb></Users/000766412/Library/TinyTeX/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmsy7.pfb></Users/000766412/Library/TinyTeX/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></Users/000766412/Library/Tin
+yTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></Users/000766412/Lib
+rary/TinyTeX/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></Users/000766
+412/Library/TinyTeX/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb>
+Output written on meeting_notes_061021.pdf (10 pages, 533377 bytes).
 PDF statistics:
- 139 PDF objects out of 1000 (max. 8388607)
- 98 compressed objects within 1 object stream
+ 156 PDF objects out of 1000 (max. 8388607)
+ 110 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  36 words of extra memory for PDF output out of 10000 (max. 10000000)
 

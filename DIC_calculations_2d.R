@@ -24,7 +24,7 @@ filepath <- "keeps_060821/" #contains runs with semi-informative priors on jump 
 keepsIND <- readRDS(paste0(filepath,"keepsBTCSP_IND.rds")) #independence
 keepsBTCSP <- readRDS(paste0(filepath,"keepsBTCSP.rds")) #MALD jump;s
 keepsBTCSP_MVN <- readRDS(paste0(filepath,"keepsBTCSP_MVN.rds")) #multivariate normal jumps
-keepsBTCSP_LD <-  readRDS(paste0(filepath,"keepsBTCSP_LD")) #laplacian jumps
+keepsBTCSP_LD <-  readRDS(paste0(filepath,"keepsBTCSP_LD.rds")) #laplacian jumps
 #keepsBTCSP_LD <-  readRDS(file.choose()) #laplacian jumps
 #generate data
 getSymbols("BTC-USD",from = "2014-09-15",to = "2020-09-30")
@@ -117,13 +117,13 @@ DIC7_IND#10953.52 (10884.23 on 06/08)
 
 #----SVMALD
 #E(ln(p(y|z,theta)))
-Elnpy_mid_ztheta_MALD <- partial_likelihood1(keeps, y) 
+Elnpy_mid_ztheta_MALD <- partial_likelihood1(keepsBTCSP, y) 
 #[1]
-lnpy_mid_zhatthetahat_MALD <- partial_likelihood2(keeps, y) 
+lnpy_mid_zhatthetahat_MALD <- partial_likelihood2(keepsBTCSP, y) 
 #[1] 
 DIC7_MALD = -4*Elnpy_mid_ztheta_MALD + 2*lnpy_mid_zhatthetahat_MALD
 DIC7_MALD
-#[1] 9813.312 (9827.731 on 06/08)
+#[1] 9813.312 (9827.731 on 06/08) (9820.858 on 06/10)
 #compare to 10953.52 from the 1d model... prefer MALD
 
 #----SVMVN
@@ -138,9 +138,9 @@ DIC7_MVN
 
 #----SVLD
 
-Elnpy_mid_ztheta_LD <- partial_likelihood1(keepsBTCSP_LD, y) 
+Elnpy_mid_ztheta_LD <- partial_likelihood1(keepsBTCSP_LD, y) #-4304.022
 #[1] 
-lnpy_mid_zhatthetahat_LD <- partial_likelihood2(keepsBTCSP_LD, y) 
+lnpy_mid_zhatthetahat_LD <- partial_likelihood2(keepsBTCSP_LD, y) #-3709.605
 #[1] 
 DIC7_LD= -4*Elnpy_mid_ztheta_LD + 2*lnpy_mid_zhatthetahat_LD
 DIC7_LD

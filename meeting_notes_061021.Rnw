@@ -43,13 +43,17 @@ $\epsilon_{k,t+1} \overset{iid}{\sim} N(0,1), k = \{y,v\}$, $\xi_{y,t+1} \overse
 \section{Empirical study: S\&P and BTC jointly}
 
 \subsection{Results: Joint Jumps}
-<<echo=FALSE>>=
+<<echo=FALSE, message=FALSE, results='hide'>>=
 library(ggplot2)
 library(reshape2)
 library(dplyr)
 filepath <- "keeps_060821/" 
-keepsBTCSP <- readRDS(paste0(filepath,"keepsBTCSP.rds")) #MALD jump;s
-
+filepath0 <- "/Users/000766412/OneDrive - Drake University/Documents/Research/Asymmetric Laplace Jumps/keeps/"
+filepath2 <- "keeps_061021/"
+keepsBTCSP0 <- readRDS(paste0(filepath0,"keepsBTCSP.rds")) #early run
+keepsBTCSP <- readRDS(paste0(filepath,"keepsBTCSP.rds")) #06/08 run
+keepsBTCSP2 <- readRDS(paste0(filepath2,"keepsBTCSP.rds")) #06/10 run
+date <- seq.Date(from = as.Date("2014-09-17"), to = as.Date("2020-09-29"), by = "day")
 domean<- function(x, total){
   R <- total
   if(length(dim(x)) == 2){ #if it's a data frame
@@ -61,8 +65,40 @@ domean<- function(x, total){
   }
 }
 
+Mode = function(x){
+    ta = table(x)
+    tam = max(ta)
+    if (all(ta == tam))
+         mod = NA
+    else
+         if(is.numeric(x))
+    mod = as.numeric(names(ta)[ta == tam])
+    else
+         mod = names(ta)[ta == tam]
+    return(mod)
+}
+
+getSymbols("BTC-USD",from = "2014-09-15",to = "2020-09-30")
+BTC <- as.data.frame(`BTC-USD`)
+BTC$Date <- seq(as.Date("2014-09-17"),as.Date("2020-09-30"),by="days")
+BTC$`BTC-USD.Close`[BTC$Date=="2020-04-17"] <- 7096.18
+getSymbols("^GSPC",from = "2014-09-15",to = "2020-09-30")
+SP500 <- as.data.frame(`GSPC`)
+SP500$Date <- as.Date(rownames(SP500))
+S <- merge(BTC,SP500)
+T <- nrow(S) - 1
+@
+
+<<messages=FALSE>>=
 #Posterior Means
-lapply(keepsBTCSP[c(4,6:17)], domean, total = 20000) %>% str()
+lapply(keepsBTCSP0[c(4,6:17)], domean, total = 10000) %>% str() #diffuse priors
+lapply(keepsBTCSP[c(4,6:17)], domean, total = 20000) %>% str() #fulop priors 1
+
+lapply(keepsBTCSP_MVN[c(4,6:17)], domean, total = 20000) %>% str() #fulop priors 2
+lapply(keepsBTCSP[c(4,6:17)], domean, total = 20000) %>% str() 
+lapply(keepsBTCSP_LD[c(4,6:17)], domean, total = 20000) %>% str() 
+lapply(keepsBTCSP_[c(4,6:17)], domean, total = 20000) %>% str() 
+rm(keepsBTCSP0);rm(keepsBTCSP2)
 @
 
 \clearpage
@@ -71,7 +107,7 @@ lapply(keepsBTCSP[c(4,6:17)], domean, total = 20000) %>% str()
 << out.width = '6in', out.height = '5in'>>=
 #Related to joint jumps:
 
-keepsBTCSP$xi_cw %>%
+keepsBTCSP_MVN$xi_cw %>%
   as.data.frame() %>%
   melt() %>%
   mutate(variable = factor(variable, levels = c("V1", "V2"),labels = c("BTC", "S&P")))%>%
@@ -94,6 +130,15 @@ keepsBTCSP$sigma_c %>%
   geom_histogram(aes(x = value)) +
   facet_grid(~variable) +
   ggtitle("sigma_c (scale of MALD)")
+
+keepsBTCSP$rho %>%
+    as.data.frame() %>%
+  melt() %>%
+  #mutate(variable = factor(variable, levels = c("V1", "V2"),labels = c("BTC", "S&P")))%>%
+  ggplot() +
+  geom_histogram(aes(x = value)) +
+  facet_grid(~variable) +
+  ggtitle("rho (scale of MALD)")
 @
 
 \clearpage
@@ -109,15 +154,21 @@ keepsBTCSP$sigma_c %>%
 \clearpage
 \newpage
 
-<<out.width = '6in', out.height = '5in' >>=
+<<out.width = '.95\\linewidth', out.height = '4in' >>=
 keepsBTCSP$delta %>%
   melt() %>%
   mutate(value = factor(value, levels = c(0:3),
                         labels = c("BTC jump", "S&P jump", "Joint jump", "No jump"))) %>%
   ggplot() +
-  geom_bar(aes(x = Var2, fill = value), position = "fill") +
-  scale_fill_brewer("Type",type = "qual") +labs(x = "Time", y = "Proportion")
+  geom_bar(aes(x = Var2, fill = value, colour = value), position = "fill") +
+  scale_fill_brewer("Type",type = "qual") +
+    scale_colour_brewer("Type",type = "qual") +
+  labs(x = "Time", y = "Proportion")
 #it's worth noting the MVN plot looks almost identical - same patterns
+
+#proportion of dates that had each of the classes
+apply(keepsBTCSP$delta, 2, Mode) %>% table()
+
 @
 
 
@@ -127,12 +178,12 @@ keepsBTCSP$delta %>%
 \subsection{DIC}
  $$DIC_7 = -4E_{\theta,\boldsymbol{z} | \boldsymbol{y}}(ln(p(\boldsymbol{y}|\theta,\boldsymbol{z}))) + 2ln(p(\boldsymbol{y}|\hat{\theta}, \hat{\boldsymbol{z}})).$$ 
  
-\begin{table}[]
+\begin{table}[h!]
 \begin{tabular}{|l|l|l|l|l|}
 \hline
                    & SVMALD  & SVLD    & SVMVN   & SVIND \\ \hline
 Diffuse priors     &9813.312 &\textbf{9796.879} &9818.368 &10953.52 \\ \hline
-Fulop-style priors &9827.731 &9854.88 &\textbf{9714.333} &10884.23 \\ \hline
+Fulop-style priors &9827.731 &9843.06 &\textbf{9714.333} &10884.23 \\ \hline
 \end{tabular}
 \caption{\label{tab:dic7} Resulting DIC from runs with diffuse priors and runs with more informative priors. }
 \end{table}
@@ -151,7 +202,15 @@ First, a lineup to motivate. Posterior predictive p-values operate on the assump
 
 \newpage
 \clearpage
+Goal: compare models in terms of a data-characteristic that is important to model well. We look at number of \textit{joint} jumps in the time series of length 1519.
 
-\includegraphics[width = .9\linewidth]{"ppp_joint_jumps.pdf"}
+
+\includegraphics[width = .75\linewidth]{"ppp_joint_jumps.pdf"}
+
+Thoughts:
+\begin{itemize}
+\item Different priors for S\&P vs BTC jumps? Their scales are pretty different.
+\item Little evidence in favor of MALD for these particular series. 
+\end{itemize}
 
 \end{document}

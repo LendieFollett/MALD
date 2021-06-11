@@ -210,23 +210,23 @@ apply(keepsIND$v, 2:3, mean) %>%
 
 
 #count number of positive jumps larger  than percent%
-njumps_pos <- function(y, percent=.5){
+njumps_pos <- function(y, percent=.75){
   sum(exp(y) <  1 -percent | exp(y ) > 1+percent ) #how many times was y_t/y_{t-1} > 1.25?
 }
 
 
 #count number of JOINT positive jumps where both were larger than percent%
-njumps_joint <- function(y1, y2, percent=.5){
+njumps_joint <- function(y1, y2, percent=.75){
   sum((exp(y1) <  1 -percent| exp(y1) >  1 +percent) &  (exp(y2) <  1 -percent|exp(y2) >  1 +percent)) #how many times was y_t/y_{t-1} > 1.25?
 }
 
 #count number of JOINT positive jumps where both were larger than percent%
-njumps_pos_joint <- function(y1, y2, percent=.5){
+njumps_pos_joint <- function(y1, y2, percent=.75){
   sum((exp(y1) >  1 +percent) &  (exp(y2) >  1 +percent)) #how many times was y_t/y_{t-1} > 1.25?
 }
 
 #count number of JOINT positive jumps where both were larger than percent%
-njumps_neg_joint <- function(y1, y2, percent=.5){
+njumps_neg_joint <- function(y1, y2, percent=.75){
   sum((exp(y1) <  1 -percent) &  (exp(y2) <  1 -percent)) #how many times was y_t/y_{t-1} > 1.25?
 }
 
