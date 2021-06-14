@@ -1,0 +1,145 @@
+rm(list = ls())  ## DON'T FORGET TO SET WD!!
+library(ald)
+library(ggplot2)
+library(dplyr)
+library(truncnorm)
+library(mvtnorm)
+library(tmvtnorm)
+library(Rcpp)
+library(MCMCpack)
+library(quantmod)
+library(RcppTN)
+
+
+thin <- 5 #thinning param
+B <- 10000 #how many burn in draws to throw away
+R <- 100000 #how many draws to keep after burn in
+n_chns <- 1 #how many chains to run
+#load data
+getSymbols("GME",from = "2020-12-01",to = "2021-05-31")
+GME <- as.data.frame(GME)
+GME$Date <- as.Date(rownames(GME))
+getSymbols("AMC",from = "2020-12-01",to = "2021-05-31")
+AMC <- as.data.frame(AMC)
+AMC$Date <- as.Date(rownames(AMC))
+getSymbols("DOGE-USD",from = "2020-12-01",to = "2021-05-31")
+DOGE <- as.data.frame(`DOGE-USD`)
+DOGE$Date <- as.Date(rownames(DOGE))
+getSymbols("^GSPC",from = "2020-12-01",to = "2021-05-31")
+SP500 <- as.data.frame(`GSPC`)
+SP500$Date <- as.Date(rownames(SP500))
+S <- merge(merge(merge(GME,AMC),DOGE),SP500)
+T <- nrow(S) - 1
+
+
+data$cabin_location <- NA
+data[grepl("A",data$cabin),"cabin_location"] <- "A"
+
+....
+
+data[! data$cabin_location %in% c("A", "B", "C"), "cabin_location"] <- "missing"
+
+
+#################################################### 
+# SVMALD MODEL ---------- GameStop
+#################################################### 
+use_starting_values <- TRUE
+sourceCpp("pgas_2d.cpp") #C++ updates
+# #2-D MODEL MCMCb        cfv09
+y <- as.matrix(100*(log(S[-1,c("GME.Close","GSPC.Close")]) - log(S[-nrow(S),c("GME.Close","GSPC.Close")])))
+yprim <- array(0,dim=dim(y))
+#source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
+exp_jumps <- norm_jumps <- ind <- FALSE
+source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
+saveRDS(keeps,paste0("keepsGME.rds"))
+
+#################################################### 
+# SVMALD MODEL ---------- AMC
+#################################################### 
+use_starting_values <- TRUE
+sourceCpp("pgas_2d.cpp") #C++ updates
+# #2-D MODEL MCMCb        cfv09
+y <- as.matrix(100*(log(S[-1,c("AMC.Close","GSPC.Close")]) - log(S[-nrow(S),c("AMC.Close","GSPC.Close")])))
+yprim <- array(0,dim=dim(y))
+#source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
+exp_jumps <- norm_jumps <- ind <- FALSE
+source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
+saveRDS(keeps,paste0("keepsAMC.rds"))
+
+#################################################### 
+# SVMALD MODEL ---------- Dogecoin
+#################################################### 
+use_starting_values <- TRUE
+sourceCpp("pgas_2d.cpp") #C++ updates
+# #2-D MODEL MCMCb        cfv09
+y <- as.matrix(100*(log(S[-1,c("DOGE-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("DOGE-USD.Close","GSPC.Close")])))
+yprim <- array(0,dim=dim(y))
+#source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
+exp_jumps <- norm_jumps <- ind <- FALSE
+source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
+saveRDS(keeps,paste0("keepsDOGE.rds"))
+
+
+#################################################### 
+# CONVERGENCE CHECKS ----------
+#################################################### 
+library(LaplacesDemon)
+
+total <- 20000 #number of mcmc iterations saved after burn-in, thinning
+doESS <- function(x, total){
+  R <- total
+  if(!is.null(dim(x))){ #if it's a data frame
+    return(apply(x[1:R,], 2, ESS))
+  }else{
+    return(ESS(x[1:R]))
+  }
+}
+
+domean<- function(x, total){
+  R <- total
+  if(length(dim(x)) == 2){ #if it's a data frame
+    return(apply(x[1:R,], 2, median))
+  }else if (length(dim(x)) > 2){
+    return(apply(x[1:R,,], 2:3, function(x){(median(x))}))
+  }else{
+    return(median(x[1:R]))
+  }
+}
+
+#SVMALD
+lapply(keeps[c(4,6:17)], doESS, total = 20000) %>% str()
+lapply(keepsBTCSP[c(4,6:17)], domean, total = 20000) %>% str()
+
+plot(keeps$sigma_c[,1], type = "l")
+plot(keeps$sigma_c[,2], type = "l")
+plot(keeps$rhoc, type = "l")
+plot(keeps$xi_cw[,1], type = "l")
+plot(keeps$xi_cw[,2], type = "l")
+plot(keeps$xi_y1eta, type = "l")
+plot(keeps$xi_y2eta, type = "l")
+plot(keeps$xi_y1w, type = "l")
+plot(keeps$xi_y2w, type = "l")
+#SVALD
+lapply(keepsIND[c(4,6:17)], doESS, total = total) %>% str()
+#SVMVN
+lapply(keepsBTCSP_MVN[c(4,6:17)], doESS, total = total) %>% str()
+#SVLD
+lapply(keepsBTCSP_LD[c(4,6:17)], doESS, total = total) %>% str()
+
+
+
+plot(keepsBTCSP$sigma_c[1:total, 1]);length(unique(keepsBTCSP$sigma_c[1:total, 1]))/total
+plot(keepsBTCSP$sigma_c[1:total, 1])
+plot(keepsBTCSP$rhoc[1:total])
+plot(keepsBTCSP$xi_y2eta[1:total])
+
+#use for starting values?
+
+starting_values <- lapply(keeps, domean, total = 20000)
+starting_values %>% str
+starting_values$delta <- apply(starting_values$delta , 2, round)
+starting_values$xi_y1 <- starting_values$xi_y1c <- starting_values$J[,1] + rnorm(length(starting_values$xi_y1), 0, .001)
+starting_values$xi_y2 <- starting_values$xi_y2c <- starting_values$J[,2]+ rnorm(length(starting_values$xi_y1), 0, .001)
+saveRDS(starting_values,"starting_values_MALD.rds")
+
+
