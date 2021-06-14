@@ -43,7 +43,7 @@ data[! data$cabin_location %in% c("A", "B", "C"), "cabin_location"] <- "missing"
 #################################################### 
 # SVMALD MODEL ---------- GameStop
 #################################################### 
-use_starting_values <- TRUE
+use_starting_values <- FALSE
 sourceCpp("pgas_2d.cpp") #C++ updates
 # #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("GME.Close","GSPC.Close")]) - log(S[-nrow(S),c("GME.Close","GSPC.Close")])))
@@ -56,7 +56,7 @@ saveRDS(keeps,paste0("keepsGME.rds"))
 #################################################### 
 # SVMALD MODEL ---------- AMC
 #################################################### 
-use_starting_values <- TRUE
+use_starting_values <- FALSE
 sourceCpp("pgas_2d.cpp") #C++ updates
 # #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("AMC.Close","GSPC.Close")]) - log(S[-nrow(S),c("AMC.Close","GSPC.Close")])))
@@ -69,7 +69,7 @@ saveRDS(keeps,paste0("keepsAMC.rds"))
 #################################################### 
 # SVMALD MODEL ---------- Dogecoin
 #################################################### 
-use_starting_values <- TRUE
+use_starting_values <- FALSE
 sourceCpp("pgas_2d.cpp") #C++ updates
 # #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("DOGE-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("DOGE-USD.Close","GSPC.Close")])))
