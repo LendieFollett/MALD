@@ -79,25 +79,37 @@ for (i in 1:(R + B)){
   J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
   lambda <- update_lambda(c(sum(N_y1),sum(N_y2),sum(N_c),T-sum(c(N_y1,N_y2,N_c))),c(10,10,10,170))
   
-  f <- function(s){(log_pxi(xi_y1,xi_y1s,xi_y1w,s+h/2) - log_pxi(xi_y1,xi_y1s,xi_y1w,s-h/2)) / h}
+  f <- function(s){(log_pxi(xi_y1,xi_y1s,xi_y1w,s+h/2, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1)) - 
+                      log_pxi(xi_y1,xi_y1s,xi_y1w,s-h/2, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1))) / h}
   hat <- uniroot(f,c(0.0001,100))$root
-  sd <- sqrt(-h^2 / (log_pxi(xi_y1,xi_y1s,xi_y1w,hat+h) - 2*log_pxi(xi_y1,xi_y1s,xi_y1w,hat) + log_pxi(xi_y1,xi_y1s,xi_y1w,hat-h)))
+  sd <- sqrt(-h^2 / (log_pxi(xi_y1,xi_y1s,xi_y1w,hat+h, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1)) - 
+                       2*log_pxi(xi_y1,xi_y1s,xi_y1w,hat, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1)) + 
+                       log_pxi(xi_y1,xi_y1s,xi_y1w,hat-h, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1))))
   xi_y1eta <- update_eta(xi_y1,xi_y1s,xi_y1w,xi_y1eta,hat,sd,w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1))
   
-  f <- function(s){(log_pxi(xi_y2,xi_y2s,xi_y2w,s+h/2) - log_pxi(xi_y2,xi_y2s,xi_y2w,s-h/2)) / h}
+  f <- function(s){(log_pxi(xi_y2,xi_y2s,xi_y2w,s+h/2, w_prior_param = c(0,.25), eta_prior_param = c(.5, 1)) - 
+                      log_pxi(xi_y2,xi_y2s,xi_y2w,s-h/2, w_prior_param = c(0,.25), eta_prior_param = c(.5, 1))) / h}
   hat <- uniroot(f,c(0.0001,100))$root
-  sd <- sqrt(-h^2 / (log_pxi(xi_y2,xi_y2s,xi_y2w,hat+h) - 2*log_pxi(xi_y2,xi_y2s,xi_y2w,hat) + log_pxi(xi_y2,xi_y2s,xi_y2w,hat-h)))
+  sd <- sqrt(-h^2 / (log_pxi(xi_y2,xi_y2s,xi_y2w,hat+h, w_prior_param = c(0,.25), eta_prior_param = c(.5, 1)) - 
+                       2*log_pxi(xi_y2,xi_y2s,xi_y2w,hat, w_prior_param = c(0,.25), eta_prior_param = c(.5, 1)) + 
+                       log_pxi(xi_y2,xi_y2s,xi_y2w,hat-h, w_prior_param = c(0,.25), eta_prior_param = c(.5, 1))))
   xi_y2eta <- update_eta(xi_y2,xi_y2s,xi_y2w,xi_y2eta,hat,sd,w_prior_param = c(0,0.25), eta_prior_param = c(.5, 1))
   
   if(exp_jumps == FALSE){
-    f <- function(s){(log_pxi(xi_y1,xi_y1s,s+h/2,xi_y1eta) - log_pxi(xi_y1,xi_y1s,s-h/2,xi_y1eta)) / h}
+    f <- function(s){(log_pxi(xi_y1,xi_y1s,s+h/2,xi_y1eta, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1)) - 
+                        log_pxi(xi_y1,xi_y1s,s-h/2,xi_y1eta, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1))) / h}
     hat <- uniroot(f,c(-100,100))$root
-    sd <- sqrt(-h^2 / (log_pxi(xi_y1,xi_y1s,hat+h,xi_y1eta) - 2*log_pxi(xi_y1,xi_y1s,hat,xi_y1eta) + log_pxi(xi_y1,xi_y1s,hat-h,xi_y1eta)))
+    sd <- sqrt(-h^2 / (log_pxi(xi_y1,xi_y1s,hat+h,xi_y1eta, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1)) - 
+                         2*log_pxi(xi_y1,xi_y1s,hat,xi_y1eta, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1)) + 
+                         log_pxi(xi_y1,xi_y1s,hat-h,xi_y1eta, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1))))
     xi_y1w <- update_w(xi_y1,xi_y1s,xi_y1w,xi_y1eta,hat,sd, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1))
     
-    f <- function(s){(log_pxi(xi_y2,xi_y2s,s+h/2,xi_y2eta) - log_pxi(xi_y2,xi_y2s,s-h/2,xi_y2eta)) / h}
+    f <- function(s){(log_pxi(xi_y2,xi_y2s,s+h/2,xi_y2eta, w_prior_param = c(0,.25), eta_prior_param = c(.5, 1)) - 
+                        log_pxi(xi_y2,xi_y2s,s-h/2,xi_y2eta, w_prior_param = c(0,.25), eta_prior_param = c(.5, 1))) / h}
     hat <- uniroot(f,c(-100,100))$root
-    sd <- sqrt(-h^2 / (log_pxi(xi_y2,xi_y2s,hat+h,xi_y2eta) - 2*log_pxi(xi_y2,xi_y2s,hat,xi_y2eta) + log_pxi(xi_y2,xi_y2s,hat-h,xi_y2eta)))
+    sd <- sqrt(-h^2 / (log_pxi(xi_y2,xi_y2s,hat+h,xi_y2eta, w_prior_param = c(0,.25), eta_prior_param = c(.5, 1)) - 
+                         2*log_pxi(xi_y2,xi_y2s,hat,xi_y2eta, w_prior_param = c(0,.25), eta_prior_param = c(.5, 1)) + 
+                         log_pxi(xi_y2,xi_y2s,hat-h,xi_y2eta, w_prior_param = c(0,.25), eta_prior_param = c(.5, 1))))
     xi_y2w <- update_w(xi_y2,xi_y2s,xi_y2w,xi_y2eta,hat,sd,w_prior_param = c(0,.25), eta_prior_param = c(.5, 1))
     
     if (ind == FALSE){
