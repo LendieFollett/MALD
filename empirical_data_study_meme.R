@@ -94,6 +94,23 @@ saveRDS(keeps,paste0("keeps_",models$model[i] ,"_DOGE.rds"))
 }
 
 #################################################### 
+# ALL MODELS ---------- BTC
+#################################################### 
+for (i in 1:nrow(models)){
+  print(paste0("----- > Starting ", models$model[i], " model < -------"))
+  use_starting_values <- FALSE
+  sourceCpp("pgas_2d.cpp") #C++ updates
+  # #2-D MODEL MCMCb        cfv09
+  y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
+  yprim <- array(0,dim=dim(y))
+  exp_jumps <- models$exp_jumps[i]
+  norm_jumps <- models$norm_jumps[i]
+  ind <- models$ind[i]
+  source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
+  saveRDS(keeps,paste0("keeps_",models$model[i] ,"_BTC.rds"))
+}
+
+#################################################### 
 # CONVERGENCE CHECKS ----------
 #################################################### 
 library(LaplacesDemon)
