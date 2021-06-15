@@ -12,10 +12,14 @@ library(RcppTN)
 
 
 thin <- 5 #thinning param
-B <- 10000 #how many burn in draws to throw away
-R <- 100000 #how many draws to keep after burn in
+B <- 100 #how many burn in draws to throw away
+R <- 1000 #how many draws to keep after burn in
 n_chns <- 1 #how many chains to run
 #load data
+getSymbols("BTC-USD",from = "2020-12-01",to = "2021-05-31")
+BTC <- as.data.frame(`BTC-USD`)
+BTC$Date <- seq(as.Date("2020-12-01"),as.Date("2021-05-31"),by="days")
+BTC$`BTC-USD.Close`[BTC$Date=="2020-04-17"] <- 7096.18
 getSymbols("GME",from = "2020-12-01",to = "2021-05-31")
 GME <- as.data.frame(GME)
 GME$Date <- as.Date(rownames(GME))
@@ -28,57 +32,66 @@ DOGE$Date <- as.Date(rownames(DOGE))
 getSymbols("^GSPC",from = "2020-12-01",to = "2021-05-31")
 SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
-S <- merge(merge(merge(GME,AMC),DOGE),SP500)
+
+S <- BTC %>%merge(GME) %>% merge(AMC) %>% merge(DOGE) %>% merge(SP500)
 T <- nrow(S) - 1
 
-
-data$cabin_location <- NA
-data[grepl("A",data$cabin),"cabin_location"] <- "A"
-
-....
-
-data[! data$cabin_location %in% c("A", "B", "C"), "cabin_location"] <- "missing"
+###Data frame of model parameters
+models <- data.frame(exp_jumps =  c(FALSE,   TRUE,  FALSE,     FALSE),
+                     norm_jumps = c(FALSE,   FALSE, TRUE,      FALSE),
+                     ind =        c(FALSE,   FALSE, FALSE,     TRUE),
+                     model =      c("SVMALD", "SVLD", "SVMVN", "SVIND"))
 
 
 #################################################### 
-# SVMALD MODEL ---------- GameStop
+# ALL MODELS ---------- GameStop
 #################################################### 
+for (i in 1:nrow(models)){
+  print(paste0("----- > Starting ", models$model[i], " model < -------"))
 use_starting_values <- FALSE
 sourceCpp("pgas_2d.cpp") #C++ updates
 # #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("GME.Close","GSPC.Close")]) - log(S[-nrow(S),c("GME.Close","GSPC.Close")])))
 yprim <- array(0,dim=dim(y))
-#source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
-exp_jumps <- norm_jumps <- ind <- FALSE
+exp_jumps <- models$exp_jumps[i]
+norm_jumps <- models$norm_jumps[i]
+ind <- models$ind[i]
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keepsGME.rds"))
+saveRDS(keeps,paste0("keeps_",models$model[i] ,"_GME.rds"))
+}
 
 #################################################### 
-# SVMALD MODEL ---------- AMC
+# ALL MODELS ---------- AMC
 #################################################### 
+for (i in 1:nrow(models)){
+  print(paste0("----- > Starting ", models$model[i], " model < -------"))
 use_starting_values <- FALSE
 sourceCpp("pgas_2d.cpp") #C++ updates
 # #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("AMC.Close","GSPC.Close")]) - log(S[-nrow(S),c("AMC.Close","GSPC.Close")])))
 yprim <- array(0,dim=dim(y))
-#source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
-exp_jumps <- norm_jumps <- ind <- FALSE
+exp_jumps <- models$exp_jumps[i]
+norm_jumps <- models$norm_jumps[i]
+ind <- models$ind[i]
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keepsAMC.rds"))
-
+saveRDS(keeps,paste0("keeps_",models$model[i] ,"_AMC.rds"))
+}
 #################################################### 
-# SVMALD MODEL ---------- Dogecoin
+# ALL MODELS ---------- Dogecoin
 #################################################### 
+for (i in 1:nrow(models)){
+  print(paste0("----- > Starting ", models$model[i], " model < -------"))
 use_starting_values <- FALSE
 sourceCpp("pgas_2d.cpp") #C++ updates
 # #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("DOGE-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("DOGE-USD.Close","GSPC.Close")])))
 yprim <- array(0,dim=dim(y))
-#source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
-exp_jumps <- norm_jumps <- ind <- FALSE
+exp_jumps <- models$exp_jumps[i]
+norm_jumps <- models$norm_jumps[i]
+ind <- models$ind[i]
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keepsDOGE.rds"))
-
+saveRDS(keeps,paste0("keeps_",models$model[i] ,"_DOGE.rds"))
+}
 
 #################################################### 
 # CONVERGENCE CHECKS ----------

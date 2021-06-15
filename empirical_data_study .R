@@ -27,14 +27,6 @@ S <- merge(BTC,SP500)
 T <- nrow(S) - 1
 
 
-data$cabin_location <- NA
-data[grepl("A",data$cabin),"cabin_location"] <- "A"
-
-....
-
-data[! data$cabin_location %in% c("A", "B", "C"), "cabin_location"] <- "missing"
-
-
 #################################################### 
 # SVMALD MODEL ---------- LRF RUNS
 #################################################### 
