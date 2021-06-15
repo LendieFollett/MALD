@@ -36,6 +36,23 @@ SP500$Date <- as.Date(rownames(SP500))
 S <- BTC %>%merge(GME) %>% merge(AMC) %>% merge(DOGE) %>% merge(SP500)
 T <- nrow(S) - 1
 
+
+#plot of data
+Date <- S$Date[-1]
+cbind(100*(log(S[-1,c("GSPC.Close", "GME.Close", "BTC-USD.Close", "AMC.Close", "DOGE-USD.Close") ])-
+      log(S[-nrow(S),c("GSPC.Close", "GME.Close", "BTC-USD.Close", "AMC.Close", "DOGE-USD.Close") ])),
+  Date) %>%
+  melt(id.vars = c("Date")) %>%
+  mutate(variable = factor(variable, levels = c("GSPC.Close", "GME.Close", "BTC-USD.Close", "AMC.Close", "DOGE-USD.Close"),
+                           labels = c("S&P", "GME", "BTC", "AMC", "DOGE"))) %>%
+  ggplot() +
+  geom_line(aes(x = Date, y = value)) +
+  facet_grid(variable~., scales = "free_y") +
+  theme_bw() +
+  scale_x_date(breaks = "month")
+
+ggsave("data_plot.pdf", height = 10, width = 8)
+
 ###Data frame of model parameters
 models <- data.frame(exp_jumps =  c(FALSE,   TRUE,  FALSE,     FALSE),
                      norm_jumps = c(FALSE,   FALSE, TRUE,      FALSE),
