@@ -12,8 +12,8 @@ library(RcppTN)
 
 
 thin <- 5 #thinning param
-B <- 100 #how many burn in draws to throw away
-R <- 1000 #how many draws to keep after burn in
+B <- 10000 #how many burn in draws to throw away
+R <- 100000 #how many draws to keep after burn in
 n_chns <- 1 #how many chains to run
 #load data
 getSymbols("BTC-USD",from = "2020-12-01",to = "2021-05-31")
