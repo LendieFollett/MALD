@@ -63,68 +63,68 @@ models <- data.frame(exp_jumps =  c(FALSE,   TRUE,  FALSE,     FALSE),
 #################################################### 
 # ALL MODELS ---------- GameStop
 #################################################### 
-for (i in 1:nrow(models)){
-  print(paste0("----- > Starting ", models$model[i], " model < -------"))
+for (k in 1:nrow(models)){
+  print(paste0("----- > Starting ", models$model[k], " model < -------"))
 use_starting_values <- FALSE
 sourceCpp("pgas_2d.cpp") #C++ updates
 # #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("GME.Close","GSPC.Close")]) - log(S[-nrow(S),c("GME.Close","GSPC.Close")])))
 yprim <- array(0,dim=dim(y))
-exp_jumps <- models$exp_jumps[i]
-norm_jumps <- models$norm_jumps[i]
-ind <- models$ind[i]
+exp_jumps <- models$exp_jumps[k]
+norm_jumps <- models$norm_jumps[k]
+ind <- models$ind[k]
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps_",models$model[i] ,"_GME.rds"))
+saveRDS(keeps,paste0("keeps_",models$model[k] ,"_GME.rds"))
 }
 
 #################################################### 
 # ALL MODELS ---------- AMC
 #################################################### 
-for (i in 1:nrow(models)){
-  print(paste0("----- > Starting ", models$model[i], " model < -------"))
+for (k in 1:nrow(models)){
+  print(paste0("----- > Starting ", models$model[k], " model < -------"))
 use_starting_values <- FALSE
 sourceCpp("pgas_2d.cpp") #C++ updates
 # #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("AMC.Close","GSPC.Close")]) - log(S[-nrow(S),c("AMC.Close","GSPC.Close")])))
 yprim <- array(0,dim=dim(y))
-exp_jumps <- models$exp_jumps[i]
-norm_jumps <- models$norm_jumps[i]
-ind <- models$ind[i]
+exp_jumps <- models$exp_jumps[k]
+norm_jumps <- models$norm_jumps[k]
+ind <- models$ind[k]
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps_",models$model[i] ,"_AMC.rds"))
+saveRDS(keeps,paste0("keeps_",models$model[k] ,"_AMC.rds"))
 }
 #################################################### 
 # ALL MODELS ---------- Dogecoin
 #################################################### 
-for (i in 1:nrow(models)){
-  print(paste0("----- > Starting ", models$model[i], " model < -------"))
+for (k in 1:nrow(models)){
+  print(paste0("----- > Starting ", models$model[k], " model < -------"))
 use_starting_values <- FALSE
 sourceCpp("pgas_2d.cpp") #C++ updates
 # #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("DOGE-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("DOGE-USD.Close","GSPC.Close")])))
 yprim <- array(0,dim=dim(y))
-exp_jumps <- models$exp_jumps[i]
-norm_jumps <- models$norm_jumps[i]
-ind <- models$ind[i]
+exp_jumps <- models$exp_jumps[k]
+norm_jumps <- models$norm_jumps[k]
+ind <- models$ind[k]
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps_",models$model[i] ,"_DOGE.rds"))
+saveRDS(keeps,paste0("keeps_",models$model[k] ,"_DOGE.rds"))
 }
 
 #################################################### 
 # ALL MODELS ---------- BTC
 #################################################### 
-for (i in 1:nrow(models)){
-  print(paste0("----- > Starting ", models$model[i], " model < -------"))
+for (k in 1:nrow(models)){
+  print(paste0("----- > Starting ", models$model[k], " model < -------"))
   use_starting_values <- FALSE
   sourceCpp("pgas_2d.cpp") #C++ updates
   # #2-D MODEL MCMCb        cfv09
   y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
   yprim <- array(0,dim=dim(y))
-  exp_jumps <- models$exp_jumps[i]
-  norm_jumps <- models$norm_jumps[i]
-  ind <- models$ind[i]
+  exp_jumps <- models$exp_jumps[k]
+  norm_jumps <- models$norm_jumps[k]
+  ind <- models$ind[k]
   source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-  saveRDS(keeps,paste0("keeps_",models$model[i] ,"_BTC.rds"))
+  saveRDS(keeps,paste0("keeps_",models$model[k] ,"_BTC.rds"))
 }
 
 #################################################### 
