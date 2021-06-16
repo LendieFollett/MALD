@@ -1,2 +1,2 @@
 # MALD
-Purpose: Use multivariate asymmetric laplace distribution to improve jump modeling in cryptocurrency.
+Use multivariate asymmetric laplace distribution to improve jump modeling in cryptocurrency.
