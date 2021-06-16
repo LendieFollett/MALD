@@ -217,6 +217,10 @@ double log_pyv(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec
   target += R::dnorm(phi(1), 1, 0.5, true); // phi ~ Normal(1,0.25) Prior
   target += R::dnorm(sigma_v(0), 0, 0.1, true); // sigma_v ~ Normal(0,0.01) Prior
   target += R::dnorm(sigma_v(1), 0, 0.1, true); // sigma_v ~ Normal(0,0.01) Prior
+  target += R::dnorm(rho(0), 0, .25, true); // rho ~ Normal(0,0.25) Prior
+  target += R::dnorm(rho(1), 0, .25, true); // rho ~ Normal(0,0.25) Prior
+  target += R::dnorm(rho(2), 0, .25, true); // rho ~ Normal(0,0.25) Prior
+  target += R::dnorm(rho(3), 0, .25, true); // rho ~ Normal(0,0.25) Prior
   return target;  
 }
 
@@ -256,7 +260,7 @@ double log_pxi_c(arma::mat xi_c, arma::vec xi_cs, arma::vec xi_cw, arma::vec sig
   target += R::dnorm(xi_cw(1), 0, .25, true); // w_c ~ norm(0,0.25) Prior (S&P)
   target += R::dnorm(sigma_c(0), .5, 1, true); // sigma_c ~ norm(.5, 1) Prior
   target += R::dnorm(sigma_c(1), .5, 1, true); // sigma_c ~ norm(.5, 1) Prior
-  target += R::dnorm(rhoc, 0, .25, true); // rhoc ~ Unif(-1,1)
+  target += R::dnorm(rhoc, 0, .25, true); // rhoc ~ N(0, .25)
   return target;  
 }
 

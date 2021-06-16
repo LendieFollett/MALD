@@ -38,7 +38,7 @@ yprim <- array(0,dim=dim(y))
 #source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
 exp_jumps <- norm_jumps <- ind <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps_061021/keepsBTCSP.rds"))
+saveRDS(keeps,paste0("keeps_long/keepsBTCSP.rds"))
 
 #################################################### 
 # SVALD INDEPENDENCE (1d) MODEL ---------- LRF RUNS
@@ -54,8 +54,7 @@ exp_jumps  <- FALSE
 norm_jumps <- FALSE 
 ind <- TRUE #Bitcoin and S&P 500 have no relationship in return, volatility or jumps
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keepsBTCSP_IND.rds"))
-saveRDS(keeps,paste0("keeps_060821/keepsBTCSP_IND.rds"))
+saveRDS(keeps,paste0("keeps_long/keepsBTCSP_IND.rds"))
 
 #################################################### 
 # SVMVN MODEL ---------- MS RUNS
@@ -70,7 +69,7 @@ exp_jumps <- FALSE
 norm_jumps <- TRUE #NORMAL JUMPS SET TO TRUE SO B/s are set to 1
 ind <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keepsBTCSP_MVN.rds"))
+saveRDS(keeps,paste0("keeps_long/keepsBTCSP_MVN.rds"))
 
 #################################################### 
 # SVLD MODEL ----------MS RUNS
@@ -85,7 +84,7 @@ exp_jumps  <- TRUE #ASYMMETRY PARAMETERS W SET TO 0 (exponential, laplace distri
 norm_jumps <- FALSE 
 ind <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keepsBTCSP_LD.rds"))
+saveRDS(keeps,paste0("keeps_long/keepsBTCSP_LD.rds"))
 
 
 #################################################### 
@@ -103,16 +102,6 @@ doESS <- function(x, total){
   }
 }
 
-domean<- function(x, total){
-  R <- total
-  if(length(dim(x)) == 2){ #if it's a data frame
-    return(apply(x[1:R,], 2, median))
-  }else if (length(dim(x)) > 2){
-    return(apply(x[1:R,,], 2:3, function(x){(median(x))}))
-  }else{
-    return(median(x[1:R]))
-  }
-}
 
 #SVMALD
 lapply(keeps[c(4,6:17)], doESS, total = 20000) %>% str()

@@ -128,6 +128,10 @@ for (k in 1:nrow(models)){
   saveRDS(keeps,paste0("keeps_",models$model[k] ,"_BTC.rds"))
 }
 
+
+#ALL OF THE ABOVE WAS FOR THE 'SHORT TIME PERIOD' ANALYSIS
+
+
 #################################################### 
 # CONVERGENCE CHECKS ----------
 #################################################### 
