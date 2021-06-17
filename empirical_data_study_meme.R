@@ -17,24 +17,32 @@ B <- 10000 #how many burn in draws to throw away
 R <- 100000 #how many draws to keep after burn in
 n_chns <- 1 #how many chains to run
 #load data
-getSymbols("BTC-USD",from = "2020-10-01",to = "2021-05-31")
-BTC <- as.data.frame(`BTC-USD`)
-BTC$Date <- seq(as.Date("2020-10-01"),as.Date("2021-05-31"),by="days")
-BTC$`BTC-USD.Close`[BTC$Date=="2020-04-17"] <- 7096.18
+# getSymbols("BTC-USD",from = "2020-10-01",to = "2021-05-31")
+# BTC <- as.data.frame(`BTC-USD`)
+# BTC$Date <- seq(as.Date("2020-10-01"),as.Date("2021-05-31"),by="days")
+# BTC$`BTC-USD.Close`[BTC$Date=="2020-04-17"] <- 7096.18
+BTC <- read.csv("BTC_USD_2020-06-17_2021-06-16-CoinDesk.csv")
+BTC <- BTC %>% dplyr::select(!Currency)
+names(BTC) <- c("Date","BTC-USD.Close","BTC-USD.Open","BTC-USD.High","BTC-USD.Low")
+BTC$Date <- as.Date(BTC$Date)
 getSymbols("GME",from = "2020-10-01",to = "2021-05-31")
 GME <- as.data.frame(GME)
 GME$Date <- as.Date(rownames(GME))
 getSymbols("AMC",from = "2020-10-01",to = "2021-05-31")
 AMC <- as.data.frame(AMC)
 AMC$Date <- as.Date(rownames(AMC))
-getSymbols("DOGE-USD",from = "2020-10-01",to = "2021-05-31")
-DOGE <- as.data.frame(`DOGE-USD`)
-DOGE$Date <- as.Date(rownames(DOGE))
+# getSymbols("DOGE-USD",from = "2020-10-01",to = "2021-05-31")
+# DOGE <- as.data.frame(`DOGE-USD`)
+# DOGE$Date <- as.Date(rownames(DOGE))
+DOGE <- read.csv("DOGE_USD_2020-06-17_2021-06-16-CoinDesk.csv")
+DOGE <- DOGE %>% dplyr::select(!Currency)
+DOGE$Date <- as.Date(DOGE$Date)
+names(DOGE) <- c("Date","DOGE-USD.Close","DOGE-USD.Open","DOGE-USD.High","DOGE-USD.Low")
 getSymbols("^GSPC",from = "2020-10-01",to = "2021-05-31")
 SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
 
-S <- BTC %>%merge(GME) %>% merge(AMC) %>% merge(DOGE) %>% merge(SP500)
+S <- BTC %>% merge(GME) %>% merge(AMC) %>% merge(DOGE) %>% merge(SP500)
 T <- nrow(S) - 1
 
 
