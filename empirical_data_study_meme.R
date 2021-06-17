@@ -52,7 +52,7 @@ cbind(100*(log(S[-1,c("GSPC.Close", "GME.Close", "BTC-USD.Close", "AMC.Close", "
   theme_bw() +
   scale_x_date(breaks = "month")
 
-ggsave("data_plot.pdf", height = 10, width = 8)
+ggsave("data_plot_meme.pdf", height = 10, width = 8)
 
 ###Data frame of model parameters
 models <- data.frame(exp_jumps =  c(FALSE,   TRUE,  FALSE,     FALSE),

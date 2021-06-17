@@ -27,6 +27,21 @@ S <- merge(BTC,SP500)
 T <- nrow(S) - 1
 
 
+Date <- S$Date[-1]
+cbind(100*(log(S[-1,c("GSPC.Close", "BTC-USD.Close") ])-
+             log(S[-nrow(S),c("GSPC.Close", "BTC-USD.Close") ])),
+      Date) %>%
+  melt(id.vars = c("Date")) %>%
+  mutate(variable = factor(variable, levels = c("GSPC.Close", "BTC-USD.Close"),
+                           labels = c("S&P", "BTC"))) %>%
+  ggplot() +
+  geom_line(aes(x = Date, y = value)) +
+  facet_grid(variable~., scales = "free_y") +
+  theme_bw() +
+  scale_x_date(breaks = "year")
+
+ggsave("data_plot.pdf", height = 10, width = 8)
+
 #################################################### 
 # SVMALD MODEL ---------- LRF RUNS
 #################################################### 
@@ -38,7 +53,7 @@ yprim <- array(0,dim=dim(y))
 #source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
 exp_jumps <- norm_jumps <- ind <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps_long/keepsBTCSP.rds"))
+saveRDS(keeps,paste0("keeps_long/keepsBTCSP_MALD.rds"))
 
 #################################################### 
 # SVALD INDEPENDENCE (1d) MODEL ---------- LRF RUNS
