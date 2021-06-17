@@ -74,25 +74,27 @@ for (m in c("SVMALD", "SVMVN", "SVLD", "SVIND")){
   }
 }
 
+
 keeps_summary <- keeps_summary %>%as.data.frame()%>%
   mutate_all(round, digits = 2) %>%
-  mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
-  dplyr::select(-c(lambda1, lambda2, lambda3, lambda4))
-keeps_summary$model <- model; keeps_summary$series <- data
+  #mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
+  #dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
+  mutate(model = model) %>%t()
+
 
 #TABLE XXX POSTERIOR MEANS OF PARAMETERS------
-keeps_summary[,c(ncol(keeps_summary), ncol(keeps_summary)-1, 1:(ncol(keeps_summary)-2))] %>%
-  arrange(series) %>%
+keeps_summary%>%
   xtable() %>%
   print()
 
 #FIGURE XXX STOCHASTIC VOLATILITY--------
+#ALTERNATIVE CURRENCY
 keeps_v1_long <- keeps_v1 %>%as.data.frame()%>%
   mutate(model = model,
          series = date) %>%
   melt(id.vars = c("model", "series")) %>%
   mutate(Date = rep(Date, each = 16)) #CHECK THIS STRUCTURE 
-
+#S&P
 keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
   mutate(model = model,
          series = data) %>%
@@ -100,10 +102,11 @@ keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
   mutate(Date = rep(Date, each = 16), #CHECK THIS STRUCTURE 
          series = "S&P")
 
+#not sure the best way to display this, may need to modify
 rbind(keeps_v1_long,keeps_v2_long) %>%
   ggplot() +
   geom_line(aes(x = Date, y = value, linetype = model)) +
-  facet_grid(series~., scales = "free_y") +
+  facet_grid(series~model., scales = "free_y") + 
   theme_bw() +
   scale_colour_grey()
 
