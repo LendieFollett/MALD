@@ -102,9 +102,10 @@ keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
 
 rbind(keeps_v1_long,keeps_v2_long) %>%
   ggplot() +
-  geom_line(aes(x = Date, y = value, colour = model)) +
+  geom_line(aes(x = Date, y = value, linetype = model)) +
   facet_grid(series~., scales = "free_y") +
-  theme_bw()
+  theme_bw() +
+  scale_colour_grey()
 
 
 ############################################################
@@ -128,6 +129,7 @@ keeps_summary <- array(dim = c(4, length(names)))
 keeps_v1 <- array(dim = c(4,dim(keeps$v)[2]))
 keeps_v2 <- array(dim = c(4,dim(keeps$v)[2]))
 model <- rep(NA, 4)
+keeps_delta <- list()
 colnames(keeps_summary) <- names
 
 j = 0
@@ -137,18 +139,22 @@ for (m in c("MALD", "IND")){# "SVMVN", "SVLD",
     keeps_summary[j,] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist
     keeps_v1[j,] <- apply(keeps$v[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
     keeps_v2[j,] <- apply(keeps$v[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
+    keeps_delta[[j]] <- keeps$delta %>%melt %>%group_by(Var2) %>%
+      summarise(prop0 = mean(value == 0),prop1 = mean(value == 1),prop2 = mean(value == 2),prop3 = mean(value == 3)) %>%
+      ungroup()
     model[j] <-m
 }
 
 
 keeps_summary <- keeps_summary %>%as.data.frame()%>%
   mutate_all(round, digits = 2) %>%
-  mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
-  dplyr::select(-c(lambda1, lambda2, lambda3, lambda4))
-keeps_summary$model <- model
+  #mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
+  #dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
+  mutate(model = model) %>%t()
+
 
 #TABLE XXX POSTERIOR MEANS OF PARAMETERS------
-keeps_summary[,c(ncol(keeps_summary), ncol(keeps_summary)-1, 1:(ncol(keeps_summary)-2))] %>%
+keeps_summary%>%
   xtable() %>%
   print()
 
@@ -167,8 +173,41 @@ keeps_v2_long <- keeps_v2[c(1,2),] %>%as.data.frame()%>%
   
   
   rbind(keeps_v1_long,keeps_v2_long) %>%
+    mutate(Model = factor(model, levels = c("MALD", "IND"), labels = c("SVMALD", "SVIND"))) %>%
   ggplot() +
-  geom_line(aes(x = Date, y = value, colour = model)) +
+  geom_line(aes(x = Date, y = value, linetype = Model)) +
     facet_grid(series~., scales = "free_y") +
-    theme_bw()
-
+    theme_bw() +
+    scale_colour_grey() +
+    labs(x = "Date", y = "Volatility")
+  ggsave("volatility.pdf", height = 8, width = 10)  
+  
+#FIGURE XXX JUMP TYPES OVER TIME-------------------
+  
+  keeps_delta[[1]] %>%
+    mutate(Date = Date[-1]) %>%
+    dplyr::select(-c(Var2))%>%
+    melt(id.vars = c("Date")) %>%
+    mutate(Jump_Type = factor(variable, levels = c("prop0", "prop1", "prop2", "prop3"), 
+                              labels = c("BTC only", "S&P only", "Both", "None"))) %>%
+    ggplot() +
+    geom_line(aes(x = Date, y = value, linetype = Jump_Type)) +
+    facet_wrap(~Jump_Type) +
+    theme_bw() +
+    labs(y = "Posterior Probability")+
+    theme(legend.position = "none")
+  ggsave("jump_type_SVMALD.pdf", height = 10, width = 10)  
+  keeps_delta[[2]] %>%
+    mutate(Date = Date[-1]) %>%
+    dplyr::select(-c(Var2))%>%
+    melt(id.vars = c("Date")) %>%
+    mutate(Jump_Type = factor(variable, levels = c("prop0", "prop1", "prop2", "prop3"), 
+                              labels = c("BTC only", "S&P only", "Both", "None"))) %>%
+    ggplot() +
+    geom_line(aes(x = Date, y = value, linetype = Jump_Type)) +
+    facet_wrap(~Jump_Type) +
+    theme_bw() +
+    labs(y = "Posterior Probability")+
+    theme(legend.position = "none")
+  ggsave("jump_type_SVIND.pdf", height = 10, width = 10)  
+  
