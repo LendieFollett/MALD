@@ -11,7 +11,7 @@ library(quantmod)
 library(RcppTN)
 library(xtable)
 library(tibble)#rownames_to_column()
-
+library(tidyr)
 
 domean<- function(x, total){
   R <- total
@@ -21,6 +21,17 @@ domean<- function(x, total){
     return(apply(x[1:R,,], 2:3, function(x){(median(x))}))
   }else{
     return(median(x[1:R]))
+  }
+}
+
+docreds<- function(x, total,q){
+  R <- total
+  if(length(dim(x)) == 2){ #if it's a data frame
+    return(apply(x[1:R,], 2, quantile, q))
+  #}#else if (length(dim(x)) > 2){
+    #return(apply(x[1:R,,], 2:3, function(x){(median(x))}))
+  }else{
+    return(quantile(x[1:R],q))
   }
 }
 
@@ -61,13 +72,18 @@ keeps_v2 <- array(dim = c(16,dim(keeps$v)[2]))
 model <- rep(NA, 16)
 data <- rep(NA, 16)
 colnames(keeps_summary) <- names
-
+keeps_creds <- list()
 j = 0
 for (m in c("SVMALD", "SVMVN", "SVLD", "SVIND")){
   for (i in c("BTC", "DOGE", "AMC", "GMC")){
     j = j + 1
     keeps <- readRDS(paste0("keeps_short/keeps_",m ,"_",i, ".rds"))
     keeps_summary[j,] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist
+    keeps_creds[[j]] <- rbind(lapply(keeps[c(4,6:17)], quantile,.025, total = 20000) %>%unlist,
+                             lapply(keeps[c(4,6:17)], quantile,.975, total = 20000) %>%unlist)%>% t() %>%
+      as.data.frame %>%
+      rownames_to_column(var = "parameter")%>%
+      mutate_if(is.numeric, round, 3) 
     keeps_v1[j,] <- apply(keeps$v[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
     keeps_v2[j,] <- apply(keeps$v[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
     model[j] <-m
@@ -134,10 +150,11 @@ keeps_v1 <- array(dim = c(4,dim(keeps$v)[2]))
 keeps_v2 <- array(dim = c(4,dim(keeps$v)[2]))
 model <- rep(NA, 4)
 keeps_delta <- list()
+keeps_creds <- list()
 colnames(keeps_summary0) <- names
 
 j = 0
-for (m in c("MALD", "IND", "MVN")){# "SVMVN", "SVLD",
+for (m in c("MALD", "IND", "MVN", "LD")){# "SVMVN", "SVLD",
     j = j + 1
     keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",m , ".rds"))
     keeps_summary0[j,] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist
@@ -146,9 +163,20 @@ for (m in c("MALD", "IND", "MVN")){# "SVMVN", "SVLD",
     keeps_delta[[j]] <- keeps$delta %>%melt %>%group_by(Var2) %>%
       summarise(prop0 = mean(value == 0),prop1 = mean(value == 1),prop2 = mean(value == 2),prop3 = mean(value == 3)) %>%
       ungroup()
+    keeps_creds[[j]] <- rbind(lapply(keeps[c(4,6:17)], docreds,q=.025, total = 20000) %>%unlist,
+                              lapply(keeps[c(4,6:17)], docreds,q=.975, total = 20000) %>%unlist)%>% t() %>%
+      as.data.frame %>%
+      rownames_to_column(var = "parameter")%>%
+      mutate_if(is.numeric, round, 2)  %>%mutate(parameter = gsub(".2.5%", "", parameter))
     model[j] <-m
 }
 
+
+keeps_ci <- do.call(rbind,keeps_creds) %>% 
+  mutate(model = rep(model, each = length(names)), #tack on model
+         ci = paste0("(", V1,", " ,V2, ")")) %>% #format to (l, u) for latex table
+  dplyr::select(-c(V1, V2)) %>% spread(model, ci)%>%#make wide by model
+  mutate(parameter = paste0("$\\", parameter, "$")) #math formatting start
 
 keeps_summary <- keeps_summary0 %>%as.data.frame()%>%
   mutate_all(round, digits = 3) %>%
@@ -156,13 +184,15 @@ keeps_summary <- keeps_summary0 %>%as.data.frame()%>%
   #dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
   mutate(model = model) %>%t() %>% as.data.frame() %>%
   rownames_to_column(var = "parameter") %>%
-  mutate(parameter = paste0("$\\", parameter, "$"))
+  mutate(parameter = paste0("$\\", parameter, "$")) %>%
+  rename(MALD =V1, IND = V2 , MVN = V3, LD = V4) %>% rbind(keeps_ci) %>%
+  arrange(parameter)
 
 
 #TABLE XXX POSTERIOR MEANS OF PARAMETERS------
 keeps_summary%>%
   xtable() %>%
-  print(sanitize.text.function = function(x){x}, type = "latex")
+  print(sanitize.text.function = function(x){x}, type = "latex", include.rownames=FALSE)
 
 #FIGURE XXX STOCHASTIC VOLATILITY--------
 keeps_v1_long <- keeps_v1[c(1,2,3),] %>%as.data.frame()%>%
