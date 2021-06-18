@@ -195,33 +195,23 @@ keeps_summary%>%
   print(sanitize.text.function = function(x){x}, type = "latex", include.rownames=FALSE)
 
 #FIGURE XXX STOCHASTIC VOLATILITY--------
-keeps_v1_long <- keeps_v1[c(1,2,3),] %>%as.data.frame()%>%
-  mutate(model = model[c(1,2,3)]) %>%
+keeps_v1_long <- keeps_v1 %>%as.data.frame()%>%
+  mutate(model = model) %>%
   melt(id.vars = c("model")) %>%
-  mutate(Date = rep(Date, each = 3), #change when add more models
+  mutate(Date = rep(Date, each = 4), #change when add more models
          series = "BTC")
 
-keeps_v2_long <- keeps_v2[c(1,2,3),] %>%as.data.frame()%>%
-  mutate(model = model[c(1,2,3)]) %>%
+keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
+  mutate(model = model) %>%
   melt(id.vars = c("model")) %>%
-  mutate(Date = rep(Date, each = 3), #change when add more models
+  mutate(Date = rep(Date, each = 4), #change when add more models
          series = "S&P")
   
   
   rbind(keeps_v1_long,keeps_v2_long) %>%
-    mutate(Model = factor(model, levels = c("MALD", "IND", "MVN"), labels = c("SV-MALD", "SV-IND", "SV-MVN"))) %>%
+    mutate(Model = factor(model, levels = c("MALD", "IND", "MVN", "LD"), labels = c("SV-MALD", "SV-IND", "SV-MVN", "SV-LD"))) %>%
   ggplot() +
   geom_line(aes(x = Date, y = value, linetype = Model)) +
-    facet_grid(series~., scales = "free_y") +
-    theme_bw() +
-    scale_colour_grey() +
-    labs(x = "Date", y = "Volatility")
-  ggsave("volatility.pdf", height = 8, width = 10) 
-  
-  rbind(keeps_v1_long,keeps_v2_long) %>%
-    mutate(Model = factor(model, levels = c("MALD", "IND", "MVN"), labels = c("SV-MALD", "SV-IND", "SV-MVN"))) %>%
-    ggplot() +
-    geom_line(aes(x = Date, y = value, linetype = Model)) +
     facet_grid(series~., scales = "free_y") +
     theme_bw() +
     scale_colour_grey() +
@@ -245,6 +235,7 @@ p2 <- keeps_v2_long %>% subset(model == "MALD") %>%
   geom_line(aes(x = Date, y = value^.5)) +
   theme_bw()
   
+
 p3 <-grid.arrange(p1, p2, nrow = 2)  
 p3
 ggsave("leverage.pdf",p3, height = 8, width = 10) 
