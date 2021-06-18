@@ -10,6 +10,7 @@ library(MCMCpack)
 library(quantmod)
 library(RcppTN)
 library(xtable)
+library(tibble)#rownames_to_column()
 
 
 domean<- function(x, total){
@@ -51,7 +52,7 @@ Date <- S$Date[-1]
 
 
 
-keeps <- readRDS(paste0("keeps_short/keeps_",SVMALD ,"_","BTC", ".rds"))
+keeps <- readRDS(paste0("keeps_short/keeps_","SVMALD" ,"_","BTC", ".rds"))
 names <- lapply(keeps[c(4,6:17)], domean, total = 10) %>%unlist %>%names
 
 keeps_summary <- array(dim = c(16, length(names)))
@@ -128,18 +129,18 @@ Date <- S$Date
 keeps <- readRDS(paste0("keeps_long/keepsBTCSP" ,"_","MALD", ".rds"))
 names <- lapply(keeps[c(4,6:17)], domean, total = 10) %>%unlist %>%names
 
-keeps_summary <- array(dim = c(4, length(names)))
+keeps_summary0 <- array(dim = c(4, length(names)))
 keeps_v1 <- array(dim = c(4,dim(keeps$v)[2]))
 keeps_v2 <- array(dim = c(4,dim(keeps$v)[2]))
 model <- rep(NA, 4)
 keeps_delta <- list()
-colnames(keeps_summary) <- names
+colnames(keeps_summary0) <- names
 
 j = 0
-for (m in c("MALD", "IND")){# "SVMVN", "SVLD",
+for (m in c("MALD", "IND", "MVN")){# "SVMVN", "SVLD",
     j = j + 1
     keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",m , ".rds"))
-    keeps_summary[j,] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist
+    keeps_summary0[j,] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist
     keeps_v1[j,] <- apply(keeps$v[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
     keeps_v2[j,] <- apply(keeps$v[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
     keeps_delta[[j]] <- keeps$delta %>%melt %>%group_by(Var2) %>%
@@ -149,42 +150,77 @@ for (m in c("MALD", "IND")){# "SVMVN", "SVLD",
 }
 
 
-keeps_summary <- keeps_summary %>%as.data.frame()%>%
-  mutate_all(round, digits = 2) %>%
+keeps_summary <- keeps_summary0 %>%as.data.frame()%>%
+  mutate_all(round, digits = 3) %>%
   #mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
   #dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
-  mutate(model = model) %>%t()
+  mutate(model = model) %>%t() %>% as.data.frame() %>%
+  rownames_to_column(var = "parameter") %>%
+  mutate(parameter = paste0("$\\", parameter, "$"))
 
 
 #TABLE XXX POSTERIOR MEANS OF PARAMETERS------
 keeps_summary%>%
   xtable() %>%
-  print()
+  print(sanitize.text.function = function(x){x}, type = "latex")
 
 #FIGURE XXX STOCHASTIC VOLATILITY--------
-keeps_v1_long <- keeps_v1[c(1,2),] %>%as.data.frame()%>%
-  mutate(model = model[c(1,2)]) %>%
+keeps_v1_long <- keeps_v1[c(1,2,3),] %>%as.data.frame()%>%
+  mutate(model = model[c(1,2,3)]) %>%
   melt(id.vars = c("model")) %>%
-  mutate(Date = rep(Date, each = 2), #change when add more models
+  mutate(Date = rep(Date, each = 3), #change when add more models
          series = "BTC")
 
-keeps_v2_long <- keeps_v2[c(1,2),] %>%as.data.frame()%>%
-  mutate(model = model[c(1,2)]) %>%
+keeps_v2_long <- keeps_v2[c(1,2,3),] %>%as.data.frame()%>%
+  mutate(model = model[c(1,2,3)]) %>%
   melt(id.vars = c("model")) %>%
-  mutate(Date = rep(Date, each = 2), #change when add more models
+  mutate(Date = rep(Date, each = 3), #change when add more models
          series = "S&P")
   
   
   rbind(keeps_v1_long,keeps_v2_long) %>%
-    mutate(Model = factor(model, levels = c("MALD", "IND"), labels = c("SVMALD", "SVIND"))) %>%
+    mutate(Model = factor(model, levels = c("MALD", "IND", "MVN"), labels = c("SV-MALD", "SV-IND", "SV-MVN"))) %>%
   ggplot() +
   geom_line(aes(x = Date, y = value, linetype = Model)) +
     facet_grid(series~., scales = "free_y") +
     theme_bw() +
     scale_colour_grey() +
     labs(x = "Date", y = "Volatility")
-  ggsave("volatility.pdf", height = 8, width = 10)  
+  ggsave("volatility.pdf", height = 8, width = 10) 
   
+  rbind(keeps_v1_long,keeps_v2_long) %>%
+    mutate(Model = factor(model, levels = c("MALD", "IND", "MVN"), labels = c("SV-MALD", "SV-IND", "SV-MVN"))) %>%
+    ggplot() +
+    geom_line(aes(x = Date, y = value, linetype = Model)) +
+    facet_grid(series~., scales = "free_y") +
+    theme_bw() +
+    scale_colour_grey() +
+    labs(x = "Date", y = "Volatility")
+  ggsave("volatility.pdf", height = 8, width = 10) 
+  
+  
+p1 <-   keeps_v1_long %>% subset(model == "MALD") %>%
+    merge(data.frame(BTC=100*(log(S[-1,c( "BTC-USD.Close") ])-
+                       log(S[-nrow(S),c( "BTC-USD.Close") ])),Date=Date[-1]) , by = "Date") %>%
+    ggplot() +
+    geom_line(aes(x = Date, y = BTC), alpha= I(.5)) +
+    geom_line(aes(x = Date, y = value^.5)) +
+    theme_bw() +labs(x = "")
+
+p2 <- keeps_v2_long %>% subset(model == "MALD") %>%
+  merge(data.frame(SP=100*(log(S[-1,c( "GSPC.Close") ])-
+                              log(S[-nrow(S),c( "GSPC.Close") ])),Date=Date[-1]) , by = "Date") %>%
+  ggplot() +
+  geom_line(aes(x = Date, y = SP), alpha= I(.5)) +
+  geom_line(aes(x = Date, y = value^.5)) +
+  theme_bw()
+  
+p3 <-grid.arrange(p1, p2, nrow = 2)  
+p3
+ggsave("leverage.pdf",p3, height = 8, width = 10) 
+
+
+
 #FIGURE XXX JUMP TYPES OVER TIME-------------------
   
   keeps_delta[[1]] %>%
@@ -213,4 +249,19 @@ keeps_v2_long <- keeps_v2[c(1,2),] %>%as.data.frame()%>%
     labs(y = "Posterior Probability")+
     theme(legend.position = "none")
   ggsave("jump_type_SVIND.pdf", height = 10, width = 10)  
+  
+  
+  # POSTERIOR DISTRIBUTIN PLOTS
+  
+  keeps <- readRDS(paste0("keeps_long/keepsBTCSP" ,"_","IND", ".rds"))
+  keeps$rho %>%
+    as.data.frame() %>%
+    melt() %>%
+    #mutate(variable = factor(variable, levels = c("V1", "V2"),labels = c("BTC", "S&P")))%>%
+    ggplot() +
+    geom_histogram(aes(x = value)) +
+    facet_grid(~variable) +
+    ggtitle("rho")
+  
+  apply(keeps$rho, 2, function(x){mean(x >0)})
   
