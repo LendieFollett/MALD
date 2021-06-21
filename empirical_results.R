@@ -1,6 +1,8 @@
 rm(list = ls()) 
 library(ald)
 library(ggplot2)
+library(grid)
+library(gridExtra)
 library(dplyr)
 library(truncnorm)
 library(mvtnorm)
@@ -65,13 +67,23 @@ S <- BTC %>% merge(GME) %>% merge(AMC) %>% merge(DOGE) %>% merge(SP500)
 T <- nrow(S) - 1
 Date <- S$Date
 
-
-
 keeps <- readRDS(paste0("keeps_","SVMALD" ,"_","BTC", ".rds"))
 names <- lapply(keeps[c(4,6:17)], domean, total = 10) %>%unlist %>%names
 
 keeps_creds <- list()
 for (i in c("BTC", "DOGE", "AMC", "GME")){
+  if (i == "BTC"){
+    RawData <- rep(S[,c("BTC-USD.Close")],each=4)
+  } else if (i == "DOGE"){
+    RawData <- rep(S[,c("DOGE-USD.Close")],each=4)
+  } else if (i == "AMC"){
+    RawData <- rep(S[,c("AMC.Close")],each=4)
+  } else {
+    RawData <- rep(S[,c("GME.Close")],each=4)
+  }
+  RawData <- as.data.frame(RawData)
+  names(RawData) <- "Price"
+  RawData$Date <- rep(Date,each=4)
   j = 0
   keeps_summary <- array(dim = c(4, length(names)))
   keeps_v1 <- array(dim = c(4,dim(keeps$v)[2]))
@@ -93,6 +105,7 @@ for (i in c("BTC", "DOGE", "AMC", "GME")){
     model[j] <- m
     keeps_summary[j,] <- paste0(round(as.numeric(keeps_summary[j,]),2)," (",keeps_creds[[j]][,2],",",keeps_creds[[j]][,3],")")
   }
+  RawData$model = rep(model,T+1)
   keeps_summary <- keeps_summary %>% as.data.frame()%>%
     #mutate_all(round, digits = 2) %>%
     #mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
@@ -120,12 +133,22 @@ for (i in c("BTC", "DOGE", "AMC", "GME")){
            series = "S&P")
 
   #not sure the best way to display this, may need to modify
-  keeps_v1_long %>%
+  g1 <- ggplot() +
+    geom_line(data = RawData,aes(x=Date,y=Price,linetype=model)) +
+    xlab("") + ylab("Price") + theme_bw()
+  
+  g2 <- keeps_v1_long %>%
     ggplot() +
     geom_line(aes(x = Date, y = value, linetype = model)) +
     #facet_grid(series~model., scales = "free_y") +
+    ylab("Volatility") +
     theme_bw() +
     scale_colour_grey()
+  
+  G1 <- ggplotGrob(g1)
+  G2 <- ggplotGrob(g2)
+  plotname <- paste0(i,"_Vol.pdf")
+  ggsave(plotname,grid.draw(rbind(G1,G2)))
 }
 
 
