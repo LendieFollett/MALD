@@ -24,7 +24,7 @@ domean<- function(x, total){
   }
 }
 
-docreds<- function(x, total,q){
+docreds <- function(x, total,q){
   R <- total
   if(length(dim(x)) == 2){ #if it's a data frame
     return(apply(x[1:R,], 2, quantile, q))
@@ -40,92 +40,93 @@ docreds<- function(x, total,q){
 #ALL CRYPTO, MEME STOCKS
 ############################################################
 #load data
-getSymbols("BTC-USD",from = "2020-12-01",to = "2021-05-31")
-BTC <- as.data.frame(`BTC-USD`)
-BTC$Date <- seq(as.Date("2020-12-01"),as.Date("2021-05-31"),by="days")
-BTC$`BTC-USD.Close`[BTC$Date=="2020-04-17"] <- 7096.18
-getSymbols("GME",from = "2020-12-01",to = "2021-05-31")
+BTC <- read.csv("BTC_USD_2020-06-17_2021-06-16-CoinDesk.csv")
+BTC <- BTC %>% dplyr::select(!Currency)
+names(BTC) <- c("Date","BTC-USD.Close","BTC-USD.Open","BTC-USD.High","BTC-USD.Low")
+BTC$Date <- as.Date(BTC$Date)
+getSymbols("GME",from = "2020-10-01",to = "2021-05-31")
 GME <- as.data.frame(GME)
 GME$Date <- as.Date(rownames(GME))
-getSymbols("AMC",from = "2020-12-01",to = "2021-05-31")
+getSymbols("AMC",from = "2020-10-01",to = "2021-05-31")
 AMC <- as.data.frame(AMC)
 AMC$Date <- as.Date(rownames(AMC))
-getSymbols("DOGE-USD",from = "2020-12-01",to = "2021-05-31")
-DOGE <- as.data.frame(`DOGE-USD`)
-DOGE$Date <- as.Date(rownames(DOGE))
-getSymbols("^GSPC",from = "2020-12-01",to = "2021-05-31")
+# getSymbols("DOGE-USD",from = "2020-10-01",to = "2021-05-31")
+# DOGE <- as.data.frame(`DOGE-USD`)
+# DOGE$Date <- as.Date(rownames(DOGE))
+DOGE <- read.csv("DOGE_USD_2020-06-17_2021-06-16-CoinDesk.csv")
+DOGE <- DOGE %>% dplyr::select(!Currency)
+DOGE$Date <- as.Date(DOGE$Date)
+names(DOGE) <- c("Date","DOGE-USD.Close","DOGE-USD.Open","DOGE-USD.High","DOGE-USD.Low")
+getSymbols("^GSPC",from = "2020-10-01",to = "2021-05-31")
 SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
 
-S <- BTC %>%merge(GME) %>% merge(AMC) %>% merge(DOGE) %>% merge(SP500)
+S <- BTC %>% merge(GME) %>% merge(AMC) %>% merge(DOGE) %>% merge(SP500)
 T <- nrow(S) - 1
-Date <- S$Date[-1]
+Date <- S$Date
 
 
 
-keeps <- readRDS(paste0("keeps_short/keeps_","SVMALD" ,"_","BTC", ".rds"))
+keeps <- readRDS(paste0("keeps_","SVMALD" ,"_","BTC", ".rds"))
 names <- lapply(keeps[c(4,6:17)], domean, total = 10) %>%unlist %>%names
 
-keeps_summary <- array(dim = c(16, length(names)))
-keeps_v1 <- array(dim = c(16,dim(keeps$v)[2]))
-keeps_v2 <- array(dim = c(16,dim(keeps$v)[2]))
-model <- rep(NA, 16)
-data <- rep(NA, 16)
-colnames(keeps_summary) <- names
 keeps_creds <- list()
-j = 0
-for (m in c("SVMALD", "SVMVN", "SVLD", "SVIND")){
-  for (i in c("BTC", "DOGE", "AMC", "GMC")){
+for (i in c("BTC", "DOGE", "AMC", "GME")){
+  j = 0
+  keeps_summary <- array(dim = c(4, length(names)))
+  keeps_v1 <- array(dim = c(4,dim(keeps$v)[2]))
+  keeps_v2 <- array(dim = c(4,dim(keeps$v)[2]))
+  model <- rep(NA, 4)
+  data <- rep(i, 4)
+  colnames(keeps_summary) <- names
+  for (m in c("SVMALD", "SVIND", "SVMVN", "SVLD")){
     j = j + 1
-    keeps <- readRDS(paste0("keeps_short/keeps_",m ,"_",i, ".rds"))
+    keeps <- readRDS(paste0("keeps_",m ,"_",i, ".rds"))
     keeps_summary[j,] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist
-    keeps_creds[[j]] <- rbind(lapply(keeps[c(4,6:17)], quantile,.025, total = 20000) %>%unlist,
-                             lapply(keeps[c(4,6:17)], quantile,.975, total = 20000) %>%unlist)%>% t() %>%
+    keeps_creds[[j]] <- rbind(lapply(keeps[c(4,6:17)], docreds, q=.025, total = 20000) %>%unlist,
+                             lapply(keeps[c(4,6:17)], docreds, q=.975, total = 20000) %>%unlist)%>% t() %>%
       as.data.frame %>%
       rownames_to_column(var = "parameter")%>%
       mutate_if(is.numeric, round, 3) 
     keeps_v1[j,] <- apply(keeps$v[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
     keeps_v2[j,] <- apply(keeps$v[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
-    model[j] <-m
-    data[j] <- i
+    model[j] <- m
+    keeps_summary[j,] <- paste0(round(as.numeric(keeps_summary[j,]),2)," (",keeps_creds[[j]][,2],",",keeps_creds[[j]][,3],")")
   }
+  keeps_summary <- keeps_summary %>% as.data.frame()%>%
+    #mutate_all(round, digits = 2) %>%
+    #mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
+    #dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
+    mutate(model = model) %>%t()
+  
+  #TABLE XXX POSTERIOR MEANS OF PARAMETERS------
+  keeps_summary%>%
+    xtable() %>%
+    print()
+  # 
+  #FIGURE XXX STOCHASTIC VOLATILITY--------
+  #ALTERNATIVE CURRENCY
+  keeps_v1_long <- keeps_v1 %>% as.data.frame()%>%
+    mutate(model = model,
+           series = data) %>%
+    melt(id.vars = c("model", "series")) %>%
+    mutate(Date = rep(Date, each = 4)) #CHECK THIS STRUCTURE
+  #S&P
+  keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
+    mutate(model = model,
+           series = data) %>%
+    melt(id.vars = c("model", "series")) %>%
+    mutate(Date = rep(Date, each = 4), #CHECK THIS STRUCTURE
+           series = "S&P")
+
+  #not sure the best way to display this, may need to modify
+  keeps_v1_long %>%
+    ggplot() +
+    geom_line(aes(x = Date, y = value, linetype = model)) +
+    #facet_grid(series~model., scales = "free_y") +
+    theme_bw() +
+    scale_colour_grey()
 }
-
-
-keeps_summary <- keeps_summary %>%as.data.frame()%>%
-  mutate_all(round, digits = 2) %>%
-  #mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
-  #dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
-  mutate(model = model) %>%t()
-
-
-#TABLE XXX POSTERIOR MEANS OF PARAMETERS------
-keeps_summary%>%
-  xtable() %>%
-  print()
-
-#FIGURE XXX STOCHASTIC VOLATILITY--------
-#ALTERNATIVE CURRENCY
-keeps_v1_long <- keeps_v1 %>%as.data.frame()%>%
-  mutate(model = model,
-         series = date) %>%
-  melt(id.vars = c("model", "series")) %>%
-  mutate(Date = rep(Date, each = 16)) #CHECK THIS STRUCTURE 
-#S&P
-keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
-  mutate(model = model,
-         series = data) %>%
-  melt(id.vars = c("model", "series")) %>%
-  mutate(Date = rep(Date, each = 16), #CHECK THIS STRUCTURE 
-         series = "S&P")
-
-#not sure the best way to display this, may need to modify
-rbind(keeps_v1_long,keeps_v2_long) %>%
-  ggplot() +
-  geom_line(aes(x = Date, y = value, linetype = model)) +
-  facet_grid(series~model., scales = "free_y") + 
-  theme_bw() +
-  scale_colour_grey()
 
 
 ############################################################
