@@ -147,7 +147,7 @@ for (i in c("BTC", "DOGE", "AMC", "GME")){
   
   G1 <- ggplotGrob(g1)
   G2 <- ggplotGrob(g2)
-  plotname <- paste0(i,"_Vol.pdf")
+  plotname <- paste0(i,"_Short_Vol.pdf")
   ggsave(plotname,grid.draw(rbind(G1,G2)))
 }
 
