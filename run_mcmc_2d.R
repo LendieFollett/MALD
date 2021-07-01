@@ -77,7 +77,7 @@ for (i in 1:(R + B)){
   N_y2 <- as.numeric(delta == 1)
   N_c <- as.numeric(delta == 2)
   J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-  lambda <- update_lambda(c(sum(N_y1),sum(N_y2),sum(N_c),T-sum(c(N_y1,N_y2,N_c))),c(10,10,10,170))
+  lambda <- update_lambda(c(sum(N_y1),sum(N_y2),sum(N_c),T-sum(c(N_y1,N_y2,N_c))),c(2,2,2,34))
   
   f <- function(s){(log_pxi(xi_y1,xi_y1s,xi_y1w,s+h/2, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1)) - 
                       log_pxi(xi_y1,xi_y1s,xi_y1w,s-h/2, w_prior_param = c(0,2.5), eta_prior_param = c(.5, 1))) / h}
