@@ -407,3 +407,98 @@ ggsave("leverage.pdf",p3, height = 8, width = 10)
   
   apply(keeps$rho, 2, function(x){mean(x >0)})
   
+  
+  # qqplots-----------
+  
+  
+  get_qq <- function(keeps){
+  delta <- rep(0,T)
+  V <- array(0, dim = c(T+1, 2))
+  J <- y <- x <- array(0, dim = c(T, 2))
+  V[1,] <- apply(keeps$v[,1,], 2, mean)
+
+  sim <- 0
+  for (t in 1:T){
+    print(t)
+    set.seed(t + 4922035+ sim)
+    delta <- sample(c(0:3),prob=apply(keeps$lambda, 2, mean), 1)
+
+    set.seed(15866245 + t + sim)
+    B <- rexp(1)
+    Sigma <- matrix(c(mean(keeps$sigma_c[,1])^2,
+                      mean(keeps$rhoc)*mean(keeps$sigma_c[,1])*mean(keeps$sigma_c[,2]),
+                      mean(keeps$rhoc)*mean(keeps$sigma_c[,1])*mean(keeps$sigma_c[,2]),
+                      mean(keeps$sigma_c[,2]^2)),
+                    nrow=2)
+    xi_c <- apply(keeps$xi_cw, 2, mean)*B+
+                  sqrt(B)*rtmvnorm(n = 1, mean = c(0,0), sigma = Sigma)
+    
+    B <- rexp(1)
+    xi_y1 <- mean(keeps$xi_y1w)*B + sqrt(B)*rnorm(1,0,mean(keeps$xi_y1eta)) #SHOULD THIS BE SQRT(ETA)?
+    B <- rexp(1)
+    xi_y2 <- mean(keeps$xi_y2w)*B + sqrt(B)*rnorm(1,0,mean(keeps$xi_y2eta)) #SHOULD THIS BE SQRT(ETA)?
+    
+    
+    J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
+
+    Sigma <- matrix(c(V[t,1],
+                      mean(keeps$rho[,1])*sqrt(prod(V[t,])),
+                      mean(keeps$rho[,3])*mean(keeps$sigma_v[,1])*V[t,1],0,
+                      mean(keeps$rho[,1])*sqrt(prod(V[t,])),V[t,2],0,mean(keeps$rho[,4])*mean(keeps$sigma_v[,2])*V[t,2],
+                      mean(keeps$rho[,3])*mean(keeps$sigma_v[,1])*V[t,1],0,mean(keeps$sigma_v[,1])^2*V[t,1],mean(keeps$rho[,2])*prod(apply(keeps$sigma_v, 2, mean))*sqrt(prod(V[t,])),
+                      0,mean(keeps$rho[,4])*mean(keeps$sigma_v[,2])*V[t,2],mean(keeps$rho[,2])*prod(apply(keeps$sigma_v, 2, mean))*sqrt(prod(V[t,])),mean(keeps$sigma_v[,2])^2*V[t,2]),nrow=4)
+    
+    set.seed(463468+t)
+    temp <- rtmvnorm(n = 1,
+                     mean = c(apply(keeps$mu, 2 ,mean) + J,
+                              apply(keeps$theta,2, mean) + apply(keeps$phi, 2, mean)*(V[t,] - apply(keeps$theta, 2, mean))),
+                     sigma = Sigma, lower=c(-Inf,-Inf, 0, 0))
+
+    V[t+1,] <- temp[c(3:4)]
+    y[t,] <- temp[c(1,2)]
+    if( t+1 <= T){ x[t+1] <- 0 }
+  }
+
+  QQdat = data.frame(SP=100*(log(S[-1,c( "GSPC.Close") ])-
+                               log(S[-nrow(S),c( "GSPC.Close") ])),
+                     BTC=100*(log(S[-1,c( "BTC-USD.Close") ])-
+                               log(S[-nrow(S),c( "BTC-USD.Close") ])),
+                     y)
+
+  p1 <- ggplot() +
+    geom_point(aes(x=quantile(QQdat$BTC,seq(0.01,0.99,0.01)),y=quantile(QQdat$X1,seq(0.01,0.99,0.01)))) +
+    geom_abline(slope=1,intercept=0) +
+    #xlim(c(-15,15)) + ylim(c(-15,15)) +
+    xlab("Actual Quantiles") + ylab("Simulated Quantiles") + theme_bw() + ggtitle("BTC")
+  
+  p2 <- ggplot() +
+    geom_point(aes(x=quantile(QQdat$SP,seq(0.01,0.99,0.01)),y=quantile(QQdat$X2,seq(0.01,0.99,0.01)))) +
+    geom_abline(slope=1,intercept=0) +
+    #xlim(c(-15,15)) + ylim(c(-15,15)) +
+    xlab("Actual Quantiles") + ylab("Simulated Quantiles") + theme_bw() + ggtitle("S&P")
+  p3 <- grid.arrange(p1,p2, nrow = 1)
+  return(p3)
+  }
+  
+  
+  model <- "MALD"
+  keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",model , ".rds"))
+  plot <- get_qq(keeps)
+  ggsave(paste0("QQ_", model, ".pdf"),plot, width = 12, height = 6)
+  
+  model <- "IND"
+  keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",model , ".rds"))
+  plot <- get_qq(keeps)
+  ggsave(paste0("QQ_", model, ".pdf"),plot)
+  
+  model <- "MVN"
+  keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",model , ".rds"))
+  plot <- get_qq(keeps)
+  ggsave(paste0("QQ_", model, ".pdf"),plot, width = 12, height = 6)
+  
+  model <- "LD"
+  keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",model , ".rds"))
+  plot <- get_qq(keeps)
+  ggsave(paste0("QQ_", model, ".pdf"),plot)
+  
+
