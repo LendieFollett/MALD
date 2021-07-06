@@ -14,6 +14,7 @@ library(RcppTN)
 library(xtable)
 library(tibble)#rownames_to_column()
 library(tidyr)
+library(reshape2)
 
 domean<- function(x, total){
   R <- total
@@ -175,7 +176,7 @@ keeps_v2 <- array(dim = c(4,dim(keeps$v)[2]))
 model <- rep(NA, 4)
 keeps_delta <- list()
 keeps_creds <- list()
-
+rho_probs <- list()
 
 j = 0
 for (m in c("MALD", "IND", "MVN", "LD")){# "SVMVN", "SVLD",
@@ -198,6 +199,8 @@ for (m in c("MALD", "IND", "MVN", "LD")){# "SVMVN", "SVLD",
              model = m) %>%
       dplyr::select(model, parameter, summary)
     
+    rho_probs[[j]] <- keeps$rho[,c(3,4)] %>%apply(2, function(x){mean(x > 0)})
+    
     model[j] <-m
 }
 
@@ -205,7 +208,10 @@ for (m in c("MALD", "IND", "MVN", "LD")){# "SVMVN", "SVLD",
 keeps_summary <- do.call(rbind,keeps_summary0) %>% spread(model, summary) %>%
   dplyr::select(parameter, IND, LD, MVN, MALD)
   
-
+do.call(rbind, rho_probs) %>%t() %>%as.data.frame() %>%
+  dplyr::rename(MALD = V1, IN = V2 , MVN = V3, LD = V4)
+  
+  
 
 #TABLE XXX POSTERIOR MEANS OF PARAMETERS------
 keeps_summary%>%
@@ -236,21 +242,39 @@ keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
     labs(x = "Date", y = "Volatility")
   ggsave("volatility.pdf", height = 8, width = 10) 
   
-  
-p1 <-   keeps_v1_long %>% subset(model == "MALD") %>%
+  tempdat = keeps_v1_long %>% subset(model == "MALD") %>%
     merge(data.frame(BTC=100*(log(S[-1,c( "BTC-USD.Close") ])-
-                       log(S[-nrow(S),c( "BTC-USD.Close") ])),Date=Date[-1]) , by = "Date") %>%
-    ggplot() +
-    geom_line(aes(x = Date, y = BTC), alpha= I(.5)) +
-    geom_line(aes(x = Date, y = value^.5)) +
+                                log(S[-nrow(S),c( "BTC-USD.Close") ])),Date=Date[-1]) , by = "Date")
+  
+p1 <-   ggplot() +
+  geom_rect(aes(xmin=as.Date("2016-01-01"),
+                xmax=as.Date("2016-12-31"),
+                ymin=-Inf,ymax=Inf),alpha=0.2,fill="blue") +
+  geom_rect(aes(xmin=as.Date("2017-07-01"),
+                xmax=as.Date("2018-03-31"),
+                ymin=-Inf,ymax=Inf),alpha=I(0.2),fill="blue") +
+  geom_rect(aes(xmin=as.Date("2020-02-01"),
+                xmax=as.Date("2021-01-31"),
+                ymin=-Inf,ymax=Inf),alpha=0.2,fill="blue")+
+    geom_line(aes(x = Date, y = BTC), alpha= I(.5), data = tempdat) +
+    geom_line(aes(x = Date, y = value^.5), data = tempdat) +
     theme_bw() +labs(x = "")
 
-p2 <- keeps_v2_long %>% subset(model == "MALD") %>%
+tempdat= keeps_v2_long %>% subset(model == "MALD") %>%
   merge(data.frame(SP=100*(log(S[-1,c( "GSPC.Close") ])-
-                              log(S[-nrow(S),c( "GSPC.Close") ])),Date=Date[-1]) , by = "Date") %>%
-  ggplot() +
-  geom_line(aes(x = Date, y = SP), alpha= I(.5)) +
-  geom_line(aes(x = Date, y = value^.5)) +
+                              log(S[-nrow(S),c( "GSPC.Close") ])),Date=Date[-1]) , by = "Date") 
+p2 <- ggplot() +
+  geom_rect(aes(xmin=as.Date("2016-01-01"),
+                xmax=as.Date("2016-12-31"),
+                ymin=-Inf,ymax=Inf),alpha=0.2,fill="blue") +
+  geom_rect(aes(xmin=as.Date("2017-07-01"),
+                xmax=as.Date("2018-03-31"),
+                ymin=-Inf,ymax=Inf),alpha=I(0.2),fill="blue") +
+  geom_rect(aes(xmin=as.Date("2020-02-01"),
+                xmax=as.Date("2021-01-31"),
+                ymin=-Inf,ymax=Inf),alpha=0.2,fill="blue")+
+  geom_line(aes(x = Date, y = SP), alpha= I(.5), data = tempdat) +
+  geom_line(aes(x = Date, y = value^.5), data = tempdat) +
   theme_bw()
   
 
