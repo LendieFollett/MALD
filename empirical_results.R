@@ -38,6 +38,18 @@ docreds <- function(x, total,q){
   }
 }
 
+library(LaplacesDemon)
+
+total <- 20000 #number of mcmc iterations saved after burn-in, thinning
+doESS <- function(x, total){
+  R <- total
+  if(!is.null(dim(x))){ #if it's a data frame
+    return(apply(x[1:R,], 2, ESS))
+  }else{
+    return(ESS(x[1:R]))
+  }
+}
+
 ############################################################
 #----SHORT TIME SERIES ONLY---------------------------------
 #ALL CRYPTO, MEME STOCKS
@@ -72,6 +84,10 @@ keeps <- readRDS(paste0("keeps_","SVMALD" ,"_","BTC", ".rds"))
 names <- lapply(keeps[c(4,6:17)], domean, total = 10) %>%unlist %>%names
 
 keeps_creds <- list()
+
+prob_rho_1 <- NULL
+prob_rho_2 <- NULL
+
 for (i in c("BTC", "DOGE", "AMC", "GME")){
   if (i == "BTC"){
     RawData <- rep(S[,c("BTC-USD.Close")],each=4)
@@ -92,7 +108,7 @@ for (i in c("BTC", "DOGE", "AMC", "GME")){
   model <- rep(NA, 4)
   data <- rep(i, 4)
   colnames(keeps_summary) <- names
-  for (m in c("SVMALD", "SVIND", "SVMVN", "SVLD")){
+  for (m in c("SVIND", "SVLD", "SVMVN", "SVMALD")){
     j = j + 1
     keeps <- readRDS(paste0("keeps_",m ,"_",i, ".rds"))
     keeps_summary[j,] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist
@@ -105,6 +121,35 @@ for (i in c("BTC", "DOGE", "AMC", "GME")){
     keeps_v2[j,] <- apply(keeps$v[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
     model[j] <- m
     keeps_summary[j,] <- paste0(round(as.numeric(keeps_summary[j,]),2)," (",keeps_creds[[j]][,2],",",keeps_creds[[j]][,3],")")
+    prob_rho_1 <- c(prob_rho_1,length(which(keeps$rho[,3] > 0))/20000)
+    prob_rho_2 <- c(prob_rho_2,length(which(keeps$rho[,4] > 0))/20000)
+    if (m == "SVMALD"){
+      lapply(keeps[c(4,6:17)], doESS, total = 20000) %>% str()
+      pdf(file=paste0("Convergence Check Plots/xi_y1w_",i,".pdf"))
+      plot(keeps$xi_y1w,type="l")
+      dev.off()
+      pdf(file=paste0("Convergence Check Plots/xi_y2w_",i,".pdf"))
+      plot(keeps$xi_y2w,type="l")
+      dev.off()
+      pdf(file=paste0("Convergence Check Plots/xi_y1eta_",i,".pdf"))
+      plot(keeps$xi_y1eta,type="l")
+      dev.off()
+      pdf(file=paste0("Convergence Check Plots/xi_y2eta_",i,".pdf"))
+      plot(keeps$xi_y2eta,type="l")
+      dev.off()
+      pdf(file=paste0("Convergence Check Plots/xi_cw1_",i,".pdf"))
+      plot(keeps$xi_cw[,1],type="l")
+      dev.off()
+      pdf(file=paste0("Convergence Check Plots/xi_cw2_",i,".pdf"))
+      plot(keeps$xi_cw[,2],type="l")
+      dev.off()
+      pdf(file=paste0("Convergence Check Plots/sigma_c1_",i,".pdf"))
+      plot(keeps$sigma_c[,1],type="l")
+      dev.off()
+      pdf(file=paste0("Convergence Check Plots/sigma_c2_",i,".pdf"))
+      plot(keeps$sigma_c[,2],type="l")
+      dev.off()
+    }
   }
   RawData$model = rep(model,T+1)
   keeps_summary <- keeps_summary %>% as.data.frame()%>%
