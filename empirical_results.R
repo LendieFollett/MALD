@@ -218,6 +218,9 @@ names <- lapply(keeps[c(4,6:17)], domean, total = 10) %>%unlist %>%names
 keeps_summary0 <- list()
 keeps_v1 <- array(dim = c(4,dim(keeps$v)[2]))
 keeps_v2 <- array(dim = c(4,dim(keeps$v)[2]))
+
+keeps_j1 <- array(dim = c(4,dim(keeps$J)[2]))
+keeps_j2 <- array(dim = c(4,dim(keeps$J)[2]))
 model <- rep(NA, 4)
 keeps_delta <- list()
 keeps_creds <- list()
@@ -229,6 +232,9 @@ for (m in c("MALD", "IND", "MVN", "LD")){# "SVMVN", "SVLD",
     keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",m , ".rds"))
     keeps_v1[j,] <- apply(keeps$v[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
     keeps_v2[j,] <- apply(keeps$v[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
+    
+    keeps_j1[j,] <- apply(keeps$J[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
+    keeps_j2[j,] <- apply(keeps$J[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
     keeps_delta[[j]] <- keeps$delta %>%melt %>%group_by(Var2) %>%
       summarise(prop0 = mean(value == 0),prop1 = mean(value == 1),prop2 = mean(value == 2),prop3 = mean(value == 3)) %>%
       ungroup()
@@ -357,6 +363,34 @@ ggsave("leverage.pdf",p3, height = 8, width = 10)
     labs(y = "Posterior Probability")+
     theme(legend.position = "none")
   ggsave("jump_type_SVIND.pdf", height = 10, width = 10)  
+  
+  
+  
+  
+  #FIGURE XXX STOCHASTIC VOLATILITY--------
+  keeps_j1_long <- keeps_j1 %>%as.data.frame()%>%
+    mutate(model = model) %>%
+    melt(id.vars = c("model")) %>%
+    mutate(Date = rep(Date[-1], each = 4), #change when add more models
+           series = "BTC")
+  
+  keeps_j2_long <- keeps_j2 %>%as.data.frame()%>%
+    mutate(model = model) %>%
+    melt(id.vars = c("model")) %>%
+    mutate(Date = rep(Date[-1], each = 4), #change when add more models
+           series = "S&P")
+  
+  
+  rbind(keeps_j1_long,keeps_j2_long) %>%
+    mutate(Model = factor(model, levels = c("MALD", "IND", "MVN", "LD"), labels = c("SV-MALD", "SV-IND", "SV-MVN", "SV-LD"))) %>%
+    ggplot() +
+    geom_line(aes(x = Date, y = value, linetype = Model)) +
+    facet_grid(series~Model, scales = "free_y") +
+    theme_bw() +
+    scale_colour_grey() +
+    labs(x = "Date", y = "Jump size")
+  ggsave("jump_sizes.pdf", height = 8, width = 14) 
+  
   
   
   # POSTERIOR DISTRIBUTIN PLOTS
