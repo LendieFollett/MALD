@@ -52,64 +52,72 @@ doESS <- function(x, total){
 
 get_qq_short <- function(keeps,data,i,m){## Function to make the QQ Plots
   #browser()
-  delta <- rep(0,T)
-  V <- array(0, dim = c(T+1, 2))
-  J <- y <- x <- array(0, dim = c(T, 2))
-  V[1,] <- apply(keeps$v[,1,], 2, mean)
+  # delta <- rep(0,T)
+  # V <- array(0, dim = c(T+1, 2))
+  # J <- y <- x <- array(0, dim = c(T, 2))
+  # V[1,] <- apply(keeps$v[,1,], 2, mean)
+  y <- x <- array(0, dim = c(T, 2))
   
   sim <- 0
   for (t in 1:T){
     print(t)
-    set.seed(t + 4922035+ sim)
-    delta <- sample(c(0:3),prob=apply(keeps$lambda, 2, mean), 1)
+    # set.seed(t + 4922035+ sim)
+    # delta <- sample(c(0:3),prob=apply(keeps$lambda, 2, mean), 1)
+    # 
+    # set.seed(15866245 + t + sim)
+    # if (m == "MVN"){
+    #   B <- 1
+    # } else {
+    #   B <- rexp(1)
+    # }
+    # xi_y1 <- mean(keeps$xi_y1w)*B + sqrt(B)*rnorm(1,0,mean(keeps$xi_y1eta)) #SHOULD THIS BE SQRT(ETA)? No
+    # if (m == "MVN"){
+    #   B <- 1
+    # } else {
+    #   B <- rexp(1)
+    # }
+    # xi_y2 <- mean(keeps$xi_y2w)*B + sqrt(B)*rnorm(1,0,mean(keeps$xi_y2eta)) #SHOULD THIS BE SQRT(ETA)? No
+    # if (m == "IND"){
+    #   xi_c = cbind(xi_y1,xi_y2)
+    # } else {
+    #   if (m == "MVN"){
+    #     B <- 1
+    #   } else {
+    #     B <- rexp(1)
+    #   }
+    #   Sigma <- matrix(c(mean(keeps$sigma_c[,1])^2,
+    #                     mean(keeps$rhoc)*mean(keeps$sigma_c[,1])*mean(keeps$sigma_c[,2]),
+    #                     mean(keeps$rhoc)*mean(keeps$sigma_c[,1])*mean(keeps$sigma_c[,2]),
+    #                     mean(keeps$sigma_c[,2]^2)),
+    #                   nrow=2)
+    #   xi_c <- apply(keeps$xi_cw, 2, mean)*B+
+    #     sqrt(B)*rtmvnorm(n = 1, mean = c(0,0), sigma = Sigma)
+    # }
+    # 
+    # J[t,] = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
+    J = apply(keeps$J[,t,], 2, mean)
+    V = apply(keeps$v[,t,], 2, mean)
     
-    set.seed(15866245 + t + sim)
-    if (m == "MVN"){
-      B <- 1
-    } else {
-      B <- rexp(1)
-    }
-    xi_y1 <- mean(keeps$xi_y1w)*B + sqrt(B)*rnorm(1,0,mean(keeps$xi_y1eta)) #SHOULD THIS BE SQRT(ETA)? No
-    if (m == "MVN"){
-      B <- 1
-    } else {
-      B <- rexp(1)
-    }
-    xi_y2 <- mean(keeps$xi_y2w)*B + sqrt(B)*rnorm(1,0,mean(keeps$xi_y2eta)) #SHOULD THIS BE SQRT(ETA)? No
-    if (m == "IND"){
-      xi_c = cbind(xi_y1,xi_y2)
-    } else {
-      if (m == "MVN"){
-        B <- 1
-      } else {
-        B <- rexp(1)
-      }
-      Sigma <- matrix(c(mean(keeps$sigma_c[,1])^2,
-                        mean(keeps$rhoc)*mean(keeps$sigma_c[,1])*mean(keeps$sigma_c[,2]),
-                        mean(keeps$rhoc)*mean(keeps$sigma_c[,1])*mean(keeps$sigma_c[,2]),
-                        mean(keeps$sigma_c[,2]^2)),
-                      nrow=2)
-      xi_c <- apply(keeps$xi_cw, 2, mean)*B+
-        sqrt(B)*rtmvnorm(n = 1, mean = c(0,0), sigma = Sigma)
-    }
+    # Sigma <- matrix(c(V[t,1],
+    #                   mean(keeps$rho[,1])*sqrt(prod(V[t,])),
+    #                   mean(keeps$rho[,3])*mean(keeps$sigma_v[,1])*V[t,1],0,
+    #                   mean(keeps$rho[,1])*sqrt(prod(V[t,])),V[t,2],0,mean(keeps$rho[,4])*mean(keeps$sigma_v[,2])*V[t,2],
+    #                   mean(keeps$rho[,3])*mean(keeps$sigma_v[,1])*V[t,1],0,mean(keeps$sigma_v[,1])^2*V[t,1],mean(keeps$rho[,2])*prod(apply(keeps$sigma_v, 2, mean))*sqrt(prod(V[t,])),
+    #                   0,mean(keeps$rho[,4])*mean(keeps$sigma_v[,2])*V[t,2],mean(keeps$rho[,2])*prod(apply(keeps$sigma_v, 2, mean))*sqrt(prod(V[t,])),mean(keeps$sigma_v[,2])^2*V[t,2]),nrow=4)
 
-    J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-    
-    Sigma <- matrix(c(V[t,1],
-                      mean(keeps$rho[,1])*sqrt(prod(V[t,])),
-                      mean(keeps$rho[,3])*mean(keeps$sigma_v[,1])*V[t,1],0,
-                      mean(keeps$rho[,1])*sqrt(prod(V[t,])),V[t,2],0,mean(keeps$rho[,4])*mean(keeps$sigma_v[,2])*V[t,2],
-                      mean(keeps$rho[,3])*mean(keeps$sigma_v[,1])*V[t,1],0,mean(keeps$sigma_v[,1])^2*V[t,1],mean(keeps$rho[,2])*prod(apply(keeps$sigma_v, 2, mean))*sqrt(prod(V[t,])),
-                      0,mean(keeps$rho[,4])*mean(keeps$sigma_v[,2])*V[t,2],mean(keeps$rho[,2])*prod(apply(keeps$sigma_v, 2, mean))*sqrt(prod(V[t,])),mean(keeps$sigma_v[,2])^2*V[t,2]),nrow=4)
-    
+    Sigma <- matrix(c(V[1],
+                      mean(keeps$rho[,1])*sqrt(prod(V)),
+                      mean(keeps$rho[,3])*mean(keeps$sigma_v[,1])*V[1],0,
+                      mean(keeps$rho[,1])*sqrt(prod(V)),V[2],0,mean(keeps$rho[,4])*mean(keeps$sigma_v[,2])*V[2],
+                      mean(keeps$rho[,3])*mean(keeps$sigma_v[,1])*V[1],0,mean(keeps$sigma_v[,1])^2*V[1],mean(keeps$rho[,2])*prod(apply(keeps$sigma_v, 2, mean))*sqrt(prod(V)),
+                      0,mean(keeps$rho[,4])*mean(keeps$sigma_v[,2])*V[2],mean(keeps$rho[,2])*prod(apply(keeps$sigma_v, 2, mean))*sqrt(prod(V)),mean(keeps$sigma_v[,2])^2*V[2]),nrow=4)
     set.seed(463468+t)
     temp <- rtmvnorm(n = 1,
-                     mean = c(apply(keeps$mu, 2 ,mean) + J,
-                              apply(keeps$theta,2, mean) + apply(keeps$phi, 2, mean)*(V[t,] - apply(keeps$theta, 2, mean))),
-                     sigma = Sigma, lower=c(-Inf,-Inf, 0, 0))
+                     mean = c(apply(keeps$mu, 2 ,mean) + J + Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% 
+                              (apply(keeps$v[,t+1,],2,mean) - (apply(keeps$theta,2, mean) + apply(keeps$phi, 2, mean)*(V - apply(keeps$theta, 2, mean))))),
+                     sigma = Sigma[1:2,1:2] - Sigma[1:2,3:4] %*% solve(Sigma[3:4,3:4]) %*% Sigma[3:4,1:2])
     
-    V[t+1,] <- temp[c(3:4)]
-    y[t,] <- temp[c(1,2)]
+    y[t,] <- temp
     if( t+1 <= T){ x[t+1] <- 0 }
   }
   
