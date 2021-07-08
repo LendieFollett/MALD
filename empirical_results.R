@@ -271,26 +271,47 @@ for (i in c("BTC", "DOGE", "AMC", "GME")){
     melt(id.vars = c("model", "series")) %>%
     mutate(Date = rep(Date, each = 4), #CHECK THIS STRUCTURE
            series = "S&P")
+  
+  tempdat <- keeps_v1_long %>% subset(model == "SVMALD") %>%
+    merge(data.frame(Date=Date[-(T+1)],Asset=QQData[,1]) , by = "Date")
+  p <- ggplot() +
+           geom_line(aes(x = Date, y = Asset), alpha= I(.4), data = tempdat) +
+           geom_line(aes(x = Date, y = value^.5), data = tempdat) +
+           theme_bw() +labs(x = "",y=i) + theme(text = element_text(size = 20))
+  assign(paste0("p",i),ggplotGrob(p))
+  if (i == "GME"){
+    tempdat <- keeps_v2_long %>% subset(model == "SVMALD") %>%
+      merge(data.frame(Date=Date[-(T+1)],Asset=QQData[,2]) , by = "Date") 
+    
+    p <- ggplot() +
+             geom_line(aes(x = Date, y = Asset), alpha= I(.4), data = tempdat) +
+             geom_line(aes(x = Date, y = value^.5), data = tempdat) +
+             theme_bw() +labs(x = "",y="S&P 500")+ theme(text = element_text(size = 20))
+    pSP500 <- ggplotGrob(p)
+  }
+  assign(paste0("keeps_",i,"_long"),keeps_v1_long)
 
-  #not sure the best way to display this, may need to modify
-  g1 <- ggplot() +
-    geom_line(data = RawData,aes(x=Date,y=Price,linetype=model)) +
-    xlab("") + ylab("Price") + theme_bw()
-  
-  g2 <- keeps_v1_long %>%
-    ggplot() +
-    geom_line(aes(x = Date, y = value, linetype = model)) +
-    #facet_grid(series~model., scales = "free_y") +
-    ylab("Volatility") +
-    theme_bw() +
-    scale_colour_grey()
-  
-  G1 <- ggplotGrob(g1)
-  G2 <- ggplotGrob(g2)
-  plotname <- paste0(i,"_Short_Vol.pdf")
-  ggsave(plotname,grid.draw(rbind(G1,G2)))
+  # #not sure the best way to display this, may need to modify
+  # g1 <- ggplot() +
+  #   geom_line(data = RawData,aes(x=Date,y=Price,linetype=model)) +
+  #   xlab("") + ylab("Price") + theme_bw()
+  # 
+  # g2 <- keeps_v1_long %>%
+  #   ggplot() +
+  #   geom_line(aes(x = Date, y = value, linetype = model)) +
+  #   #facet_grid(series~model., scales = "free_y") +
+  #   ylab("Volatility") +
+  #   theme_bw() +
+  #   scale_colour_grey()
+  # 
+  # G1 <- ggplotGrob(g1)
+  # G2 <- ggplotGrob(g2)
+  # plotname <- paste0(i,"_Short_Vol.pdf")
+  # ggsave(plotname,grid.draw(rbind(G1,G2)))
 }
 
+grid.arrange(rbind(pBTC,pDOGE,pAMC,pGME,pSP500))
+grid.arrange(rbind(vBTC,vDOGE,vAMC,vGME))
 
 ############################################################
 #----LONG TIME SERIES ONLY---------------------------------

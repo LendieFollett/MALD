@@ -9,60 +9,64 @@ library(Rcpp)
 library(MCMCpack)
 library(quantmod)
 
+###Data frame of model parameters
+models <- data.frame(exp_jumps =  c(FALSE,   TRUE,  FALSE,     FALSE),
+                     norm_jumps = c(FALSE,   FALSE, TRUE,      FALSE),
+                     ind =        c(FALSE,   FALSE, FALSE,     TRUE),
+                     model =      c("SVMALD", "SVLD", "SVMVN", "SVIND"))
+
+##### LONG TIME PERIOD #####
 fix <- FALSE
-sourceCpp("pgas.cpp") #C++ updates
-B <- 20000 #how many burn in draws to throw away
-R <- 10000 #how many draws to keep after burn in
-n_chns <- 4 #how many total chains to run
-getSymbols("SNAP",from = "2017-05-01",to = "2021-01-31")
-SNAP <- as.data.frame(SNAP)
-SNAP$Date <- as.Date(rownames(SNAP))
+thin <- 5 #thinning param
+B <- 10000 #how many burn in draws to throw away
+R <- 100000 #how many draws to keep after burn in
+n_chns <- 1 #how many chains to run
+getSymbols("NVAX",from = "2014-09-15",to = "2020-09-30")
+NVAX <- as.data.frame(NVAX)
+NVAX$Date <- as.Date(rownames(NVAX))
+getSymbols("^GSPC",from = "2014-09-15",to = "2020-09-30")
+SP500 <- as.data.frame(`GSPC`)
+SP500$Date <- as.Date(rownames(SP500))
+S <- merge(NVAX,SP500)
+T <- nrow(S) - 1
+for (k in 1:nrow(models)){
+  print(paste0("----- > Starting ", models$model[k], " model < -------"))
+  use_starting_values <- FALSE
+  sourceCpp("pgas_2d.cpp") #C++ updates
+  # #2-D MODEL MCMCb        cfv09
+  y <- as.matrix(100*(log(S[-1,c("NVAX.Close","GSPC.Close")]) - log(S[-nrow(S),c("NVAX.Close","GSPC.Close")])))
+  yprim <- array(0,dim=dim(y))
+  exp_jumps <- models$exp_jumps[k]
+  norm_jumps <- models$norm_jumps[k]
+  ind <- models$ind[k]
+  source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
+  saveRDS(keeps,paste0("keeps_",models$model[k] ,"_NVAX_long.rds"))
+}
 
-getSymbols("TWTR",from = "2014-05-01",to = "2018-01-31")
-TWTR <- as.data.frame(TWTR)
-TWTR$Date <- as.Date(rownames(TWTR))
-
-getSymbols("YELP",from = "2013-05-01",to = "2017-01-31")
-YELP <- as.data.frame(YELP)
-YELP$Date <- as.Date(rownames(YELP))
-
-getSymbols("MTCH",from = "2015-05-01",to = "2019-01-31")
-MTCH <- as.data.frame(MTCH)
-MTCH$Date <- as.Date(rownames(MTCH))
-
-y <- 100*(log(TWTR[-1,c("TWTR.Close")]) - log(TWTR[-nrow(TWTR),c("TWTR.Close")]))
-x <- rep(0,length(y))
-T <- length(y)
-source("run_mcmc.R") 
-#R+B iterations of pgas.R and pgas.cpp updates
-#save results! not sure how to do this... 
-#maybe save each keeps object as separate RDS file?
-saveRDS(keeps,paste0("keepsTWTR.rds"))
-
-y <- 100*(log(SNAP[-1,c("SNAP.Close")]) - log(SNAP[-nrow(SNAP),c("SNAP.Close")]))
-x <- rep(0,length(y))
-T <- length(y)
-source("run_mcmc.R") 
-#R+B iterations of pgas.R and pgas.cpp updates
-#save results! not sure how to do this... 
-#maybe save each keeps object as separate RDS file?
-saveRDS(keeps,paste0("keepsSNAP.rds"))
-
-y <- 100*(log(YELP[-1,c("YELP.Close")]) - log(YELP[-nrow(YELP),c("YELP.Close")]))
-x <- rep(0,length(y))
-T <- length(y)
-source("run_mcmc.R") 
-#R+B iterations of pgas.R and pgas.cpp updates
-#save results! not sure how to do this... 
-#maybe save each keeps object as separate RDS file?
-saveRDS(keeps,paste0("keepsYELP.rds"))
-
-y <- 100*(log(MTCH[-1,c("MTCH.Close")]) - log(MTCH[-nrow(MTCH),c("MTCH.Close")]))
-x <- rep(0,length(y))
-T <- length(y)
-source("run_mcmc.R") 
-#R+B iterations of pgas.R and pgas.cpp updates
-#save results! not sure how to do this... 
-#maybe save each keeps object as separate RDS file?
-saveRDS(keeps,paste0("keepsMTCH.rds"))
-
+##### SHORT TIME PERIOD #####
+fix <- FALSE
+thin <- 5 #thinning param
+B <- 10000 #how many burn in draws to throw away
+R <- 100000 #how many draws to keep after burn in
+n_chns <- 1 #how many chains to run
+getSymbols("NVAX",from = "2020-10-01",to = "2021-06-30")
+NVAX <- as.data.frame(NVAX)
+NVAX$Date <- as.Date(rownames(NVAX))
+getSymbols("^GSPC",from = "2020-10-01",to = "2021-06-30")
+SP500 <- as.data.frame(`GSPC`)
+SP500$Date <- as.Date(rownames(SP500))
+S <- merge(NVAX,SP500)
+T <- nrow(S) - 1
+for (k in 1:nrow(models)){
+  print(paste0("----- > Starting ", models$model[k], " model < -------"))
+  use_starting_values <- FALSE
+  sourceCpp("pgas_2d.cpp") #C++ updates
+  # #2-D MODEL MCMCb        cfv09
+  y <- as.matrix(100*(log(S[-1,c("NVAX.Close","GSPC.Close")]) - log(S[-nrow(S),c("NVAX.Close","GSPC.Close")])))
+  yprim <- array(0,dim=dim(y))
+  exp_jumps <- models$exp_jumps[k]
+  norm_jumps <- models$norm_jumps[k]
+  ind <- models$ind[k]
+  source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
+  saveRDS(keeps,paste0("keeps_",models$model[k] ,"_NVAX_short.rds"))
+}
