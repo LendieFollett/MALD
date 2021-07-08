@@ -129,6 +129,8 @@ get_qq_short <- function(keeps,data,i,m){## Function to make the QQ Plots
     geom_abline(slope=1,intercept=0) +
     #xlim(c(-15,15)) + ylim(c(-15,15)) +
     xlab("Actual Quantiles") + ylab("Simulated Quantiles") + theme_bw() + ggtitle(i)
+  p1
+  
   return(p1)
 }
 
@@ -382,48 +384,30 @@ keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
     facet_grid(series~., scales = "free_y") +
     theme_bw() +
     scale_colour_grey() +
-    labs(x = "Date", y = "Volatility")
-  ggsave("volatility.pdf", height = 8, width = 10) 
+    labs(x = "Date", y = "Volatility")+ theme(text = element_text(size = 20))
+  ggsave("volatility.pdf", height = 10, width = 14) 
   
   tempdat = keeps_v1_long %>% subset(model == "MALD") %>%
     merge(data.frame(BTC=100*(log(S[-1,c( "BTC-USD.Close") ])-
                                 log(S[-nrow(S),c( "BTC-USD.Close") ])),Date=Date[-1]) , by = "Date")
   
 p1 <-   ggplot() +
-  geom_rect(aes(xmin=as.Date("2016-01-01"),
-                xmax=as.Date("2016-12-31"),
-                ymin=-Inf,ymax=Inf),alpha=0.2,fill="blue") +
-  geom_rect(aes(xmin=as.Date("2017-07-01"),
-                xmax=as.Date("2018-03-31"),
-                ymin=-Inf,ymax=Inf),alpha=I(0.2),fill="blue") +
-  geom_rect(aes(xmin=as.Date("2020-02-01"),
-                xmax=as.Date("2021-01-31"),
-                ymin=-Inf,ymax=Inf),alpha=0.2,fill="blue")+
-    geom_line(aes(x = Date, y = BTC), alpha= I(.5), data = tempdat) +
+    geom_line(aes(x = Date, y = BTC), alpha= I(.4), data = tempdat) +
     geom_line(aes(x = Date, y = value^.5), data = tempdat) +
-    theme_bw() +labs(x = "")
+    theme_bw() +labs(x = "")+ theme(text = element_text(size = 20))
 
 tempdat= keeps_v2_long %>% subset(model == "MALD") %>%
   merge(data.frame(SP=100*(log(S[-1,c( "GSPC.Close") ])-
                               log(S[-nrow(S),c( "GSPC.Close") ])),Date=Date[-1]) , by = "Date") 
 p2 <- ggplot() +
-  geom_rect(aes(xmin=as.Date("2016-01-01"),
-                xmax=as.Date("2016-12-31"),
-                ymin=-Inf,ymax=Inf),alpha=0.2,fill="blue") +
-  geom_rect(aes(xmin=as.Date("2017-07-01"),
-                xmax=as.Date("2018-03-31"),
-                ymin=-Inf,ymax=Inf),alpha=I(0.2),fill="blue") +
-  geom_rect(aes(xmin=as.Date("2020-02-01"),
-                xmax=as.Date("2021-01-31"),
-                ymin=-Inf,ymax=Inf),alpha=0.2,fill="blue")+
-  geom_line(aes(x = Date, y = SP), alpha= I(.5), data = tempdat) +
+  geom_line(aes(x = Date, y = SP), alpha= I(.4), data = tempdat) +
   geom_line(aes(x = Date, y = value^.5), data = tempdat) +
-  theme_bw()
+  theme_bw() +labs(y = "S&P")+ theme(text = element_text(size = 20))
   
 
 p3 <-grid.arrange(p1, p2, nrow = 2)  
 p3
-ggsave("leverage.pdf",p3, height = 8, width = 10) 
+ggsave("leverage.pdf",p3, height = 10, width = 14) 
 
 
 
@@ -440,7 +424,7 @@ ggsave("leverage.pdf",p3, height = 8, width = 10)
     facet_wrap(~Jump_Type) +
     theme_bw() +
     labs(y = "Posterior Probability")+
-    theme(legend.position = "none")
+    theme(legend.position = "none")+ theme(text = element_text(size = 20))
   ggsave("jump_type_SVMALD.pdf", height = 10, width = 10)  
   keeps_delta[[2]] %>%
     mutate(Date = Date[-1]) %>%
@@ -453,13 +437,13 @@ ggsave("leverage.pdf",p3, height = 8, width = 10)
     facet_wrap(~Jump_Type) +
     theme_bw() +
     labs(y = "Posterior Probability")+
-    theme(legend.position = "none")
+    theme(legend.position = "none")+ theme(text = element_text(size = 20))
   ggsave("jump_type_SVIND.pdf", height = 10, width = 10)  
   
   
   
   
-  #FIGURE XXX STOCHASTIC VOLATILITY--------
+  #FIGURE XXX JUMP SIZES--------
   keeps_j1_long <- keeps_j1 %>%as.data.frame()%>%
     mutate(model = model) %>%
     melt(id.vars = c("model")) %>%
@@ -480,8 +464,8 @@ ggsave("leverage.pdf",p3, height = 8, width = 10)
     facet_grid(series~Model, scales = "free_y") +
     theme_bw() +
     scale_colour_grey() +
-    labs(x = "Date", y = "Jump size")
-  ggsave("jump_sizes.pdf", height = 8, width = 14) 
+    labs(x = "Date", y = "Jump size")+ theme(text = element_text(size = 20))
+  ggsave("jump_sizes.pdf", height = 10, width = 14) 
   
   
   
@@ -501,12 +485,14 @@ ggsave("leverage.pdf",p3, height = 8, width = 10)
   
   
   # qqplots-----------
-  get_qq <- function(keeps){## Function to make the QQ Plots
+  get_qq <- function(keeps, model){## Function to make the QQ Plots
     delta <- rep(0,T)
     V <- array(0, dim = c(T+1, 2))
     J <- y <- x <- array(0, dim = c(T, 2))
-    V[1,] <- apply(keeps$v[,1,], 2, mean)
-    
+    #V[1,] <- apply(keeps$v[,1,], 2, mean)
+    V <- apply(keeps$v, 2:3, mean)
+    #overwrite J
+    J <- apply(keeps$J, 2:3, mean)
     sim <- 0
     for (t in 1:T){
       print(t)
@@ -514,23 +500,35 @@ ggsave("leverage.pdf",p3, height = 8, width = 10)
       delta <- sample(c(0:3),prob=apply(keeps$lambda, 2, mean), 1)
       
       set.seed(15866245 + t + sim)
-      B <- rexp(1)
+      if(model == "MVN"){
+        B <- 1
+      }else{
+        B <- rexp(1)
+      }
       Sigma <- matrix(c(mean(keeps$sigma_c[,1])^2,
                         mean(keeps$rhoc)*mean(keeps$sigma_c[,1])*mean(keeps$sigma_c[,2]),
                         mean(keeps$rhoc)*mean(keeps$sigma_c[,1])*mean(keeps$sigma_c[,2]),
                         mean(keeps$sigma_c[,2]^2)),
                       nrow=2)
-      xi_c <- apply(keeps$xi_cw, 2, mean)*B+
-        sqrt(B)*rtmvnorm(n = 1, mean = c(0,0), sigma = Sigma)
-      
-      B <- rexp(1)
-      xi_y1 <- mean(keeps$xi_y1w)*B + sqrt(B)*rnorm(1,0,mean(keeps$xi_y1eta)) #SHOULD THIS BE SQRT(ETA)?
-      B <- rexp(1)
-      xi_y2 <- mean(keeps$xi_y2w)*B + sqrt(B)*rnorm(1,0,mean(keeps$xi_y2eta)) #SHOULD THIS BE SQRT(ETA)?
-      
-      
-      J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
-      
+      # xi_c <- apply(keeps$xi_cw, 2, mean)*B+
+      #   sqrt(B)*rtmvnorm(n = 1, mean = c(0,0), sigma = Sigma)
+      # 
+      # if(model == "MVN"){
+      #   B <- 1
+      # }else{
+      #   B <- rexp(1)
+      # }
+      # xi_y1 <- mean(keeps$xi_y1w)*B + sqrt(B)*rnorm(1,0,mean(keeps$xi_y1eta)) #SHOULD THIS BE SQRT(ETA)?
+      # if(model == "MVN"){
+      #   B <- 1
+      # }else{
+      #   B <- rexp(1)
+      # }
+      # xi_y2 <- mean(keeps$xi_y2w)*B + sqrt(B)*rnorm(1,0,mean(keeps$xi_y2eta)) #SHOULD THIS BE SQRT(ETA)?
+      # 
+      # 
+      # J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
+      # 
       Sigma <- matrix(c(V[t,1],
                         mean(keeps$rho[,1])*sqrt(prod(V[t,])),
                         mean(keeps$rho[,3])*mean(keeps$sigma_v[,1])*V[t,1],0,
@@ -538,13 +536,15 @@ ggsave("leverage.pdf",p3, height = 8, width = 10)
                         mean(keeps$rho[,3])*mean(keeps$sigma_v[,1])*V[t,1],0,mean(keeps$sigma_v[,1])^2*V[t,1],mean(keeps$rho[,2])*prod(apply(keeps$sigma_v, 2, mean))*sqrt(prod(V[t,])),
                         0,mean(keeps$rho[,4])*mean(keeps$sigma_v[,2])*V[t,2],mean(keeps$rho[,2])*prod(apply(keeps$sigma_v, 2, mean))*sqrt(prod(V[t,])),mean(keeps$sigma_v[,2])^2*V[t,2]),nrow=4)
       
+
+      
       set.seed(463468+t)
       temp <- rtmvnorm(n = 1,
-                       mean = c(apply(keeps$mu, 2 ,mean) + J,
+                       mean = c(apply(keeps$mu, 2 ,mean) + J[t,],
                                 apply(keeps$theta,2, mean) + apply(keeps$phi, 2, mean)*(V[t,] - apply(keeps$theta, 2, mean))),
                        sigma = Sigma, lower=c(-Inf,-Inf, 0, 0))
       
-      V[t+1,] <- temp[c(3:4)]
+      #V[t+1,] <- temp[c(3:4)]
       y[t,] <- temp[c(1,2)]
       if( t+1 <= T){ x[t+1] <- 0 }
     }
@@ -559,7 +559,7 @@ ggsave("leverage.pdf",p3, height = 8, width = 10)
       geom_point(aes(x=quantile(QQdat$BTC,seq(0.01,0.99,0.01)),y=quantile(QQdat$X1,seq(0.01,0.99,0.01)))) +
       geom_abline(slope=1,intercept=0) +
       #xlim(c(-15,15)) + ylim(c(-15,15)) +
-      xlab("Actual Quantiles") + ylab("Simulated Quantiles") + theme_bw() + ggtitle("BTC")
+      xlab("Actual Quantiles") + ylab("Simulated Quantiles") + theme_bw() + ggtitle(paste0("SV-", model))
     
     p2 <- ggplot() +
       geom_point(aes(x=quantile(QQdat$SP,seq(0.01,0.99,0.01)),y=quantile(QQdat$X2,seq(0.01,0.99,0.01)))) +
@@ -567,27 +567,30 @@ ggsave("leverage.pdf",p3, height = 8, width = 10)
       #xlim(c(-15,15)) + ylim(c(-15,15)) +
       xlab("Actual Quantiles") + ylab("Simulated Quantiles") + theme_bw() + ggtitle("S&P")
     p3 <- grid.arrange(p1,p2, nrow = 1)
-    return(p3)
+    return(p1 + theme(plot.title = element_text(hjust = 0.5,size = 20)))
   }
   
   model <- "MALD"
   keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",model , ".rds"))
-  plot <- get_qq(keeps)
-  ggsave(paste0("QQ_", model, ".pdf"),plot, width = 12, height = 6)
+  plot1 <- get_qq(keeps,model)
+  #ggsave(paste0("QQ_", model, ".pdf"),plot, width = 12, height = 6)
   
   model <- "IND"
   keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",model , ".rds"))
-  plot <- get_qq(keeps)
-  ggsave(paste0("QQ_", model, ".pdf"),plot)
+  plot2 <- get_qq(keeps,model)
+  #ggsave(paste0("QQ_", model, ".pdf"),plot, width = 12, height = 6)
   
   model <- "MVN"
   keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",model , ".rds"))
-  plot <- get_qq(keeps)
-  ggsave(paste0("QQ_", model, ".pdf"),plot, width = 12, height = 6)
+  plot3 <- get_qq(keeps,model)
+  #ggsave(paste0("QQ_", model, ".pdf"),plot, width = 12, height = 6)
   
   model <- "LD"
   keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",model , ".rds"))
-  plot <- get_qq(keeps)
-  ggsave(paste0("QQ_", model, ".pdf"),plot)
+  plot4 <- get_qq(keeps,model)
+  
+  plot5 <- grid.arrange(plot2, plot4, plot3,plot1, nrow = 2)
+  
+  ggsave(paste0("QQ_", "all", ".pdf"),plot5, width = 12, height = 12)
   
 

@@ -131,6 +131,11 @@ plot(keeps$xi_y1eta, type = "l")
 plot(keeps$xi_y2eta, type = "l")
 plot(keeps$xi_y1w, type = "l")
 plot(keeps$xi_y2w, type = "l")
+
+plot(keeps$lambda[,1], type = "l")
+plot(keeps$lambda[,2], type = "l")
+plot(keeps$lambda[,3], type = "l")
+
 #SVALD
 lapply(keepsIND[c(4,6:17)], doESS, total = total) %>% str()
 #SVMVN
