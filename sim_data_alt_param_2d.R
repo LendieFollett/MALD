@@ -7,11 +7,11 @@ sim = runif(1,1, 50000)
 print(sim)
 idx =235235235
 idx2  = 3452
-T <- 5000
+T <- 1500
 t <- T + 1
 true_omega <- array(0, dim=c(T+1,2))
 true_sigma_v <- c(.2,.3) #standard deviation on volatility
-true_rho <- c(.4,.5,-.4,.4) #correlation between y's, volatility's and leverage effects for assets 1 and 2
+true_rho <- c(.1,-.2,-.4,.4) #correlation between y's, volatility's and leverage effects for assets 1 and 2
 
 true_mu <- c(.05,.05)
 
