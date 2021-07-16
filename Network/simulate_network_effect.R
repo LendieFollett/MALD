@@ -26,9 +26,9 @@ pmts <- pmts %>% group_by(Timestamp)%>%summarise(pmts = mean(n.payments))
 trans <- trans %>% group_by(Timestamp)%>%summarise(trans = mean(n.transactions))
 addy <- addy %>% group_by(Timestamp)%>%summarise(addy = mean(n.unique.addresses))
 
-net <- users %>%merge(pmts)%>%merge(trans)%>%merge(addy)
+net <- pmts%>%merge(trans)%>%merge(addy)
 
-delta_net <- net %>% mutate_at(c(2:5), function(x){x - lag(x)})
+delta_net <- net %>% mutate_at(c(2:4), function(x){x - lag(x)})
 
 getSymbols("BTC-USD",from = min(delta_net$Timestamp),to =  max(delta_net$Timestamp))
 BTC <- as.data.frame(`BTC-USD`)
@@ -48,7 +48,7 @@ lm_trans <- lm(BTC ~ trans , data = all)
 summary(lm_trans)
 lm_addy <- lm(BTC ~ addy, data = all)
 summary(lm_addy)
-lm5 <- lm(BTC ~ users + pmts + trans + addy, data = all)
+lm5 <- lm(BTC ~  pmts + trans + addy, data = all)
 summary(lm5)
 
 
