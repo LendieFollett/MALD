@@ -28,6 +28,20 @@ addy <- addy %>% group_by(Timestamp)%>%summarise(addy = mean(n.unique.addresses)
 
 net <- users %>%merge(pmts)%>%merge(trans)%>%merge(addy)
 
+delta_net <- net %>% mutate_at(c(2:5), function(x){x - lag(x)})
+
+getSymbols("BTC-USD",from = min(delta_net$Timestamp),to =  max(delta_net$Timestamp))
+BTC <- as.data.frame(`BTC-USD`)
+BTC$Date <- seq(min(delta_net$Timestamp),max(delta_net$Timestamp),by="days")
+BTC$`BTC-USD.Close`[BTC$Date=="2020-04-17"] <- 7096.18
+BTC_dat <- data.frame(Date = BTC$Date[-1], 
+                 BTC = 100*(log(BTC[-1,c( "BTC-USD.Close") ])-
+       log(BTC[-nrow(BTC),c("BTC-USD.Close") ])))
+
+all <- merge(delta_net, BTC, by.x = "Timestamp", by.y= "Date")
+
+
+
 
 
 
