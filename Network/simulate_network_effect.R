@@ -28,22 +28,23 @@ addy <- addy %>% group_by(Timestamp)%>%summarise(addy = mean(n.unique.addresses)
 
 net <- users %>%merge(pmts,all=TRUE)%>%merge(trans,all=TRUE)%>%merge(addy,all=TRUE)
 
-delta_net <- net %>% mutate_at(c(2:4), function(x){x - lag(x)})
+delta_net <- net %>% mutate_at(c(2:5), function(x){x - lag(x)})
 
 getSymbols("BTC-USD",from = min(delta_net$Timestamp),to =  max(delta_net$Timestamp))
 BTC <- as.data.frame(`BTC-USD`)
 BTC$Date <- seq(min(delta_net$Timestamp),max(delta_net$Timestamp),by="days")
 BTC$`BTC-USD.Close`[BTC$Date=="2020-04-17"] <- 7096.18
-BTC_return_dat <- data.frame(Date = BTC$Date[-1], 
-                 BTC = 100*(log(BTC[-1,c( "BTC-USD.Close") ])-
-       log(BTC[-nrow(BTC),c("BTC-USD.Close") ])))
+BTC_return_dat <-  data.frame(Date = BTC$Date[-1], 
+                              BTC = 100*((BTC[-1,c( "BTC-USD.Close") ])-
+                                       (BTC[-nrow(BTC),c("BTC-USD.Close") ]))/BTC[-nrow(BTC),c("BTC-USD.Close") ])
 
 BTC_dat <- data.frame(Date = BTC$Date[-1], 
                       BTC = BTC[-1,c( "BTC-USD.Close") ])
 
 all <- merge(delta_net, BTC_return_dat, by.x = "Timestamp", by.y= "Date")
 
-
+lm_users <- lm(BTC ~ users , data = all)
+summary(lm_users)
 lm_pmts <- lm(BTC ~ pmts, data = all)
 summary(lm_pmts)
 lm_trans <- lm(BTC ~ trans , data = all)
@@ -52,11 +53,10 @@ lm_addy <- lm(BTC ~ addy, data = all)
 summary(lm_addy)
 lm5 <- lm(BTC ~  pmts + trans + addy, data = all)
 summary(lm5)
-lm_users <- lm(BTC ~ users , data = all)
-##summary(lm_users)
 
 
-ynew <- predict(lm5, all) + rnorm(nrow(all), 0, (sum(lm5$residuals^2)/lm5$df.residual)^0.5)
-plot(ynew, type = "l")
 
-
+ynew <- predict(lm5, all) #+ rnorm(nrow(all), 0, (sum(lm5$residuals^2)/lm5$df.residual)^0.5)
+plot(BTC_return_dat$BTC, type = "l")
+lines(ynew, col = "red")
+plot(ynew, type  ="l")
