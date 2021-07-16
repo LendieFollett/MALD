@@ -38,9 +38,18 @@ BTC_dat <- data.frame(Date = BTC$Date[-1],
                  BTC = 100*(log(BTC[-1,c( "BTC-USD.Close") ])-
        log(BTC[-nrow(BTC),c("BTC-USD.Close") ])))
 
-all <- merge(delta_net, BTC, by.x = "Timestamp", by.y= "Date")
+all <- merge(delta_net, BTC_dat, by.x = "Timestamp", by.y= "Date")
 
-
+lm_users <- lm(BTC ~ users , data = all)
+summary(lm_users)
+lm_pmts <- lm(BTC ~ pmts, data = all)
+summary(lm_pmts)
+lm_trans <- lm(BTC ~ trans , data = all)
+summary(lm_trans)
+lm_addy <- lm(BTC ~ addy, data = all)
+summary(lm_addy)
+lm5 <- lm(BTC ~ users + pmts + trans + addy, data = all)
+summary(lm5)
 
 
 
