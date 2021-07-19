@@ -1,4 +1,4 @@
-rm(list = ls())  ## DON'T FORGET TO SET WD!!
+rm(list = ls())  
 library(ald)
 library(ggplot2)
 library(dplyr)
@@ -35,8 +35,8 @@ BTC <- as.data.frame(`BTC-USD`)
 BTC$Date <- seq(min(delta_net$Timestamp),max(delta_net$Timestamp),by="days")
 BTC$`BTC-USD.Close`[BTC$Date=="2020-04-17"] <- 7096.18
 BTC_return_dat <-  data.frame(Date = BTC$Date[-1], 
-                              BTC = 100*((BTC[-1,c( "BTC-USD.Close") ])-
-                                       (BTC[-nrow(BTC),c("BTC-USD.Close") ]))/BTC[-nrow(BTC),c("BTC-USD.Close") ])
+                              BTC = 100*(log(BTC[-1,c( "BTC-USD.Close") ])-
+                                       log(BTC[-nrow(BTC),c("BTC-USD.Close") ])))
 
 BTC_dat <- data.frame(Date = BTC$Date[-1], 
                       BTC = BTC[-1,c( "BTC-USD.Close") ])
@@ -51,12 +51,42 @@ lm_trans <- lm(BTC ~ trans , data = all)
 summary(lm_trans)
 lm_addy <- lm(BTC ~ addy, data = all)
 summary(lm_addy)
-lm5 <- lm(BTC ~  pmts + trans + addy, data = all)
+lm5 <- lm(BTC ~  pmts + trans + addy + users, data = all)
 summary(lm5)
 
 
 
-ynew <- predict(lm5, all) #+ rnorm(nrow(all), 0, (sum(lm5$residuals^2)/lm5$df.residual)^0.5)
+ynew <- predict(lm5, all) 
+ynew[is.na(ynew)] <- coef(lm5)[1]
+ynew <- ynew + rnorm(nrow(all), 0, (sum(lm5$residuals^2)/lm5$df.residual)^0.5)
+
 plot(BTC_return_dat$BTC, type = "l")
-lines(ynew, col = "red")
 plot(ynew, type  ="l")
+lines(predict(lm5, all), col = "red")
+all$ynew <- ynew
+
+
+#------fit model
+
+#################################################### 
+# SVMALD MODEL ----------
+#################################################### 
+thin <- 5 #thinning param
+B <- 10000 #how many burn in draws to throw away
+R <- 100000 #how many draws to keep after burn in
+n_chns <- 1 #how many chains to run
+use_starting_values <- FALSE
+sourceCpp("pgas_2d.cpp") #C++ updates
+# #2-D MODEL MCMCb        
+getSymbols("^GSPC",from = min(all$Timestamp),to = max(all$Timestamp))
+SP500 <- as.data.frame(`GSPC`)
+SP500$Date <- as.Date(rownames(SP500))
+S <- merge(all[,c("Timestamp", "ynew")],SP500, by.x = "Timestamp", by.y = "Date")
+T <- nrow(S) - 1
+y <- cbind(S$ynew[-1], 100*(log(S[-1,c("GSPC.Close")]) - log(S[-nrow(S),c("GSPC.Close")])))
+
+yprim <- array(0,dim=dim(y))
+#source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
+exp_jumps <- norm_jumps <- ind <- FALSE
+source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
+saveRDS(keeps,paste0("keeps_long/keepsBTCSP_MALD.rds"))

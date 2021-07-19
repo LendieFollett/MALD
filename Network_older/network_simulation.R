@@ -32,12 +32,12 @@ getSymbols("BTC-USD",from = min(users$Timestamp),to =  max(users$Timestamp))
 BTC <- as.data.frame(`BTC-USD`)
 BTC$Date <- as.Date(rownames(BTC))#seq(min(delta_net$Timestamp),max(delta_net$Timestamp),by="days")
 #BTC$`BTC-USD.Close`[BTC$Date=="2020-04-17"] <- 7096.18
-BTC <- BTC%>%mutate(month = format(Date, "%m%Y"))%>%group_by(month)%>%summarise(`BTC-USD.Close` = mean(`BTC-USD.Close`))
+BTC <- BTC%>%mutate(month = format(Date, "%m%Y"))%>%group_by(month)%>%summarise(`BTC-USD.Close` = mean(`BTC-USD.Close`))%>%
+  arrange(month)
 BTC_return_dat <- data.frame(Date = BTC$month[-1], 
-                             BTC = 100*(log(BTC[-1,c( "BTC-USD.Close") ])-
-                                          log(BTC[-nrow(BTC),c("BTC-USD.Close") ])))%>%
-  mutate(month = as.Date(paste0("01", Date), format = "%d%m%Y"))%>%
-  arrange(Date)
+                             BTC = 100*((BTC[-1,c( "BTC-USD.Close") ])-
+                                          (BTC[-nrow(BTC),c("BTC-USD.Close") ]))/BTC[-nrow(BTC),c("BTC-USD.Close") ])%>%
+  mutate(month = as.Date(paste0("01", Date), format = "%d%m%Y"))
 
 BTC_dat <- data.frame(Date = BTC$month[-1], 
                       BTC = BTC[-1,c( "BTC-USD.Close") ])%>%
@@ -53,7 +53,7 @@ lm_addy <- lm(BTC.USD.Close ~ addy, data = all)
 summary(lm_addy)
 lm_users <- lm(BTC.USD.Close ~ users , data = all)
 summary(lm_users)
-lm5 <- lm(BTC.USD.Close ~  trans + addy , data = all)
+lm5 <- lm(BTC.USD.Close ~  trans + addy+users , data = all)
 summary(lm5)
 
 
