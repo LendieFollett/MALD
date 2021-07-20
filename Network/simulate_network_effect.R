@@ -89,4 +89,10 @@ yprim <- array(0,dim=dim(y))
 #source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
 exp_jumps <- norm_jumps <- ind <- FALSE
 source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps_long/keepsBTCSP_MALD.rds"))
+saveRDS(keeps,paste0("Network/keepsBTCSPSIM_MALD.rds"))
+
+apply(keeps$rho, 2, mean)
+#[1]  0.003716513 -0.020089649 -0.005576129 -0.6242593
+mean(keeps$rho[,3]>0)
+#[1] 0.4986
+
