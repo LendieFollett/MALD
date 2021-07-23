@@ -1,3 +1,7 @@
+######
+#DOES MONTHLY AGGREGATIONS
+#Liu time period: January 1, 2011, to December 31, 2018
+#Our time period: September 2014 to December 2020
 rm(list = ls())  ## DON'T FORGET TO SET WD!!
 library(ald)
 library(ggplot2)
@@ -11,17 +15,27 @@ library(quantmod)
 library(RcppTN)
 library(lubridate)
 
-users <- read.csv("Network_older/my-wallet-n-users")
-trans <- read.csv("Network_older/n-transactions")
-addy <- read.csv("Network_older/n-unique-addresses")
+folder <- "Network_older"
+if(folder == "Network"){
+  start <- "2014-09-01"%>%as.Date  
+  end <- "2020-12-31"%>%as.Date 
+}else{
+  start <- as.Date("2011-11-01")
+  end <- "2018-12-31"%>%as.Date 
+}
+
+
+users <- read.csv(paste0(folder,"/my-wallet-n-users.txt"))
+trans <- read.csv(paste0(folder,"/n-transactions.txt"))
+addy <- read.csv(paste0(folder,"/n-unique-addresses.txt"))
 
 users$Timestamp <- as.Date(users$Timestamp)
 trans$Timestamp <- as.Date(trans$Timestamp)
 addy$Timestamp <- as.Date(addy$Timestamp)
 
-users2 <- users %>% group_by(Timestamp)%>%summarise(users = mean(my.wallet.n.users)) %>%subset(Timestamp > as.Date("2011-11-01")) %>%mutate(month = format(Timestamp, "%m%Y"))%>%group_by(month)%>%summarise(users = mean(users))%>%mutate_at(c(2), function(x){x - lag(x)}) %>%mutate(month = as.Date(paste0("01", month), format = "%d%m%Y"))
-trans2 <- trans %>% group_by(Timestamp)%>%summarise(trans = mean(n.transactions)) %>%subset(Timestamp > as.Date("2011-11-01")) %>%mutate(month = format(Timestamp, "%m%Y"))%>%group_by(month)%>%summarise(trans = mean(trans)) %>% mutate_at(c(2), function(x){x - lag(x)})%>%mutate(month = as.Date(paste0("01", month), format = "%d%m%Y"))
-addy2 <- addy %>% group_by(Timestamp)%>%summarise(addy = mean(n.unique.addresses)) %>%subset(Timestamp > as.Date("2011-11-01")) %>%mutate(month = format(Timestamp, "%m%Y"))%>%group_by(month)%>%summarise(addy = mean(addy))%>% mutate_at(c(2), function(x){x - lag(x)})%>%mutate(month = as.Date(paste0("01", month), format = "%d%m%Y"))
+users2 <- users %>% group_by(Timestamp)%>%summarise(users = mean(my.wallet.n.users)) %>%subset(Timestamp > start & Timestamp < end) %>%mutate(month = format(Timestamp, "%m%Y"))%>%group_by(month)%>%summarise(users = mean(users))%>%mutate_at(c(2), function(x){x - lag(x)}) %>%mutate(month = as.Date(paste0("01", month), format = "%d%m%Y"))
+trans2 <- trans %>% group_by(Timestamp)%>%summarise(trans = mean(n.transactions)) %>%subset(Timestamp > start& Timestamp < end) %>%mutate(month = format(Timestamp, "%m%Y"))%>%group_by(month)%>%summarise(trans = mean(trans)) %>% mutate_at(c(2), function(x){x - lag(x)})%>%mutate(month = as.Date(paste0("01", month), format = "%d%m%Y"))
+addy2 <- addy %>% group_by(Timestamp)%>%summarise(addy = mean(n.unique.addresses)) %>%subset(Timestamp > start& Timestamp < end) %>%mutate(month = format(Timestamp, "%m%Y"))%>%group_by(month)%>%summarise(addy = mean(addy))%>% mutate_at(c(2), function(x){x - lag(x)})%>%mutate(month = as.Date(paste0("01", month), format = "%d%m%Y"))
 
 delta_net <- users2%>%merge(trans2, all.x=TRUE, all.y=TRUE)%>%merge(addy2, all.x=TRUE, all.y=TRUE) %>%
   arrange(month)
@@ -47,13 +61,13 @@ all <- merge(delta_net, BTC_return_dat, by.x = "month", by.y= "month", all=TRUE)
 
 cor(delta_net[,-1])
 
-lm_trans <- lm(BTC.USD.Close ~ trans , data = all)
-summary(lm_trans)
-lm_addy <- lm(BTC.USD.Close ~ addy, data = all)
-summary(lm_addy)
-lm_users <- lm(BTC.USD.Close ~ users , data = all)
-summary(lm_users)
-lm5 <- lm(BTC.USD.Close ~  trans + addy+users , data = all)
-summary(lm5)
+lm_trans_month <- lm(BTC.USD.Close ~ trans , data = all)
+summary(lm_trans_month )
+lm_addy_month  <- lm(BTC.USD.Close ~ addy, data = all)
+summary(lm_addy_month)
+lm_users_month  <- lm(BTC.USD.Close ~ users , data = all)
+summary(lm_users_month )
+lm5_month_old  <- lm(BTC.USD.Close ~  trans + addy+users , data = all)
+summary(lm5_month_old)
 
-
+stargazer(lm5_month_new, lm5_month_old)
