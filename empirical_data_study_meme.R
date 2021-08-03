@@ -41,8 +41,11 @@ names(DOGE) <- c("Date","DOGE-USD.Close","DOGE-USD.Open","DOGE-USD.High","DOGE-U
 getSymbols("^GSPC",from = "2020-10-01",to = "2021-06-30")
 SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
+getSymbols("MRNA",from = "2020-10-01",to = "2021-06-30")
+MRNA <- as.data.frame(MRNA)
+MRNA$Date <- as.Date(rownames(MRNA))
 
-S <- BTC %>% merge(GME) %>% merge(AMC) %>% merge(DOGE) %>% merge(SP500)
+S <- BTC %>% merge(GME) %>% merge(AMC) %>% merge(DOGE) %>% merge(SP500) %>% merge(MRNA)
 T <- nrow(S) - 1
 
 
@@ -134,6 +137,23 @@ for (k in 1:nrow(models)){
   ind <- models$ind[k]
   source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
   saveRDS(keeps,paste0("keeps_",models$model[k] ,"_BTC.rds"))
+}
+
+#################################################### 
+# ALL MODELS ---------- Moderna
+#################################################### 
+for (k in 1:nrow(models)){
+  print(paste0("----- > Starting ", models$model[k], " model < -------"))
+  use_starting_values <- FALSE
+  sourceCpp("pgas_2d.cpp") #C++ updates
+  # #2-D MODEL MCMCb        cfv09
+  y <- as.matrix(100*(log(S[-1,c("MRNA.Close","GSPC.Close")]) - log(S[-nrow(S),c("MRNA.Close","GSPC.Close")])))
+  yprim <- array(0,dim=dim(y))
+  exp_jumps <- models$exp_jumps[k]
+  norm_jumps <- models$norm_jumps[k]
+  ind <- models$ind[k]
+  source("run_mcmc_2d.R") #R+B iterations of pgas.R and pgas.cpp updates
+  saveRDS(keeps,paste0("keeps_",models$model[k] ,"_MRNA.rds"))
 }
 
 

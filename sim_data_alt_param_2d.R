@@ -16,8 +16,8 @@ true_rho <- c(.1,-.2,-.4,.4) #correlation between y's, volatility's and leverage
 true_mu <- c(.05,.05)
 
 y <- array(0, dim=c(T,2))
-x <- array(0, dim=c(T,2))
-x[1,] <- 0
+#x <- array(0, dim=c(T,2))
+#x[1,] <- 0
 
 #volatility model parameters, sparting point
 true_theta <- c(1,1.5)
@@ -88,13 +88,12 @@ for ( i in 1:T){
   idx <- 0
   set.seed(463468+i + idx + sim)
   temp <- rtmvnorm(n = 1, 
-                  mean = c(x[i,] + true_mu + true_J[i,],
+                  mean = c(true_mu + true_J[i,],
                          true_theta + true_phi*(true_omega[i,] - true_theta)),
                   sigma = Sigma, lower=c(-Inf,-Inf,0,0))
   
   true_omega[i+1,] <- temp[3:4]
   y[i,] <- temp[1:2]
-  if( i+1 <= T){ x[i+1,] <- y[i,] }  
 }
 
 
@@ -104,11 +103,11 @@ p <-  qplot(2:length(y), true_xic[-1,1]) +
                    y = true_xic[-1,1], 
                    yend = true_xic[-1,1] + y[-1] - ( y[-length(y)] + true_xic[-1,1]) ))
 
-plot(true_xic[,2]);lines(rep(true_sigma_v, length = length(true_omega)),col="red")
-plot(true_xic[,1]); lines(sqrt(true_omega),col="red")
-
-plot(y-x); lines(sqrt(true_omega),col="red")
-plot( y, type = "l")
-plot(true_omega,type = "l")
+# plot(true_xic[,2]);lines(rep(true_sigma_v, length = length(true_omega)),col="red")
+# plot(true_xic[,1]); lines(sqrt(true_omega),col="red")
+# 
+# plot(y-x); lines(sqrt(true_omega),col="red")
+# plot( y, type = "l")
+# plot(true_omega,type = "l")
 
 

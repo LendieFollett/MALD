@@ -3,8 +3,8 @@
 p <- .5
 
 w_start <- array(0,dim = c(T,2))
-w_start[,1] <- lowess((y[,1]-mean(y[,1]))^2, f = 0.2)$y #informed starting values
-w_start[,2] <- lowess((y[,2]-mean(y[,2]))^2, f = 0.2)$y #informed starting values
+w_start[,1] <- lowess((y[,1]-mean(y[,1]))^2, f = 0.1)$y #informed starting values
+w_start[,2] <- lowess((y[,2]-mean(y[,2]))^2, f = 0.1)$y #informed starting values
 #w_start[T+1,] <- c(w_start[T,1],w_start[T,2])
 #w_start <- c(w_start, tail(w_start,1))
 v <- rbind(w_start,c(w_start[T,1],w_start[T,2]))
