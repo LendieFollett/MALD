@@ -14,7 +14,9 @@ library(RcppTN)
 library(lubridate)
 #Liu time period: January 1, 2011, to December 31, 2018
 #Our time period: September 2014 to December 2020
-folder <- "Network_older"
+
+
+get_daily_reg <- function(folder){
 if(folder == "Network"){
   start <- "2014-09-01"%>%as.Date  
   end <- "2020-12-31"%>%as.Date 
@@ -33,10 +35,10 @@ users$Timestamp <- as.Date(users$Timestamp)
 trans$Timestamp <- as.Date(trans$Timestamp)
 addy$Timestamp <- as.Date(addy$Timestamp)
 
-users <- users %>% group_by(Timestamp)%>%subset(Timestamp > start & Timestamp < end)%>%summarise(users = mean(my.wallet.n.users))
+users <- users %>% subset(Timestamp > start & Timestamp < end)%>%group_by(Timestamp)%>%summarise(users = mean(my.wallet.n.users))
 #pmts <- pmts %>% group_by(Timestamp)%>%subset(Timestamp > start & Timestamp < end)%>%summarise(pmts = mean(n.payments))
-trans <- trans %>% group_by(Timestamp)%>%subset(Timestamp > start & Timestamp < end)%>%summarise(trans = mean(n.transactions))
-addy <- addy %>% group_by(Timestamp)%>%subset(Timestamp > start & Timestamp < end)%>%summarise(addy = mean(n.unique.addresses))
+trans <- trans %>% subset(Timestamp > start & Timestamp < end)%>%group_by(Timestamp)%>%summarise(trans = mean(n.transactions))
+addy <- addy %>% subset(Timestamp > start & Timestamp < end)%>%group_by(Timestamp)%>%summarise(addy = mean(n.unique.addresses))
 
 net <- users %>%merge(trans,all=TRUE)%>%merge(addy,all=TRUE)
 
@@ -59,11 +61,18 @@ lm_users <- lm(BTC ~ users , data = all)
 summary(lm_users)
 #lm_pmts <- lm(BTC ~ pmts, data = all)
 #summary(lm_pmts)
-lm_trans <- lm(BTC ~ trans , data = all)
-summary(lm_trans)
+#lm_trans <- lm(BTC ~ trans , data = all)
+#summary(lm_trans)
 lm_addy <- lm(BTC ~ addy, data = all)
 summary(lm_addy)
-lm5_daily_old <- lm(BTC ~  trans + addy + users, data = all)
+lm5 <- lm(BTC ~  trans + addy + users, data = all)
+return(lm5)
+}
+
+#can't do old; there is not data available on daily level 
+#daily_old <- get_daily_reg(folder = "Network_older")
+daily_new <- get_daily_reg(folder = "Network")
+
 
 
 summary(lm5)

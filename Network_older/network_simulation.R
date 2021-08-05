@@ -14,8 +14,9 @@ library(MCMCpack)
 library(quantmod)
 library(RcppTN)
 library(lubridate)
+library(coinmarketcapr)
 
-folder <- "Network_older"
+get_monthly_reg <- function(folder){
 if(folder == "Network"){
   start <- "2014-09-01"%>%as.Date  
   end <- "2020-12-31"%>%as.Date 
@@ -69,5 +70,12 @@ lm_users_month  <- lm(BTC.USD.Close ~ users , data = all)
 summary(lm_users_month )
 lm5_month_old  <- lm(BTC.USD.Close ~  trans + addy+users , data = all)
 summary(lm5_month_old)
+return(lm5_month_old)
+}
 
-stargazer(lm5_month_new, lm5_month_old)
+
+monthly_old <- get_monthly_reg(folder = "Network_older")
+
+monthly_new <- get_monthly_reg(folder = "Network")
+
+stargazer(monthly_old, monthly_new)
