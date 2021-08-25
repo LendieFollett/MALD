@@ -168,7 +168,36 @@ g4 <- ggplot(J2) +
   ylab("Jump -- Asset 2")
 
 p1 <- grid.arrange(g1,g3,g2,g4,nrow=2)
-ggsave("VolandJumps.pdf",p1)
+library(reshape2)
+vol_plot <- rbind(data.frame(Vol1, series = "Asset 1"), 
+      data.frame(Vol2, series = "Asset 2")) %>%
+  melt(id.var = c("Time", "series")) %>%
+  ggplot() + 
+  geom_line(aes(x = Time, y =value, colour = variable, linetype =variable )) +
+  facet_wrap(series~., nrow = 2, scales = "free") +
+  theme_bw() +
+  scale_colour_grey(start = .2, end = .6) +
+  theme(legend.position = "none") +
+  labs(x = "Time", y = "Volatility")
+vol_plot
+ggsave("sim_volatility.pdf",vol_plot)
+
+
+
+jump_plot <- rbind(data.frame(J1, series = "Asset 1"), 
+      data.frame(J2, series = "Asset 2")) %>%
+  ggplot() + 
+  geom_point(aes(x = Time, y =True)) +
+  geom_line(aes(x = Time, y =Est), colour = "grey60") +
+  facet_wrap(series~., nrow = 2, scales = "free") +
+  theme_bw() +
+  scale_colour_grey(start = .2, end = .6) +
+  theme(legend.position = "none") +
+  labs(x = "Time", y = "Volatility")
+jump_plot
+ggsave("sim_jump.pdf",vol_plot)
+
+
 
 get_qq <- function(keeps, simdat){## Function to make the QQ Plots
   delta <- rep(0,T)
