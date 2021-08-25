@@ -44,6 +44,7 @@ library(gridExtra)
 
 s <- 100
 keeps <- readRDS(paste0("keeps/keeps",s,".rds")) 
+set.seed(s)
 sim = runif(1,1, 50000)
 print(sim)
 idx =235235235
