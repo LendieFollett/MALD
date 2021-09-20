@@ -195,7 +195,7 @@ jump_plot <- rbind(data.frame(J1, series = "Asset 1"),
   theme(legend.position = "none") +
   labs(x = "Time", y = "Volatility")
 jump_plot
-ggsave("sim_jump.pdf",vol_plot)
+ggsave("sim_jump.pdf",jump_plot)
 
 
 
