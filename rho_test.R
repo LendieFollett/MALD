@@ -15,15 +15,22 @@ Date <- S$Date
 tmp <- 
 for (m in c("IND","LD","MVN","MALD")){
   keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",m,".rds"))
-  mu <- apply(keeps$mu,2,mean)
-  theta <- apply(keeps$theta,2,mean)
-  kappa <- 1 - apply(keeps$phi,2,mean)
-  sigmav <- apply(keeps$sigma_v,2,mean)
-  J <- apply(keeps$J,c(2,3),mean)
-  V <- apply(keeps$v,c(2,3),mean)
-  eps_y <- (y - mu[1] - J[,1])/sqrt(V[-(T+1),1])
-  eps_v <- (V[-1,1] - V[-(T+1),1] - kappa[1]*(theta[1] - V[-(T+1),1]))/(sigmav[1]*sqrt(V[-(T+1),1]))
-  rho <- eps_y*eps_v
+  mu <- keeps$mu[,1]
+  theta <- keeps$theta[,1]
+  kappa <- 1 - keeps$phi[,1]
+  sigmav <- keeps$sigma_v[,1]
+  J <- keeps$J[,,1]
+  V <- keeps$v[,,1]
+  eps_y <- NULL
+  eps_v <- NULL
+  for (k in 1:20000){
+    print(k)
+    eps_y <- cbind(eps_y,(y - mu[k] - J[k,])/sqrt(V[k,-(T+1)]))
+    eps_v <- cbind(eps_v,(V[k,-1] - V[k,-(T+1)] - kappa[k]*(theta[k] - V[k,-(T+1)]))/(sigmav[k]*sqrt(V[k,-(T+1)])))
+  }
+  rho <- (apply(eps_y*eps_v,1,mean) - apply(eps_y,1,mean)*apply(eps_v,1,mean))/sqrt(apply(eps_y,1,var)*apply(eps_v,1,var))
+  tmp$tm <- rho
+  names(tmp)[names(tmp)=="tm"] = m
   tmp$tm <- rho
   names(tmp)[names(tmp)=="tm"] = m
 }
@@ -102,7 +109,7 @@ for (i in c("BTC","DOGE","AMC","GME","MRNA","DIS","BBY","BMY")){
       eps_y <- cbind(eps_y,(y - mu[k] - J[k,])/sqrt(V[k,-(T+1)]))
       eps_v <- cbind(eps_v,(V[k,-1] - V[k,-(T+1)] - kappa[k]*(theta[k] - V[k,-(T+1)]))/(sigmav[k]*sqrt(V[k,-(T+1)])))
     }
-    rho <- apply(eps_y*eps_v,1,mean)
+    rho <- (apply(eps_y*eps_v,1,mean) - apply(eps_y,1,mean)*apply(eps_v,1,mean))/sqrt(apply(eps_y,1,var)*apply(eps_v,1,var))
     tmp$tm <- rho
     names(tmp)[names(tmp)=="tm"] = m
   }
