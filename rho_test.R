@@ -11,6 +11,7 @@ SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
 S <- merge(BTC,SP500)
 T <- nrow(S) - 1
+y = log(S$`BTC-USD.Close`)[-1] - log(S$`BTC-USD.Close`)[-(T+1)]
 Date <- S$Date
 tmp <- data.frame(Date=S$Date[-1])
 for (m in c("IND","LD","MVN","MALD")){
