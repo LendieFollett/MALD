@@ -31,8 +31,6 @@ for (m in c("IND","LD","MVN","MALD")){
   rho <- (apply(eps_y*eps_v,1,mean) - apply(eps_y,1,mean)*apply(eps_v,1,mean))/sqrt(apply(eps_y,1,var)*apply(eps_v,1,var))
   tmp$tm <- rho
   names(tmp)[names(tmp)=="tm"] = m
-  tmp$tm <- rho
-  names(tmp)[names(tmp)=="tm"] = m
 }
 p <- tmp %>% gather("Model","Rho",-Date) %>%
   ggplot() +
