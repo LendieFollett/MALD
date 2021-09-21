@@ -22,7 +22,7 @@ for (m in c("IND","LD","MVN","MALD")){
   J <- apply(keeps$J,c(2,3),mean)
   V <- apply(keeps$v,c(2,3),mean)
   eps_y <- (y - mu[1] - J[,1])/sqrt(V[-(T+1),1])
-  eps_v <- (V[-1,1] - V[-(T+1),1] - kappa[1]*(theta[1] - V[-(T+1),1]))/sqrt(V[-(T+1),1])
+  eps_v <- (V[-1,1] - V[-(T+1),1] - kappa[1]*(theta[1] - V[-(T+1),1]))/(sigmav[1]*sqrt(V[-(T+1),1]))
   rho <- eps_y*eps_v
   tmp$tm <- rho
   names(tmp)[names(tmp)=="tm"] = m
@@ -72,7 +72,7 @@ for (i in c("BTC","DOGE","AMC","GME","MRNA","DIS","BBY","BMY")){
   if (i == "BTC"){
     y = log(S$`BTC-USD.Close`)[-1] - log(S$`BTC-USD.Close`)[-(T+1)]
   } else if (i == "DOGE"){
-    y = log(S$DOGE.Close)[-1] - log(S$DOGE.Close)[-(T+1)]
+    y = log(S$`DOGE-USD.Close`)[-1] - log(S$`DOGE-USD.Close`)[-(T+1)]
   }else if (i == "AMC"){
     y = log(S$AMC.Close)[-1] - log(S$AMC.Close)[-(T+1)]
   } else if (i == "GME"){
@@ -89,15 +89,20 @@ for (i in c("BTC","DOGE","AMC","GME","MRNA","DIS","BBY","BMY")){
   tmp <- data.frame(Date=S$Date[-1])
   for (m in c("SVIND","SVLD","SVMVN","SVMALD")){
     keeps <- readRDS(paste0("keeps/keeps_",m,"_",i,".rds"))
-    mu <- apply(keeps$mu,2,mean)
-    theta <- apply(keeps$theta,2,mean)
-    kappa <- 1 - apply(keeps$phi,2,mean)
-    sigmav <- apply(keeps$sigma_v,2,mean)
-    J <- apply(keeps$J,c(2,3),mean)
-    V <- apply(keeps$v,c(2,3),mean)
-    eps_y <- (y - mu[1] - J[,1])/sqrt(V[-(T+1),1])
-    eps_v <- (V[-1,1] - V[-(T+1),1] - kappa[1]*(theta[1] - V[-(T+1),1]))/sqrt(V[-(T+1),1])
-    rho <- eps_y*eps_v
+    mu <- keeps$mu[,1]
+    theta <- keeps$theta[,1]
+    kappa <- 1 - keeps$phi[,1]
+    sigmav <- keeps$sigma_v[,1]
+    J <- keeps$J[,,1]
+    V <- keeps$v[,,1]
+    eps_y <- NULL
+    eps_v <- NULL
+    for (k in 1:20000){
+      print(k)
+      eps_y <- cbind(eps_y,(y - mu[k] - J[k,])/sqrt(V[k,-(T+1)]))
+      eps_v <- cbind(eps_v,(V[k,-1] - V[k,-(T+1)] - kappa[k]*(theta[k] - V[k,-(T+1)]))/(sigmav[k]*sqrt(V[k,-(T+1)])))
+    }
+    rho <- apply(eps_y*eps_v,1,mean)
     tmp$tm <- rho
     names(tmp)[names(tmp)=="tm"] = m
   }
