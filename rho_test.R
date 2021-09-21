@@ -12,7 +12,7 @@ SP500$Date <- as.Date(rownames(SP500))
 S <- merge(BTC,SP500)
 T <- nrow(S) - 1
 Date <- S$Date
-tmp <- 
+tmp <- data.frame(Date=S$Date[-1])
 for (m in c("IND","LD","MVN","MALD")){
   keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",m,".rds"))
   mu <- keeps$mu[,1]
