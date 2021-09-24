@@ -33,11 +33,13 @@ for (m in c("IND","LD","MVN","MALD")){
   rho <- (apply(eps_y*eps_v,1,mean) - apply(eps_y,1,mean)*apply(eps_v,1,mean))/sqrt(apply(eps_y,1,var)*apply(eps_v,1,var))
   tmp$V <- sqrt(apply(V,2,mean)*252)[-(T+1)]
   tmp$Rho <- rho
-  p1 <- ggplot(tmp) +
-    geom_line(aes(x=Date,y=V)) + theme_bw() + theme(text = element_text(size = 20))
-  p2 <- ggplot(tmp) +
-    geom_line(aes(x=Date,y=Rho)) + theme_bw() + theme(text = element_text(size = 20))
-  ggsave(paste0("rho_t_long_",m,".pdf"),grid.arrange(p1,p2,nrow=2), height = 10, width = 14) 
+  p <- tmp %>% 
+    gather("Type","Value",-Date) %>% 
+    ggplot() + 
+    geom_line(aes(x=Date,y=Value,colour=Type)) + 
+    facet_grid(Type ~ ., scales = "free_y") + 
+    theme(legend.position = "none") + theme_bw()
+  ggsave(paste0("rho_t_long_",m,".pdf"),p, height = 10, width = 14) 
 }
 
 
@@ -113,13 +115,18 @@ for (i in c("BTC","DOGE","AMC","GME","MRNA","DIS","BBY","BMY")){
     rho <- (apply(eps_y*eps_v,1,mean) - apply(eps_y,1,mean)*apply(eps_v,1,mean))/sqrt(apply(eps_y,1,var)*apply(eps_v,1,var))
     tmp$V <- sqrt(apply(V,2,mean)*252)[-(T+1)]
     tmp$Rho <- rho
-    p1 <- ggplot(tmp) +
-      geom_line(aes(x=Date,y=V)) + theme_bw() + theme(text = element_text(size = 20))
-    p2 <- ggplot(tmp) +
-      geom_line(aes(x=Date,y=Rho)) + theme_bw() + theme(text = element_text(size = 20))
-    ggsave(paste0(i,"_",m,"_rho_t.pdf"),grid.arrange(p1,p2,nrow=2), height = 10, width = 14) 
+    p <- tmp %>% 
+      gather("Type","Value",-Date) %>% 
+      ggplot() + 
+      geom_line(aes(x=Date,y=Value,colour=Type)) + 
+      facet_grid(Type ~ ., scales = "free_y") + 
+      theme(legend.position = "none") + theme_bw()
+    ggsave(paste0("rho_t_long_",m,".pdf"),p, height = 10, width = 14) 
   }
 }
+
+
+
 
 
 
