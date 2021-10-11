@@ -102,61 +102,61 @@ source("run_mcmc_2d_threshold.R") #R+B iterations of pgas.R and pgas.cpp updates
 saveRDS(keeps,paste0("keeps/keepsBTCSP_LD_threshold.rds"))
 
 
-#################################################### 
-# CONVERGENCE CHECKS ----------
-#################################################### 
-library(LaplacesDemon)
-
-total <- 20000 #number of mcmc iterations saved after burn-in, thinning
-doESS <- function(x, total){
-  R <- total
-  if(!is.null(dim(x))){ #if it's a data frame
-    return(apply(x[1:R,], 2, ESS))
-  }else{
-    return(ESS(x[1:R]))
-  }
-}
-
-
-#SVMALD
-lapply(keeps[c(4,6:17)], doESS, total = 20000) %>% str()
-lapply(keepsBTCSP[c(4,6:17)], domean, total = 20000) %>% str()
-
-plot(keeps$sigma_c[,1], type = "l")
-plot(keeps$sigma_c[,2], type = "l")
-plot(keeps$rhoc, type = "l")
-plot(keeps$xi_cw[,1], type = "l")
-plot(keeps$xi_cw[,2], type = "l")
-plot(keeps$xi_y1eta, type = "l")
-plot(keeps$xi_y2eta, type = "l")
-plot(keeps$xi_y1w, type = "l")
-plot(keeps$xi_y2w, type = "l")
-
-plot(keeps$lambda[,1], type = "l")
-plot(keeps$lambda[,2], type = "l")
-plot(keeps$lambda[,3], type = "l")
-
-#SVALD
-lapply(keepsIND[c(4,6:17)], doESS, total = total) %>% str()
-#SVMVN
-lapply(keepsBTCSP_MVN[c(4,6:17)], doESS, total = total) %>% str()
-#SVLD
-lapply(keepsBTCSP_LD[c(4,6:17)], doESS, total = total) %>% str()
-
-
-
-plot(keepsBTCSP$sigma_c[1:total, 1]);length(unique(keepsBTCSP$sigma_c[1:total, 1]))/total
-plot(keepsBTCSP$sigma_c[1:total, 1])
-plot(keepsBTCSP$rhoc[1:total])
-plot(keepsBTCSP$xi_y2eta[1:total])
-
-#use for starting values?
-
-starting_values <- lapply(keeps, domean, total = 20000)
-starting_values %>% str
-starting_values$delta <- apply(starting_values$delta , 2, round)
-starting_values$xi_y1 <- starting_values$xi_y1c <- starting_values$J[,1] + rnorm(length(starting_values$xi_y1), 0, .001)
-starting_values$xi_y2 <- starting_values$xi_y2c <- starting_values$J[,2]+ rnorm(length(starting_values$xi_y1), 0, .001)
-saveRDS(starting_values,"starting_values_MALD.rds")
-
-
+# #################################################### 
+# # CONVERGENCE CHECKS ----------
+# #################################################### 
+# library(LaplacesDemon)
+# 
+# total <- 20000 #number of mcmc iterations saved after burn-in, thinning
+# doESS <- function(x, total){
+#   R <- total
+#   if(!is.null(dim(x))){ #if it's a data frame
+#     return(apply(x[1:R,], 2, ESS))
+#   }else{
+#     return(ESS(x[1:R]))
+#   }
+# }
+# 
+# 
+# #SVMALD
+# lapply(keeps[c(4,6:17)], doESS, total = 20000) %>% str()
+# lapply(keepsBTCSP[c(4,6:17)], domean, total = 20000) %>% str()
+# 
+# plot(keeps$sigma_c[,1], type = "l")
+# plot(keeps$sigma_c[,2], type = "l")
+# plot(keeps$rhoc, type = "l")
+# plot(keeps$xi_cw[,1], type = "l")
+# plot(keeps$xi_cw[,2], type = "l")
+# plot(keeps$xi_y1eta, type = "l")
+# plot(keeps$xi_y2eta, type = "l")
+# plot(keeps$xi_y1w, type = "l")
+# plot(keeps$xi_y2w, type = "l")
+# 
+# plot(keeps$lambda[,1], type = "l")
+# plot(keeps$lambda[,2], type = "l")
+# plot(keeps$lambda[,3], type = "l")
+# 
+# #SVALD
+# lapply(keepsIND[c(4,6:17)], doESS, total = total) %>% str()
+# #SVMVN
+# lapply(keepsBTCSP_MVN[c(4,6:17)], doESS, total = total) %>% str()
+# #SVLD
+# lapply(keepsBTCSP_LD[c(4,6:17)], doESS, total = total) %>% str()
+# 
+# 
+# 
+# plot(keepsBTCSP$sigma_c[1:total, 1]);length(unique(keepsBTCSP$sigma_c[1:total, 1]))/total
+# plot(keepsBTCSP$sigma_c[1:total, 1])
+# plot(keepsBTCSP$rhoc[1:total])
+# plot(keepsBTCSP$xi_y2eta[1:total])
+# 
+# #use for starting values?
+# 
+# starting_values <- lapply(keeps, domean, total = 20000)
+# starting_values %>% str
+# starting_values$delta <- apply(starting_values$delta , 2, round)
+# starting_values$xi_y1 <- starting_values$xi_y1c <- starting_values$J[,1] + rnorm(length(starting_values$xi_y1), 0, .001)
+# starting_values$xi_y2 <- starting_values$xi_y2c <- starting_values$J[,2]+ rnorm(length(starting_values$xi_y1), 0, .001)
+# saveRDS(starting_values,"starting_values_MALD.rds")
+# 
+# 
