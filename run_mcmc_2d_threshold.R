@@ -37,7 +37,7 @@ keeps <- list(
 h <- 1e-4
 
 for (chn in 1:n_chns){
-source("starting_values_2d.R") #initialize values
+source("starting_values_2d_threshold.R") #initialize values
 ####### ONLY FOR PFE #########
   #w_start[1,1] = 0.005
 #(in total, we're running R + B iterations)
