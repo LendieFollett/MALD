@@ -143,7 +143,7 @@ arma::mat armgetSigma(arma::vec omegat, arma::vec sigma_v, arma::vec rho){
     Sigma(2,0) = rho(3) * sigma_v(0) * omegat(0);
   } else {
     Sigma(0,2) = rho(2) * sigma_v(0) * omegat(0);//rho(2)= corr btwn y1, v1 errors when v1 is above threshold
-    Sigma(2,0) = rho(2) * sigma_v(0) * omegat(0)
+    Sigma(2,0) = rho(2) * sigma_v(0) * omegat(0);
   }
   Sigma(0,3) = 0;
   Sigma(3,0) = 0;
