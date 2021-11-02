@@ -129,7 +129,7 @@ arma::vec dmvnrm_arma(arma::mat x,
   return(out);
 }
 
-arma::mat armgetSigma(arma::vec omegat, arma::vec sigma_v, arma::vec rho){
+arma::mat armgetSigma(arma::vec omegat, arma::vec sigma_v, arma::vec rho, double threshold){
   arma::mat Sigma(4,4);
   Sigma(0,0) = omegat(0);//y1 variance
   Sigma(1,1) = omegat(1); // y2 variance
@@ -138,7 +138,7 @@ arma::mat armgetSigma(arma::vec omegat, arma::vec sigma_v, arma::vec rho){
   
   Sigma(0,1) = rho(0) * sqrt(omegat(0) * omegat(1)); //rho(0)= corr btwn y1, y2 errors
   Sigma(1,0) = rho(0) * sqrt(omegat(0) * omegat(1));
-  if (omegat(0) < 20/sqrt(252)){
+  if (omegat(0) < pow(threshold,2)/252){
     Sigma(0,2) = rho(3) * sigma_v(0) * omegat(0);//rho(3)= corr btwn y1, v1 errors when v1 is below threshold
     Sigma(2,0) = rho(3) * sigma_v(0) * omegat(0);
   } else {
@@ -208,7 +208,7 @@ std::vector<int> csample_int( std::vector<int> x,
 }
 
 // [[Rcpp::export]]
-double log_pyv(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho){
+double log_pyv(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, double threshold){
   int T = y.n_rows;
   double target = 0;
   
@@ -227,7 +227,7 @@ double log_pyv(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec
   target += dmvnorm_arma(eps_v0,  arma::trans(arma::zeros(2)), Sigma_v0, true)[0];
   
   for (int t = 0;t < T; t++){
-    Sigma = armgetSigma(arma::trans(omega.row(t)), sigma_v, rho);
+    Sigma = armgetSigma(arma::trans(omega.row(t)), sigma_v, rho, threshold);
     
     epsilon[0] = y(t,0) - (x(t,0) + mu(0) + J(t,0));
     epsilon[1] = y(t,1) - (x(t,1) + mu(1) + J(t,1));
@@ -293,87 +293,7 @@ double log_pxi_c(arma::mat xi_c, arma::vec xi_cs, arma::vec xi_cw, arma::vec sig
 }
 
 // [[Rcpp::export]]
-double gethat(double a, double b, double c, double d, double sign){
-  double disc, q, r, dum1, s, t, term1, r13, x1, x2, x3, fx1, fx2, fx3, hat;
-  if (d == 0){ // One solution is 0, then can use quadratic formula
-    x1 = 0;
-    if ((b*b - 4*a*c < 0)) {
-      hat = 0.0001;
-    } else {
-      x2 = (-b + sqrt(b*b - 4*a*c)) / (2*a);
-      x3 = (-b - sqrt(b*b - 4*a*c)) / (2*a);
-      if (x1 <= 0){
-        fx1 = R_NegInf;
-      } else {
-        fx1 = R::dnorm(sign*sqrt(2*d),0,sqrt(x1),true) + R::dnorm(x1,-b/a,sqrt(-1/a),true);
-      }
-      if (x2 <= 0){
-        fx2 = R_NegInf;
-      } else {
-        fx2 = R::dnorm(sign*sqrt(2*d),0,sqrt(x2),true) + R::dnorm(x2,-b/a,sqrt(-1/a),true);
-      }
-      if (x3 <= 0){
-        fx3 = R_NegInf;
-      } else {
-        fx3 = R::dnorm(sign*sqrt(2*d),0,sqrt(x3),true) + R::dnorm(x3,-b/a,sqrt(-1/a),true);
-      }
-      if ((fx1 > fx2) & (fx1 > fx3)){
-        hat = x1;
-      } else if ((fx2 > fx3) & (fx2 > fx1)){
-        hat = x2;
-      } else {
-        hat = x3;
-      }
-    }
-  } else {
-    q = (3.0*c/a - (b*b)/(a*a))/9.0;
-    r = -(27.0*d/a) + b/a*(9.0*c/a - 2.0*(b*b)/(a*a));
-    r /= 54.0;
-    disc = q*q*q + r*r;
-    term1 = (b/(3.0*a));
-    if (disc > 0){ // only 1 real root, is the value of hat
-      s = r + sqrt(disc);
-      s = s<0 ? -cbrt(-s) : cbrt(s);
-      t = r - sqrt(disc);
-      t = t<0 ? -cbrt(-t) : cbrt(t);
-      hat = -term1 + s + t;
-    } else { // 3 real roots, need to compare values to determine what hat is
-      q = -q;
-      dum1 = q*q*q;
-      dum1 = acos(r/sqrt(dum1));
-      r13 = 2.0*sqrt(q);
-      x1 = -term1 + r13*cos(dum1/3.0);
-      x2 = -term1 + r13*cos((dum1 + 2.0*M_PI)/3.0);
-      x3 = -term1 + r13*cos((dum1 + 4.0*M_PI)/3.0);
-      if (x1 <= 0){
-        fx1 = R_NegInf;
-      } else {
-        fx1 = R::dnorm(sign*sqrt(2*d),0,sqrt(x1),true) + R::dnorm(x1,-b/a,sqrt(-1/a),true);
-      }
-      if (x2 <= 0){
-        fx2 = R_NegInf;
-      } else {
-        fx2 = R::dnorm(sign*sqrt(2*d),0,sqrt(x2),true) + R::dnorm(x2,-b/a,sqrt(-1/a),true);
-      }
-      if (x3 <= 0){
-        fx3 = R_NegInf;
-      } else {
-        fx3 = R::dnorm(sign*sqrt(2*d),0,sqrt(x3),true) + R::dnorm(x3,-b/a,sqrt(-1/a),true);
-      }
-      if ((fx1 > fx2) & (fx1 > fx3)){
-        hat = x1;
-      } else if ((fx2 > fx3) & (fx2 > fx1)){
-        hat = x2;
-      } else {
-        hat = x3;
-      }
-    }
-  }
-  return hat;
-}
-
-// [[Rcpp::export]]
-IntegerVector update_delta(arma::mat y, arma::mat x, arma::mat omega, arma::vec xiy1, arma::vec xiy2, arma::mat xic, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v ,arma::vec rho, arma::vec lambda){
+IntegerVector update_delta(arma::mat y, arma::mat x, arma::mat omega, arma::vec xiy1, arma::vec xiy2, arma::mat xic, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v ,arma::vec rho, arma::vec lambda, double threshold){
   int T = y.n_rows;
   IntegerVector N(T);
   double part1_N3=0;  double part1_N2=0; double part1_N1=0; double part1_N0=0;
@@ -629,7 +549,7 @@ arma::rowvec pgas_sc_cpp(arma::mat xi, arma::rowvec w_c, arma::mat Sigma_c, arma
 }
 
 // [[Rcpp::export]]
-arma::rowvec pgas_xiy1_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, arma::vec xiy1prim, arma::vec xiy2, arma::mat xic, arma::vec Ny1, arma::vec Ny2, arma::vec Nc, double w, double eta, arma::vec sy1, int N){
+arma::rowvec pgas_xiy1_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, arma::vec xiy1prim, arma::vec xiy2, arma::mat xic, arma::vec Ny1, arma::vec Ny2, arma::vec Nc, double w, double eta, arma::vec sy1, int N, double threshold){
   // Initializations
   int T = xiy1prim.n_rows;
   arma::mat xiy1(N,T);
@@ -659,7 +579,7 @@ arma::rowvec pgas_xiy1_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec 
   std::vector<int> Indices(N) ;
   std::iota (std::begin(Indices), std::end(Indices), 0);
   
-  sigma = armgetSigma(arma::trans(omega.row(0)),  sigma_v,  rho);
+  sigma = armgetSigma(arma::trans(omega.row(0)),  sigma_v,  rho, threshold);
   sigma12 = sigma.cols(idx);
   sigma12 = sigma12.row(0);
   sigma22 = sigma.rows(idx);
@@ -701,7 +621,7 @@ arma::rowvec pgas_xiy1_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec 
                                  TRUE,
                                  weights);
     
-    sigma = armgetSigma(arma::trans(omega.row(t)),  sigma_v,  rho);
+    sigma = armgetSigma(arma::trans(omega.row(t)),  sigma_v,  rho, threshold);
     sigma12 = sigma.cols(idx);
     sigma12 = sigma12.row(0);
     sigma22 = sigma.rows(idx);
@@ -759,7 +679,7 @@ arma::rowvec pgas_xiy1_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec 
 }
 
 // [[Rcpp::export]]
-arma::rowvec pgas_xiy2_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, arma::vec xiy1, arma::vec xiy2prim, arma::mat xic, arma::vec Ny1, arma::vec Ny2, arma::vec Nc, double w, double eta, arma::vec sy2, int N){
+arma::rowvec pgas_xiy2_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, arma::vec xiy1, arma::vec xiy2prim, arma::mat xic, arma::vec Ny1, arma::vec Ny2, arma::vec Nc, double w, double eta, arma::vec sy2, int N, double threshold){
   // Initializations
   int T = xiy2prim.n_rows;
   arma::mat xiy2(N,T);
@@ -789,7 +709,7 @@ arma::rowvec pgas_xiy2_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec 
   std::vector<int> Indices(N) ;
   std::iota (std::begin(Indices), std::end(Indices), 0);
   
-  sigma = armgetSigma(arma::trans(omega.row(0)),  sigma_v,  rho);
+  sigma = armgetSigma(arma::trans(omega.row(0)),  sigma_v,  rho, threshold);
   sigma12 = sigma.cols(idx);
   sigma12 = sigma12.row(1);
   sigma22 = sigma.rows(idx);
@@ -831,7 +751,7 @@ arma::rowvec pgas_xiy2_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec 
                                  TRUE,
                                  weights);
     
-    sigma = armgetSigma(arma::trans(omega.row(t)),  sigma_v,  rho);
+    sigma = armgetSigma(arma::trans(omega.row(t)),  sigma_v,  rho, threshold);
     sigma12 = sigma.cols(idx);
     sigma12 = sigma12.row(1);
     sigma22 = sigma.rows(idx);
@@ -889,7 +809,7 @@ arma::rowvec pgas_xiy2_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec 
 }
 
 // [[Rcpp::export]]
-arma::mat pgas_xic_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, arma::vec xiy1, arma::vec xiy2, arma::mat xicprim, arma::vec Ny1, arma::vec Ny2, arma::vec Nc, arma::vec wc, arma::vec sigmac, double rhoc, arma::vec sc, int N){
+arma::mat pgas_xic_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, arma::vec xiy1, arma::vec xiy2, arma::mat xicprim, arma::vec Ny1, arma::vec Ny2, arma::vec Nc, arma::vec wc, arma::vec sigmac, double rhoc, arma::vec sc, int N, double threshold){
   // Initializations
   int T = xicprim.n_rows;
   arma::cube xic(T,2,N);
@@ -932,7 +852,7 @@ arma::mat pgas_xic_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec mu, 
   s_pri(0, 1) = rhoc * sigmac(0) * sigmac(1) * sc(0);
   s_pri(1, 0) = rhoc * sigmac(0) * sigmac(1) * sc(0);
   
-  sigma = armgetSigma(arma::trans(omega.row(0)), sigma_v, rho);
+  sigma = armgetSigma(arma::trans(omega.row(0)), sigma_v, rho, threshold);
   sigma11 = sigma.cols(idx0);
   sigma11 = sigma11.rows(idx0);
   sigma12 = sigma.cols(idx0);
@@ -990,7 +910,7 @@ arma::mat pgas_xic_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec mu, 
     s_pri(0, 1) = rhoc * sigmac(0) * sigmac(1) * sc(t);
     s_pri(1, 0) = rhoc * sigmac(0) * sigmac(1) * sc(t);
     
-    sigma = armgetSigma(arma::trans(omega.row(t)), sigma_v, rho);
+    sigma = armgetSigma(arma::trans(omega.row(t)), sigma_v, rho, threshold);
     sigma11 = sigma.cols(idx0);
     sigma11 = sigma11.rows(idx0);
     sigma12 = sigma.cols(idx0);
@@ -1056,7 +976,7 @@ arma::mat pgas_xic_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::vec mu, 
 }
 
 // [[Rcpp::export]]
-arma::mat pgas_v_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, int N){
+arma::mat pgas_v_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, int N, double threshold){
   // Initializations
   int T = y.n_rows;
   arma::cube v(T+1,2,N);
@@ -1112,7 +1032,7 @@ arma::mat pgas_v_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arm
     } else {
       vv(0) = v(0,0,i);
       vv(1) = v(0,1,i);
-      sigma = armgetSigma(vv, sigma_v, rho);
+      sigma = armgetSigma(vv, sigma_v, rho, threshold);
       sigma11 = sigma.rows(idx0);
       sigma11 = sigma11.cols(idx0);
       epsilon(0) = y(0,0) - (x(0,0) + mu(0) + J(0,0));
@@ -1138,7 +1058,7 @@ arma::mat pgas_v_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arm
       resid(1) = y(t-1,1) - (x(t-1,1) + mu(1) + J(t-1,1));
       resid(2) = (theta(0) + phi(0) * (vv(0) - theta(0)));
       resid(3) = (theta(1) + phi(1) * (vv(1) - theta(1)));
-      sigma = armgetSigma(vv, sigma_v, rho);
+      sigma = armgetSigma(vv, sigma_v, rho, threshold);
       sigma11 = sigma.cols(idx0);
       sigma11 = sigma11.rows(idx0);
       sigma12 = sigma.cols(idx1);
@@ -1167,7 +1087,7 @@ arma::mat pgas_v_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arm
         resid(1) = y(t-1,1) - (x(t-1,1) + mu(1) + J(t-1,1));
         resid(2) = omega(t,0) - (theta(0) + phi(0) * (vv(0) - theta(0)));
         resid(3) = omega(t,1) - (theta(1) + phi(1) * (vv(1) - theta(1)));
-        sigma = armgetSigma(vv, sigma_v, rho);
+        sigma = armgetSigma(vv, sigma_v, rho, threshold);
         sigma11 = sigma.cols(idx0);
         sigma11 = sigma11.rows(idx0);
         sigma12 = sigma.cols(idx1);
@@ -1205,7 +1125,7 @@ arma::mat pgas_v_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arm
       } else {
         vv(0) = v(t,0,i);
         vv(1) = v(t,1,i);
-        sigma = armgetSigma(vv, sigma_v, rho);
+        sigma = armgetSigma(vv, sigma_v, rho, threshold);
         sigma11 = sigma.rows(idx0);
         sigma11 = sigma11.cols(idx0);
         epsilon(0) = y(t,0) - (x(t,0) + mu(0) + J(t,0));
@@ -1225,7 +1145,7 @@ arma::mat pgas_v_cpp(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arm
 }
 
 // [[Rcpp::export]]
-arma::mat update_mu(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho) {
+arma::mat update_mu(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, double threshold) {
   int T = y.n_rows;
   //N(0,1) prior
   arma::vec S(2); // prior mean over prior variance
@@ -1243,7 +1163,7 @@ arma::mat update_mu(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma
   arma::vec J1 = J.col(0);
   arma::vec J2 = J.col(1);
   for (int t = 0; t < T; t++) {
-    sigma = armgetSigma(arma::trans(omega.row(t)),sigma_v,rho);
+    sigma = armgetSigma(arma::trans(omega.row(t)),sigma_v,rho,threshold);
     sigma_cond = sigma.submat(0,0,1,1) - sigma.submat(0,2,1,3) * arma::inv(sigma.submat(2,2,3,3)) * sigma.submat(2,0,3,1);
     W += arma::inv(sigma_cond);
     y_resid(0) = y(t,0) - (x(t,0) + J1(t));
@@ -1258,7 +1178,7 @@ arma::mat update_mu(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma
 }
 
 // [[Rcpp::export]]
-arma::vec update_theta(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho) {
+arma::vec update_theta(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, double threshold) {
   int T = y.n_rows;
   //N(0,10) prior
   double S = 0; // prior mean over prior variance
@@ -1275,7 +1195,7 @@ arma::vec update_theta(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, a
   arma::uvec idx0 = {0,1,3};
   arma::uvec idx1 = {0,1,2};
   for (int t = 0; t < T; t++) {
-    sigma = armgetSigma(arma::trans(omega.row(t)),sigma_v,rho);
+    sigma = armgetSigma(arma::trans(omega.row(t)),sigma_v,rho,threshold);
     sigma12 = sigma.cols(idx0);
     sigma12 = sigma12.row(2);
     sigma22 = sigma.rows(idx0);
@@ -1295,7 +1215,7 @@ arma::vec update_theta(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, a
   S = 0;
   W = pow(10,-1);
   for (int t = 0; t < T; t++) {
-    sigma = armgetSigma(arma::trans(omega.row(t)),sigma_v,rho);
+    sigma = armgetSigma(arma::trans(omega.row(t)),sigma_v,rho,threshold);
     sigma12 = sigma.cols(idx1);
     sigma12 = sigma12.row(3);
     sigma22 = sigma.rows(idx1);
@@ -1316,7 +1236,7 @@ arma::vec update_theta(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, a
 }
 
 // [[Rcpp::export]]
-arma::vec update_phi(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho) {
+arma::vec update_phi(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, double threshold) {
   int T = y.n_rows;
   //N(1,.25) prior
   arma::mat S(1,1); // prior mean over prior variance
@@ -1335,7 +1255,7 @@ arma::vec update_phi(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arm
   arma::uvec idx0 = {0,1,3};
   arma::uvec idx1 = {0,1,2};
   for (int t = 0; t < T; t++) {
-    sigma = armgetSigma(arma::trans(omega.row(t)),sigma_v,rho);
+    sigma = armgetSigma(arma::trans(omega.row(t)),sigma_v,rho,threshold);
     sigma12 = sigma.cols(idx0);
     sigma12 = sigma12.row(2);
     sigma22 = sigma.rows(idx0);
@@ -1356,7 +1276,7 @@ arma::vec update_phi(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arm
   S(0,0) = 1 / .25;
   W(0,0) = 1 / .25;
   for (int t = 0; t < T; t++) {
-    sigma = armgetSigma(arma::trans(omega.row(t)),sigma_v,rho);
+    sigma = armgetSigma(arma::trans(omega.row(t)),sigma_v,rho,threshold);
     sigma12 = sigma.cols(idx1);
     sigma12 = sigma12.row(3);
     sigma22 = sigma.rows(idx1);
@@ -1378,7 +1298,7 @@ arma::vec update_phi(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arm
 }
 
 // [[Rcpp::export]]
-double update_sigma_v(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, double hat, double sd, int k) {
+double update_sigma_v(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, double hat, double sd, int k, double threshold) {
   arma::vec proposal(2);
   double a;
   double final;
@@ -1402,17 +1322,13 @@ double update_sigma_v(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, ar
 }
 
 // [[Rcpp::export]]
-double update_rho(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, double hat, double sd, int k) {
+double update_rho(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::vec mu, arma::vec theta, arma::vec phi, arma::vec sigma_v, arma::vec rho, double hat, double sd, int k, double threshold) {
   arma::vec proposal(5);
   double a;
   double final;
   proposal = rho;
   proposal(k) = R::rt(6) * sd + hat;
   if ((proposal(k) < -1) | (proposal(k) > 1) | (corDet(rho) < 0) | (corDetThreshold(rho) < 0)){
-    a = R_NegInf;
-  } else if ((k==2) & (proposal(k) < 0)){
-    a = R_NegInf;
-  } else if ((k==3) & (proposal(k) > 0)){
     a = R_NegInf;
   } else {
     a = log_pyv(y, x, omega, J, mu, theta, phi, sigma_v, proposal);

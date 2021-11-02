@@ -8,7 +8,6 @@ library(tmvtnorm)
 library(Rcpp)
 library(MCMCpack)
 library(quantmod)
-library(RcppTN)
 
 
 thin <- 5 #thinning param
@@ -28,79 +27,19 @@ T <- nrow(S) - 1
 
 
 Date <- S$Date[-1]
-cbind(100*(log(S[-1,c("GSPC.Close", "BTC-USD.Close") ])-
-             log(S[-nrow(S),c("GSPC.Close", "BTC-USD.Close") ])),
-      Date) %>%
-  melt(id.vars = c("Date")) %>%
-  mutate(variable = factor(variable, levels = c("GSPC.Close", "BTC-USD.Close"),
-                           labels = c("S&P", "BTC"))) %>%
-  ggplot() +
-  geom_line(aes(x = Date, y = value)) +
-  facet_grid(variable~., scales = "free_y") +
-  theme_bw() +
-  scale_x_date(breaks = "year")
-
-ggsave("data_plot.pdf", height = 10, width = 8)
-
 #################################################### 
 # SVMALD MODEL ---------- LRF RUNS
 #################################################### 
-use_starting_values <- TRUE
+use_starting_values <- FALSE
 sourceCpp("pgas_2d_threshold.cpp") #C++ updates
 # #2-D MODEL MCMCb        cfv09
 y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
 yprim <- array(0,dim=dim(y))
 #source("starting_values_2d.R") #initialize values (performed within run_mcmc_2d.R)
 exp_jumps <- norm_jumps <- ind <- FALSE
+threshold <- 20
 source("run_mcmc_2d_threshold.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps/keepsBTCSP_MALD_threshold.rds"))
-
-#################################################### 
-# SVALD INDEPENDENCE (1d) MODEL ---------- LRF RUNS
-#################################################### 
-use_starting_values <- TRUE
-sourceCpp("pgas_2d_threshold.cpp") #C++ updates
-#initialize values, create space to save draws
-# #2-D MODEL MCMC
-y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
-yprim <- array(0,dim=dim(y))
-#source("starting_values_2d.R") #initialize values
-exp_jumps  <- FALSE 
-norm_jumps <- FALSE 
-ind <- TRUE #Bitcoin and S&P 500 have no relationship in return, volatility or jumps
-source("run_mcmc_2d_threshold.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps/keepsBTCSP_IND_threshold.rds"))
-
-#################################################### 
-# SVMVN MODEL ---------- MS RUNS
-#################################################### 
-sourceCpp("pgas_2d_threshold.cpp") #C++ updates
-#initialize values, create space to save draws
-# #2-D MODEL MCMC
-y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
-yprim <- array(0,dim=dim(y))
-source("starting_values_2d.R") #initialize values
-exp_jumps <- FALSE
-norm_jumps <- TRUE #NORMAL JUMPS SET TO TRUE SO B/s are set to 1
-ind <- FALSE
-source("run_mcmc_2d_threshold.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps/keepsBTCSP_MVN_threshold.rds"))
-
-#################################################### 
-# SVLD MODEL ----------MS RUNS
-#################################################### 
-sourceCpp("pgas_2d_threshold.cpp") #C++ updates
-#initialize values, create space to save draws
-# #2-D MODEL MCMC
-y <- as.matrix(100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")])))
-yprim <- array(0,dim=dim(y))
-source("starting_values_2d.R") #initialize values
-exp_jumps  <- TRUE #ASYMMETRY PARAMETERS W SET TO 0 (exponential, laplace distributed jumps)
-norm_jumps <- FALSE 
-ind <- FALSE
-source("run_mcmc_2d_threshold.R") #R+B iterations of pgas.R and pgas.cpp updates
-saveRDS(keeps,paste0("keeps/keepsBTCSP_LD_threshold.rds"))
-
+saveRDS(keeps,"keeps/keepsBTCSP_MALD_threshold",threshold,".rds")
 
 # #################################################### 
 # # CONVERGENCE CHECKS ----------

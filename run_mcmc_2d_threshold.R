@@ -51,7 +51,7 @@ source("starting_values_2d_threshold.R") #initialize values
 for (i in 1:(R + B)){
   print(i)
   #update stochastic volatility using pgas
-  v <- pgas_v_cpp(y,yprim,omega=v,J,mu,theta,phi,sigma_v,rho,N=10)
+  v <- pgas_v_cpp(y,yprim,omega=v,J,mu,theta,phi,sigma_v,rho,N=10,threshold)
   
   xi_y1<- pgas_xiy1_cpp(y,yprim, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y1w, xi_y1eta, xi_y1s, N=10) %>% as.vector()
   J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
@@ -67,13 +67,13 @@ for (i in 1:(R + B)){
     xi_c = cbind(xi_y1,xi_y2)
     J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
   } else {
-    xi_c <- pgas_xic_cpp(y,yprim, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_cw, sigma_c, rhoc, xi_cs, N=10)
+    xi_c <- pgas_xic_cpp(y,yprim, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_cw, sigma_c, rhoc, xi_cs, N=10,threshold)
     J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
     if (norm_jumps == FALSE){
       xi_cs <- pgas_sc_cpp(xi_c, xi_cw, Sigma_c, xi_cs, N=10) %>% as.vector()
     }
   }
-  delta <- update_delta(y,yprim,omega=v,xiy1=xi_y1, xiy2=xi_y2, xic=xi_c,mu,theta,phi,sigma_v,rho,lambda)
+  delta <- update_delta(y,yprim,omega=v,xiy1=xi_y1, xiy2=xi_y2, xic=xi_c,mu,theta,phi,sigma_v,rho,lambda,threshold)
 
   N_y1 <- as.numeric(delta == 0)
   N_y2 <- as.numeric(delta == 1)
@@ -145,22 +145,22 @@ for (i in 1:(R + B)){
   }
   
   Sigma_c <- matrix(c(sigma_c[1]^2,rhoc*prod(sigma_c),rhoc*prod(sigma_c),sigma_c[2]^2),nrow=2)
-  mu <- update_mu(y,yprim,omega=v,J,theta,phi,sigma_v,rho) %>% as.vector
-  theta <- update_theta(y,yprim,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
-  phi <- update_phi(y,yprim,omega=v,J,mu,theta,phi,sigma_v,rho) %>% as.vector
+  mu <- update_mu(y,yprim,omega=v,J,theta,phi,sigma_v,rho,threshold) %>% as.vector
+  theta <- update_theta(y,yprim,omega=v,J,mu,theta,phi,sigma_v,rho,threshold) %>% as.vector
+  phi <- update_phi(y,yprim,omega=v,J,mu,theta,phi,sigma_v,rho,threshold) %>% as.vector
   
-  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,c(s+h/2,sigma_v[2]),rho) - log_pyv(y,yprim,v,J,mu,theta,phi,c(s-h/2,sigma_v[2]),rho)) / h}
+  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,c(s+h/2,sigma_v[2]),rho,threshold) - log_pyv(y,yprim,v,J,mu,theta,phi,c(s-h/2,sigma_v[2]),rho,threshold)) / h}
   hat <- uniroot(f,c(0.001,100))$root
-  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,c(hat+h,sigma_v[2]),rho) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,c(hat,sigma_v[2]),rho) + log_pyv(y,yprim,v,J,mu,theta,phi,c(hat-h,sigma_v[2]),rho)))
-  sigma_v[1] <- update_sigma_v(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,0)
+  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,c(hat+h,sigma_v[2]),rho,threshold) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,c(hat,sigma_v[2]),rho,threshold) + log_pyv(y,yprim,v,J,mu,theta,phi,c(hat-h,sigma_v[2]),rho,threshold)))
+  sigma_v[1] <- update_sigma_v(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,0,threshold)
   
-  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],s+h/2),rho) - log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],s-h/2),rho)) / h}
+  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],s+h/2),rho,threshold) - log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],s-h/2),rho,threshold)) / h}
   hat <- uniroot(f,c(0.001,100))$root
-  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat+h),rho) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat),rho) + log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat-h),rho)))
-  sigma_v[2] <- update_sigma_v(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,1)
+  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat+h),rho,threshold) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat),rho,threshold) + log_pyv(y,yprim,v,J,mu,theta,phi,c(sigma_v[1],hat-h),rho,threshold)))
+  sigma_v[2] <- update_sigma_v(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,1,threshold)
   
   if (ind == FALSE){
-    f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(s+h/2,rho[2:5])) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(s-h/2,rho[2:5]))) / h}
+    f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(s+h/2,rho[2:5]),threshold) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(s-h/2,rho[2:5]),threshold)) / h}
     a = rho[2]^2 - 1
     b1 = -2*prod(rho[c(2,3,5)])
     b2 = -2*prod(rho[c(2,4,5)])
@@ -169,10 +169,10 @@ for (i in 1:(R + B)){
     end1 = (-b1 + c(-1,1)*sqrt(b1^2 - 4*a*c1)) / (2*a)
     end2 = (-b2 + c(-1,1)*sqrt(b2^2 - 4*a*c2)) / (2*a)
     hat <- uniroot(f,c(max(min(end1),min(end2))+0.0001,min(max(end1),max(end2))-0.0001))$root
-    sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat+h,rho[2:5])) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat,rho[2:5])) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat-h,rho[2:5]))))
-    rho[1] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,0)
+    sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat+h,rho[2:5]),threshold) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat,rho[2:5]),threshold) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat-h,rho[2:5]))))
+    rho[1] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,0,threshold)
     
-    f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],s+h/2,rho[3:5])) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],s-h/2,rho[3:5]))) / h}
+    f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],s+h/2,rho[3:5]),threshold) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],s-h/2,rho[3:5]),threshold)) / h}
     a = rho[1]^2 - 1
     b1 = -2*prod(rho[c(1,3,5)])
     b2 = -2*prod(rho[c(1,4,5)])
@@ -181,29 +181,29 @@ for (i in 1:(R + B)){
     end1 = (-b1 + c(-1,1)*sqrt(b1^2 - 4*a*c1)) / (2*a)
     end2 = (-b2 + c(-1,1)*sqrt(b2^2 - 4*a*c2)) / (2*a)
     hat <- uniroot(f,c(max(min(end1),min(end2))+0.0001,min(max(end1),max(end2))-0.0001))$root
-    sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],hat+h,rho[3:5])) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],hat,rho[3:5])) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],hat-h,rho[3:5]))))
-    rho[2] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,1)
+    sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],hat+h,rho[3:5]),threshold) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],hat,rho[3:5]),threshold) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],hat-h,rho[3:5]),threshold)))
+    rho[2] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,1,threshold)
   }
   
-  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],s+h/2,rho[4:5])) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],s-h/2,rho[4:5]))) / h}
+  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],s+h/2,rho[4:5]),threshold) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],s-h/2,rho[4:5]),threshold)) / h}
   a = rho[5]^2 - 1
   b = -2*prod(rho[c(1,2,5)])
   c = 1 - sum(rho[c(1,2,5)]^2) + prod(rho[1:2])^2
   end = (-b + c(-1,1)*sqrt(b^2 - 4*a*c)) / (2*a)
   hat <- uniroot(f,c(min(end)+0.0001,max(end)-0.0001))$root
-  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat+h,rho[4:5])) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat,rho[4:5])) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat-h,rho[4:5]))))
-  rho[3] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,2)
+  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat+h,rho[4:5]),threshold) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat,rho[4:5]),threshold) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat-h,rho[4:5]),threshold)))
+  rho[3] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,2,threshold)
   
-  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:3],s+h/2,rho[5])) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:3],s-h/2,rho[5]))) / h}
+  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:3],s+h/2,rho[5]),threshold) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:3],s-h/2,rho[5]),threshold)) / h}
   a = rho[5]^2 - 1
   b = -2*prod(rho[c(1,2,5)])
   c = 1 - sum(rho[c(1,2,5)]^2) + prod(rho[1:2])^2
   end = (-b + c(-1,1)*sqrt(b^2 - 4*a*c)) / (2*a)
   hat <- uniroot(f,c(min(end)+0.0001,max(end)-0.0001))$root
-  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat+h,rho[4:5])) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat,rho[4:5])) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat-h,rho[4:5]))))
-  rho[4] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,3)
+  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat+h,rho[4:5]),threshold) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat,rho[4:5]),threshold) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:2],hat-h,rho[4:5]),threshold)))
+  rho[4] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,3,threshold)
   
-  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:4],s+h/2)) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:4],s-h/2))) / h}
+  f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:4],s+h/2),threshold) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:4],s-h/2),threshold)) / h}
   a1 = rho[3]^2 - 1
   a2 = rho[4]^2 - 1
   b1 = -2*prod(rho[c(1,2,3)])
@@ -213,8 +213,8 @@ for (i in 1:(R + B)){
   end1 = (-b1 + c(-1,1)*sqrt(b1^2 - 4*a1*c1)) / (2*a1)
   end2 = (-b2 + c(-1,1)*sqrt(b2^2 - 4*a2*c2)) / (2*a2)
   hat <- uniroot(f,c(max(min(end1),min(end2))+0.0001,min(max(end1),max(end2))-0.0001))$root
-  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:4],hat+h)) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:4],hat)) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:4],hat-h))))
-  rho[5] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,4)
+  sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:4],hat+h),threshold) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:4],hat),threshold) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1:4],hat-h),threshold)))
+  rho[5] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,4,threshold)
   
   #store after burn in
   if (i > B) {
