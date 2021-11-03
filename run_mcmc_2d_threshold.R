@@ -53,12 +53,12 @@ for (i in 1:(R + B)){
   #update stochastic volatility using pgas
   v <- pgas_v_cpp(y,yprim,omega=v,J,mu,theta,phi,sigma_v,rho,N=10,threshold)
   
-  xi_y1<- pgas_xiy1_cpp(y,yprim, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y1w, xi_y1eta, xi_y1s, N=10) %>% as.vector()
+  xi_y1<- pgas_xiy1_cpp(y,yprim, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y1w, xi_y1eta, xi_y1s, N=10, threshold) %>% as.vector()
   J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
   if (norm_jumps == FALSE){
     xi_y1s <- pgas_s_cpp(xi_y1, xi_y1w, xi_y1eta, xi_y1s, N=10) %>%as.vector()
   }
-  xi_y2 <- pgas_xiy2_cpp(y,yprim, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y2w, xi_y2eta, xi_y2s, N=10) %>% as.vector()
+  xi_y2 <- pgas_xiy2_cpp(y,yprim, omega=v, mu, theta, phi, sigma_v, rho, xi_y1, xi_y2, xi_c, N_y1, N_y2, N_c, xi_y2w, xi_y2eta, xi_y2s, N=10, threshold) %>% as.vector()
   J = xi_c*(delta==2) +cbind(xi_y1,0)*(delta==0) + cbind(0,xi_y2)*(delta==1)
   if (norm_jumps == FALSE){ 
     xi_y2s <- pgas_s_cpp(xi_y2, xi_y2w, xi_y2eta, xi_y2s, N=10) %>%as.vector()
