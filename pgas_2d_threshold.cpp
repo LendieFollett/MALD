@@ -1328,7 +1328,7 @@ double update_rho(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::
   double final;
   proposal = rho;
   proposal(k) = R::rt(6) * sd + hat;
-  if ((proposal(k) < -1) | (proposal(k) > 1) | (corDet(rho) < 0) | (corDetThreshold(rho) < 0)){
+  if ((proposal(k) < -1) | (proposal(k) > 1) | (corDet(rho) < 0.0001) | (corDetThreshold(rho) < 0.0001)){
     a = R_NegInf;
   } else {
     a = log_pyv(y, x, omega, J, mu, theta, phi, sigma_v, proposal, threshold);
