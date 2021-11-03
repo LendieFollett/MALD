@@ -1307,8 +1307,8 @@ double update_sigma_v(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, ar
   if (proposal(k) < 0){
     a = R_NegInf;
   }else{
-    a = log_pyv(y, x, omega, J, mu, theta, phi, proposal, rho);
-    a += -log_pyv(y, x, omega, J, mu, theta, phi, sigma_v, rho);
+    a = log_pyv(y, x, omega, J, mu, theta, phi, proposal, rho, threshold);
+    a += -log_pyv(y, x, omega, J, mu, theta, phi, sigma_v, rho, threshold);
     a += -R::dt((proposal(k) - hat)/sd,6,true) + R::dt((sigma_v(k) - hat)/sd,6,true);
     //Rcout << exp(a) << std::endl;
   }
@@ -1331,8 +1331,8 @@ double update_rho(arma::mat y, arma::mat x, arma::mat omega, arma::mat J, arma::
   if ((proposal(k) < -1) | (proposal(k) > 1) | (corDet(rho) < 0) | (corDetThreshold(rho) < 0)){
     a = R_NegInf;
   } else {
-    a = log_pyv(y, x, omega, J, mu, theta, phi, sigma_v, proposal);
-    a += -log_pyv(y, x, omega, J, mu, theta, phi, sigma_v, rho);
+    a = log_pyv(y, x, omega, J, mu, theta, phi, sigma_v, proposal, threshold);
+    a += -log_pyv(y, x, omega, J, mu, theta, phi, sigma_v, rho, threshold);
     a += -R::dt((proposal(k) - hat)/sd,6,true) + R::dt((rho(k) - hat)/sd,6,true);
     //Rcout << exp(a) << std::endl; 
   }
