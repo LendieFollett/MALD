@@ -169,7 +169,7 @@ for (i in 1:(R + B)){
     end1 = (-b1 + c(-1,1)*sqrt(b1^2 - 4*a*c1)) / (2*a)
     end2 = (-b2 + c(-1,1)*sqrt(b2^2 - 4*a*c2)) / (2*a)
     hat <- uniroot(f,c(max(min(end1),min(end2))+0.0001,min(max(end1),max(end2))-0.0001))$root
-    sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat+h,rho[2:5]),threshold) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat,rho[2:5]),threshold) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat-h,rho[2:5]))))
+    sd <- sqrt(-h^2 / (log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat+h,rho[2:5]),threshold) - 2*log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat,rho[2:5]),threshold) + log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(hat-h,rho[2:5]),threshold)))
     rho[1] <- update_rho(y,yprim,v,J,mu,theta,phi,sigma_v,rho,hat,sd,0,threshold)
     
     f <- function(s){(log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],s+h/2,rho[3:5]),threshold) - log_pyv(y,yprim,v,J,mu,theta,phi,sigma_v,c(rho[1],s-h/2,rho[3:5]),threshold)) / h}
