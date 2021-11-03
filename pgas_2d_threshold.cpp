@@ -311,7 +311,7 @@ IntegerVector update_delta(arma::mat y, arma::mat x, arma::mat omega, arma::vec 
   NumericVector probs(4);
   
   for (int t = 0; t < T; t++){
-    sigma = armgetSigma(arma::trans(omega.row(t)),  sigma_v,  rho);
+    sigma = armgetSigma(arma::trans(omega.row(t)),  sigma_v,  rho, threshold);
     epsilon[2] = omega(t+1,0) - (theta(0) + phi(0) * (omega(t,0) - theta(0)));
     epsilon[3] = omega(t+1,1) - (theta(1) + phi(1) * (omega(t,1) - theta(1)));
     
