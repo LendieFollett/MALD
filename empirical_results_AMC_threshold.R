@@ -126,7 +126,7 @@ BTC$Date <- as.Date(BTC$Date)
 getSymbols("GME",from = "2020-10-01",to = "2021-12-31")
 GME <- as.data.frame(GME)
 GME$Date <- as.Date(rownames(GME))
-getSymbols("AMC",from = "2020-10-01",to = "2021-12-31")
+getSymbols("AMC",from = "2021-05-15",to = "2021-12-31")
 AMC <- as.data.frame(AMC)
 AMC$Date <- as.Date(rownames(AMC))
 # getSymbols("DOGE-USD",from = "2020-10-01",to = "2021-05-31")
@@ -147,9 +147,9 @@ S <- BTC %>% merge(GME) %>% merge(AMC) %>% merge(DOGE) %>% merge(SP500) %>% merg
 T <- nrow(S) - 1
 Date <- S$Date
 
-for (i in c("BTC", "DOGE", "GME","MRNA")){
+for (i in c("AMC")){
   m <- "SVMALD"
-  keeps <- readRDS(paste0("keeps/keeps_",m ,"_",i,".rds"))
+  keeps <- readRDS(paste0("keeps/keeps_AMC/keeps_",m ,"_",i,".rds"))
   summary <- NULL
   thresholds <- sqrt(252*apply(keeps$v[1:20000,,1], 2, mean)) %>% quantile(probs=seq(0.15,0.25,0.01))
   if (i == "BTC"){
@@ -176,7 +176,7 @@ for (i in c("BTC", "DOGE", "GME","MRNA")){
   keeps_v1_long <- NULL
   for (thresh in thresholds){
     j = j + 1
-    keeps <- readRDS(paste0("keeps/keeps_",m ,"_",i, "_",thresh,".rds"))
+    keeps <- readRDS(paste0("keeps/keeps_AMC/keeps_",m ,"_",i, "_",thresh,".rds"))
     keeps_v1 <- apply(keeps$v[1:20000,,1], 2, mean) #alternative sv
     prob_rho_1_mn[j] <- length(which(keeps$rho[,4] > 0))/20000
     prob_rho_1_pl_1_mn[j] <- length(which(keeps$rho[,3] > keeps$rho[,4]))/20000
@@ -209,7 +209,7 @@ for (i in c("BTC", "DOGE", "GME","MRNA")){
     theme_bw()
   p <- grid.arrange(p1,p2, nrow = 1)
   ggsave(paste0("Probability_Plots_",i, ".pdf"),
-                p, width = 10, height = 7)
+         p, width = 10, height = 7)
   p <- grid.arrange(plot1,plot11,nrow = 2)
   ggsave(paste0("QQ_Plots_",i,"_threshold", ".pdf"),
          p, width = 12, height = 12)

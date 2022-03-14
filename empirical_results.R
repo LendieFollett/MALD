@@ -139,27 +139,27 @@ get_qq_short <- function(keeps,data,i,m){## Function to make the QQ Plots
 #ALL CRYPTO, MEME STOCKS
 ############################################################
 #load data
-BTC <- read.csv("BTC_USD_2020-07-01_2021-06-30-CoinDesk.csv")
+BTC <- read.csv("BTC_USD_2014-11-03_2022-01-12-CoinDesk.csv")
 BTC <- BTC %>% dplyr::select(!Currency)
 names(BTC) <- c("Date","BTC-USD.Close","BTC-USD.Open","BTC-USD.High","BTC-USD.Low")
 BTC$Date <- as.Date(BTC$Date)
-getSymbols("GME",from = "2020-10-01",to = "2021-06-30")
+getSymbols("GME",from = "2020-10-01",to = "2021-12-31")
 GME <- as.data.frame(GME)
 GME$Date <- as.Date(rownames(GME))
-getSymbols("AMC",from = "2020-10-01",to = "2021-06-30")
+getSymbols("AMC",from = "2020-10-01",to = "2021-12-31")
 AMC <- as.data.frame(AMC)
 AMC$Date <- as.Date(rownames(AMC))
 # getSymbols("DOGE-USD",from = "2020-10-01",to = "2021-05-31")
 # DOGE <- as.data.frame(`DOGE-USD`)
 # DOGE$Date <- as.Date(rownames(DOGE))
-DOGE <- read.csv("DOGE_USD_2020-07-01_2021-06-30-CoinDesk.csv")
+DOGE <- read.csv("DOGE_USD_2019-02-27_2022-01-12-CoinDesk.csv")
 DOGE <- DOGE %>% dplyr::select(!Currency)
 DOGE$Date <- as.Date(DOGE$Date)
 names(DOGE) <- c("Date","DOGE-USD.Close","DOGE-USD.Open","DOGE-USD.High","DOGE-USD.Low")
-getSymbols("^GSPC",from = "2020-10-01",to = "2021-06-30")
+getSymbols("^GSPC",from = "2020-10-01",to = "2021-12-31")
 SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
-getSymbols("MRNA",from = "2020-10-01",to = "2021-06-30")
+getSymbols("MRNA",from = "2020-10-01",to = "2021-12-31")
 MRNA <- as.data.frame(MRNA)
 MRNA$Date <- as.Date(rownames(MRNA))
 
@@ -170,66 +170,72 @@ Date <- S$Date
 keeps <- readRDS(paste0("keeps/keeps_","SVMALD" ,"_","MRNA", ".rds"))
 names <- lapply(keeps[c(4,6:17)], domean, total = 10) %>%unlist %>%names
 
-keeps_creds <- list()
-
 prob_rho_1 <- NULL
 prob_rho_2 <- NULL
 
 for (i in c("BTC", "DOGE", "AMC", "GME","MRNA")){
   if (i == "BTC"){
-    QQData <- 100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) - 
+    QQData <- 100*(log(S[-1,c("BTC-USD.Close","GSPC.Close")]) -
       log(S[-nrow(S),c("BTC-USD.Close","GSPC.Close")]))
   } else if (i == "DOGE"){
-    QQData <- 100*(log(S[-1,c("DOGE-USD.Close","GSPC.Close")]) - 
+    QQData <- 100*(log(S[-1,c("DOGE-USD.Close","GSPC.Close")]) -
                      log(S[-nrow(S),c("DOGE-USD.Close","GSPC.Close")]))
   } else if (i == "AMC"){
-    QQData <- 100*(log(S[-1,c("AMC.Close","GSPC.Close")]) - 
+    QQData <- 100*(log(S[-1,c("AMC.Close","GSPC.Close")]) -
                      log(S[-nrow(S),c("AMC.Close","GSPC.Close")]))
   } else if (i == "GME") {
-    QQData <- 100*(log(S[-1,c("GME.Close","GSPC.Close")]) - 
+    QQData <- 100*(log(S[-1,c("GME.Close","GSPC.Close")]) -
                      log(S[-nrow(S),c("GME.Close","GSPC.Close")]))
   } else {
-    QQData <- 100*(log(S[-1,c("MRNA.Close","GSPC.Close")]) - 
+    QQData <- 100*(log(S[-1,c("MRNA.Close","GSPC.Close")]) -
                      log(S[-nrow(S),c("MRNA.Close","GSPC.Close")]))
   }
   j = 0
+  keeps_medians <- array(dim = c(4, length(names)))
   keeps_summary <- array(dim = c(4, length(names)))
+  keeps_creds_lower <- array(dim = c(4, length(names)))
+  keeps_creds_upper <- array(dim = c(4, length(names)))
   keeps_v1 <- array(dim = c(4,dim(keeps$v)[2]))
   keeps_v2 <- array(dim = c(4,dim(keeps$v)[2]))
   model <- rep(NA, 4)
   data <- rep(i, 4)
   colnames(keeps_summary) <- names
   for (m in c("SVIND", "SVLD", "SVMVN", "SVMALD")){
+  #for (m in "SVMALD"){
     j = j + 1
     keeps <- readRDS(paste0("keeps/keeps_",m ,"_",i, ".rds"))
-    keeps_summary[j,] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist
-    keeps_creds[[j]] <- rbind(lapply(keeps[c(4,6:17)], docreds, q=.025, total = 20000) %>%unlist,
-                             lapply(keeps[c(4,6:17)], docreds, q=.975, total = 20000) %>%unlist)%>% t() %>%
-      as.data.frame %>%
-      rownames_to_column(var = "parameter")%>%
-      mutate_if(is.numeric, round, 3) 
+    keeps_medians[j,] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist
+    keeps_creds_lower[j,] <- lapply(keeps[c(4,6:17)], docreds, q=.025, total = 20000) %>%unlist
+    keeps_creds_upper[j,] <- lapply(keeps[c(4,6:17)], docreds, q=.975, total = 20000) %>%unlist
+
+    keeps_medians[j,] <- ifelse(grepl("phi",names),1-keeps_medians[j,],keeps_medians[j,])
+    tmp <- ifelse(grepl("phi",names),1-keeps_creds_upper[j,],keeps_creds_lower[j,])
+    keeps_creds_upper[j,] <- ifelse(grepl("phi",names),1-keeps_creds_lower[j,],keeps_creds_upper[j,])
+    keeps_creds_lower[j,] <- tmp
     keeps_v1[j,] <- apply(keeps$v[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
     keeps_v2[j,] <- apply(keeps$v[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
     model[j] <- m
-    keeps_summary[j,] <- paste0(round(as.numeric(keeps_summary[j,]),2)," (",keeps_creds[[j]][,2],",",keeps_creds[[j]][,3],")")
-    plot <- get_qq_short(keeps,QQData,i,m)
-    assign(paste0("QQ_",m),plot)
+    keeps_summary[j,] <- paste0(round(as.numeric(keeps_medians[j,]),3)," (",
+                                round(as.numeric(keeps_creds_lower[j,]),3),",",
+                                round(as.numeric(keeps_creds_upper[j,]),3),")")
+    # plot <- get_qq_short(keeps,QQData,i,m)
+    # assign(paste0("QQ_",m),plot)
     prob_rho_1 <- c(prob_rho_1,length(which(keeps$rho[,3] > 0))/20000)
     prob_rho_2 <- c(prob_rho_2,length(which(keeps$rho[,4] > 0))/20000)
   }
-  plot5 <- grid.arrange(QQ_SVIND, QQ_SVLD, QQ_SVMVN,QQ_SVMALD, nrow = 2)
-  
-  ggsave(paste0("Figures/QQ_Plots_Short_Time/QQ_", i, "_Short.pdf"),plot5, width = 12, height = 12)
-  keeps_summary <- keeps_summary %>% as.data.frame()%>%
-    #mutate_all(round, digits = 2) %>%
-    #mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
-    #dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
-    mutate(model = model) %>%t()
-  
-  #TABLE XXX POSTERIOR MEANS OF PARAMETERS------
-  keeps_summary%>%
-    xtable() %>%
-    print()
+  #plot5 <- grid.arrange(QQ_SVIND, QQ_SVLD, QQ_SVMVN,QQ_SVMALD, nrow = 2)
+
+  #ggsave(paste0("Figures/QQ_Plots_Short_Time/QQ_", i, "_Short.pdf"),plot5, width = 12, height = 12)
+ keeps_summary <- keeps_summary %>% as.data.frame()%>%
+ mutate_all(round, digits = 2) %>%
+ mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
+ dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
+  mutate(model = model) %>%t()
+
+#  TABLE XXX POSTERIOR MEANS OF PARAMETERS------
+ keeps_summary%>%
+ xtable() %>%
+  print()
   # 
   #FIGURE XXX STOCHASTIC VOLATILITY--------
   #ALTERNATIVE CURRENCY
@@ -237,43 +243,52 @@ for (i in c("BTC", "DOGE", "AMC", "GME","MRNA")){
     mutate(model = model,
            series = data) %>%
     melt(id.vars = c("model", "series")) %>%
-    mutate(Date = rep(Date, each = 4)) #CHECK THIS STRUCTURE
+    mutate(Date = rep(Date,each=4)) #CHECK THIS STRUCTURE
   #S&P
-  keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
-    mutate(model = model,
-           series = data) %>%
-    melt(id.vars = c("model", "series")) %>%
-    mutate(Date = rep(Date, each = 4), #CHECK THIS STRUCTURE
-           series = "S&P")
+  # keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
+  #   mutate(model = model,
+  #          series = data) %>%
+  #   melt(id.vars = c("model", "series")) %>%
+  #   mutate(Date = Date, #CHECK THIS STRUCTURE
+  #          series = "S&P")
   
-  tempdat <- keeps_v1_long %>% subset(model == "SVMALD") %>%
-    merge(data.frame(Date=Date[-(T+1)],Asset=QQData[,1]) , by = "Date")
-  p <- ggplot() +
-           geom_line(aes(x = Date, y = Asset), alpha= I(.4), data = tempdat) +
-           geom_line(aes(x = Date, y = value^.5), data = tempdat) +
-           theme_bw() +labs(x = "",y=i) + theme(text = element_text(size = 20))
-  assign(paste0("p",i),ggplotGrob(p))
-  if (i == "GME"){
-    tempdat <- keeps_v2_long %>% subset(model == "SVMALD") %>%
-      merge(data.frame(Date=Date[-(T+1)],Asset=QQData[,2]) , by = "Date") 
-    
-    p <- ggplot() +
-             geom_line(aes(x = Date, y = Asset), alpha= I(.4), data = tempdat) +
-             geom_line(aes(x = Date, y = value^.5), data = tempdat) +
-             theme_bw() +labs(x = "",y="S&P 500")+ theme(text = element_text(size = 20))
-    pSP500 <- ggplotGrob(p)
-  }
-  assign(paste0("keeps_",i,"_long"),keeps_v1_long)
+  # tempdat <- keeps_v1_long %>% subset(model == "SVMALD") %>%
+    # merge(data.frame(Date=Date[-(T+1)],Asset=QQData[,1]) , by = "Date")
+  # p <- ggplot() +
+  #          geom_line(aes(x = Date, y = Asset), alpha= I(.4), data = tempdat) +
+  #          geom_line(aes(x = Date, y = sqrt(252*value^.5)), data = tempdat) +
+  #          theme_bw() +labs(x = "",y=i) + theme(text = element_text(size = 20))
+  # assign(paste0("p",i),ggplotGrob(p))
+  # if (i == "GME"){
+  #   tempdat <- keeps_v2_long %>% subset(model == "SVMALD") %>%
+  #     merge(data.frame(Date=Date[-(T+1)],Asset=QQData[,2]) , by = "Date")
+  # 
+  #   p <- ggplot() +
+  #            geom_line(aes(x = Date, y = Asset), alpha= I(.4), data = tempdat) +
+  #            geom_line(aes(x = Date, y = value^.5), data = tempdat) +
+  #            theme_bw() +labs(x = "",y="S&P 500")+ theme(text = element_text(size = 20))
+  #   pSP500 <- ggplotGrob(p)
+  # }
+#  assign(paste0("keeps_",i,"_long"),keeps_v1_long)
 }
 
 V <- rbind(keeps_AMC_long,keeps_BTC_long,keeps_DOGE_long,keeps_GME_long,keeps_MRNA_long)
-names(V) <- c()
-ggplot(V) + 
-  geom_line(aes(x = Date, y = value, linetype = model)) +
+p <- ggplot(V) +
+  geom_line(aes(x = Date, y = sqrt(252*value), linetype = model)) +
   facet_grid(series~., scales = "free_y") +
   theme_bw() +
   scale_colour_grey() +
   labs(x = "Date", y = "Volatility")+ theme(text = element_text(size = 20))
+ggsave(paste0("Volatility_", "all", ".pdf"),p, width = 10, height = 14)
+
+# p <- ggplot(V %>% filter(model=="SVMALD")) + 
+#   geom_line(aes(x = Date, y = sqrt(252*value), linetype = model)) +
+#   facet_grid(series~., scales = "free_y") +
+#   theme_bw() +
+#   scale_colour_grey() +
+#   labs(x = "Date", y = "Volatility")+ theme(text = element_text(size = 20))
+# ggsave(paste0("Volatility_", "MALD", ".pdf"),p, width = 10, height = 14)
+
 
 grid.arrange(rbind(pAMC,pBTC,pDOGE,pGME,pMRNA,pSP500))
 
@@ -282,24 +297,24 @@ grid.arrange(rbind(pAMC,pBTC,pDOGE,pGME,pMRNA,pSP500))
 #ALL NON-SPECULATIVE STOCKS
 ############################################################
 #load data
-getSymbols("^GSPC",from = "2020-10-01",to = "2021-06-30")
+getSymbols("^GSPC",from = "2020-10-01",to = "2021-12-31")
 SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
-getSymbols("DIS",from = "2020-10-01",to = "2021-06-30")
+getSymbols("DIS",from = "2020-10-01",to = "2021-12-31")
 DIS <- as.data.frame(DIS)
 DIS$Date <- as.Date(rownames(DIS))
-getSymbols("BBY",from = "2020-10-01",to = "2021-06-30")
+getSymbols("BBY",from = "2020-10-01",to = "2021-12-31")
 BBY <- as.data.frame(BBY)
 BBY$Date <- as.Date(rownames(BBY))
-getSymbols("PFE",from = "2020-10-01",to = "2021-06-30")
-PFE <- as.data.frame(PFE)
-PFE$Date <- as.Date(rownames(PFE))
+getSymbols("BMY",from = "2020-10-01",to = "2021-12-31")
+BMY <- as.data.frame(BMY)
+BMY$Date <- as.Date(rownames(BMY))
 
-S <- DIS %>% merge(BBY) %>% merge(PFE) %>% merge(SP500)
+S <- DIS %>% merge(BBY) %>% merge(BMY) %>% merge(SP500)
 T <- nrow(S) - 1
 Date <- S$Date
 
-keeps <- readRDS(paste0("keeps/keeps_","SVMALD" ,"_","PFE", ".rds"))
+keeps <- readRDS(paste0("keeps/keeps_","SVMALD" ,"_","BMY", ".rds"))
 names <- lapply(keeps[c(4,6:17)], domean, total = 10) %>%unlist %>%names
 
 keeps_creds <- list()
@@ -307,8 +322,7 @@ keeps_creds <- list()
 prob_rho_1 <- NULL
 prob_rho_2 <- NULL
 
-for (i in c("DIS","BBY","PFE")){
-  #for (i in "MRNA"){
+for (i in c("DIS","BBY","BMY")){
   if (i == "DIS"){
     QQData <- 100*(log(S[-1,c("DIS.Close","GSPC.Close")]) - 
                      log(S[-nrow(S),c("DIS.Close","GSPC.Close")]))
@@ -316,44 +330,52 @@ for (i in c("DIS","BBY","PFE")){
     QQData <- 100*(log(S[-1,c("BBY.Close","GSPC.Close")]) - 
                      log(S[-nrow(S),c("BBY.Close","GSPC.Close")]))
   } else {
-    QQData <- 100*(log(S[-1,c("PFE.Close","GSPC.Close")]) - 
-                     log(S[-nrow(S),c("PFE.Close","GSPC.Close")]))
+    QQData <- 100*(log(S[-1,c("BMY.Close","GSPC.Close")]) - 
+                     log(S[-nrow(S),c("BMY.Close","GSPC.Close")]))
   }
   j = 0
+  keeps_medians <- array(dim = c(4, length(names)))
   keeps_summary <- array(dim = c(4, length(names)))
+  keeps_creds_lower <- array(dim = c(4, length(names)))
+  keeps_creds_upper <- array(dim = c(4, length(names)))
   keeps_v1 <- array(dim = c(4,dim(keeps$v)[2]))
   keeps_v2 <- array(dim = c(4,dim(keeps$v)[2]))
   model <- rep(NA, 4)
   data <- rep(i, 4)
   colnames(keeps_summary) <- names
   for (m in c("SVIND", "SVLD", "SVMVN", "SVMALD")){
+    #for (m in "SVMALD"){
     j = j + 1
     keeps <- readRDS(paste0("keeps/keeps_",m ,"_",i, ".rds"))
-    keeps_summary[j,] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist
-    keeps_creds[[j]] <- rbind(lapply(keeps[c(4,6:17)], docreds, q=.025, total = 20000) %>%unlist,
-                              lapply(keeps[c(4,6:17)], docreds, q=.975, total = 20000) %>%unlist)%>% t() %>%
-      as.data.frame %>%
-      rownames_to_column(var = "parameter")%>%
-      mutate_if(is.numeric, round, 3) 
+    keeps_medians[j,] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist
+    keeps_creds_lower[j,] <- lapply(keeps[c(4,6:17)], docreds, q=.025, total = 20000) %>%unlist
+    keeps_creds_upper[j,] <- lapply(keeps[c(4,6:17)], docreds, q=.975, total = 20000) %>%unlist
+    
+    keeps_medians[j,] <- ifelse(grepl("phi",names),1-keeps_medians[j,],keeps_medians[j,])
+    tmp <- ifelse(grepl("phi",names),1-keeps_creds_upper[j,],keeps_creds_lower[j,])
+    keeps_creds_upper[j,] <- ifelse(grepl("phi",names),1-keeps_creds_lower[j,],keeps_creds_upper[j,])
+    keeps_creds_lower[j,] <- tmp
     keeps_v1[j,] <- apply(keeps$v[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
     keeps_v2[j,] <- apply(keeps$v[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
     model[j] <- m
-    keeps_summary[j,] <- paste0(round(as.numeric(keeps_summary[j,]),2)," (",keeps_creds[[j]][,2],",",keeps_creds[[j]][,3],")")
-    plot <- get_qq_short(keeps,QQData,i,m)
-    assign(paste0("QQ_",m),plot)
+    keeps_summary[j,] <- paste0(round(as.numeric(keeps_medians[j,]),3)," (",
+                                round(as.numeric(keeps_creds_lower[j,]),3),",",
+                                round(as.numeric(keeps_creds_upper[j,]),3),")")
+    # plot <- get_qq_short(keeps,QQData,i,m)
+    # assign(paste0("QQ_",m),plot)
     prob_rho_1 <- c(prob_rho_1,length(which(keeps$rho[,3] > 0))/20000)
     prob_rho_2 <- c(prob_rho_2,length(which(keeps$rho[,4] > 0))/20000)
   }
-  plot5 <- grid.arrange(QQ_SVIND, QQ_SVLD, QQ_SVMVN,QQ_SVMALD, nrow = 2)
+  #plot5 <- grid.arrange(QQ_SVIND, QQ_SVLD, QQ_SVMVN,QQ_SVMALD, nrow = 2)
   
-  ggsave(paste0("Figures/QQ_Plots_Short_Time/QQ_", i, "_Short.pdf"),plot5, width = 12, height = 12)
+  #ggsave(paste0("Figures/QQ_Plots_Short_Time/QQ_", i, "_Short.pdf"),plot5, width = 12, height = 12)
   keeps_summary <- keeps_summary %>% as.data.frame()%>%
-    #mutate_all(round, digits = 2) %>%
-    #mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
-    #dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
+#    mutate_all(round, digits = 2) %>%
+#    mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
+#    dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
     mutate(model = model) %>%t()
   
-  #TABLE XXX POSTERIOR MEANS OF PARAMETERS------
+  #  TABLE XXX POSTERIOR MEANS OF PARAMETERS------
   keeps_summary%>%
     xtable() %>%
     print()
@@ -364,44 +386,46 @@ for (i in c("DIS","BBY","PFE")){
     mutate(model = model,
            series = data) %>%
     melt(id.vars = c("model", "series")) %>%
-    mutate(Date = rep(Date, each = 4)) #CHECK THIS STRUCTURE
+    mutate(Date = rep(Date,each=4)) #CHECK THIS STRUCTURE
   #S&P
-  keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
-    mutate(model = model,
-           series = data) %>%
-    melt(id.vars = c("model", "series")) %>%
-    mutate(Date = rep(Date, each = 4), #CHECK THIS STRUCTURE
-           series = "S&P")
+  # keeps_v2_long <- keeps_v2 %>%as.data.frame()%>%
+  #   mutate(model = model,
+  #          series = data) %>%
+  #   melt(id.vars = c("model", "series")) %>%
+  #   mutate(Date = Date, #CHECK THIS STRUCTURE
+  #          series = "S&P")
   
-  tempdat <- keeps_v1_long %>% subset(model == "SVMALD") %>%
-    merge(data.frame(Date=Date[-(T+1)],Asset=QQData[,1]) , by = "Date")
-  p <- ggplot() +
-    geom_line(aes(x = Date, y = Asset), alpha= I(.4), data = tempdat) +
-    geom_line(aes(x = Date, y = value^.5), data = tempdat) +
-    theme_bw() +labs(x = "",y=i) + theme(text = element_text(size = 20))
-  assign(paste0("p",i),ggplotGrob(p))
-  if (i == "GME"){
-    tempdat <- keeps_v2_long %>% subset(model == "SVMALD") %>%
-      merge(data.frame(Date=Date[-(T+1)],Asset=QQData[,2]) , by = "Date") 
-    
-    p <- ggplot() +
-      geom_line(aes(x = Date, y = Asset), alpha= I(.4), data = tempdat) +
-      geom_line(aes(x = Date, y = value^.5), data = tempdat) +
-      theme_bw() +labs(x = "",y="S&P 500")+ theme(text = element_text(size = 20))
-    pSP500 <- ggplotGrob(p)
-  }
+  # tempdat <- keeps_v1_long %>% subset(model == "SVMALD") %>%
+  # merge(data.frame(Date=Date[-(T+1)],Asset=QQData[,1]) , by = "Date")
+  # p <- ggplot() +
+  #          geom_line(aes(x = Date, y = Asset), alpha= I(.4), data = tempdat) +
+  #          geom_line(aes(x = Date, y = sqrt(252*value^.5)), data = tempdat) +
+  #          theme_bw() +labs(x = "",y=i) + theme(text = element_text(size = 20))
+  # assign(paste0("p",i),ggplotGrob(p))
+  # if (i == "GME"){
+  #   tempdat <- keeps_v2_long %>% subset(model == "SVMALD") %>%
+  #     merge(data.frame(Date=Date[-(T+1)],Asset=QQData[,2]) , by = "Date")
+  # 
+  #   p <- ggplot() +
+  #            geom_line(aes(x = Date, y = Asset), alpha= I(.4), data = tempdat) +
+  #            geom_line(aes(x = Date, y = value^.5), data = tempdat) +
+  #            theme_bw() +labs(x = "",y="S&P 500")+ theme(text = element_text(size = 20))
+  #   pSP500 <- ggplotGrob(p)
+  # }
   assign(paste0("keeps_",i,"_long"),keeps_v1_long)
 }
 
-V <- rbind(keeps_DIS_long,keeps_BBY_long,keeps_PFE_long)
-ggplot(V) + 
-  geom_line(aes(x = Date, y = value, linetype = model)) +
+V <- rbind(keeps_DIS_long,keeps_BBY_long,keeps_BMY_long)
+p <- ggplot(V) + 
+  geom_line(aes(x = Date, y = sqrt(252*value), linetype = model)) +
   facet_grid(series~., scales = "free_y") +
   theme_bw() +
   scale_colour_grey() +
   labs(x = "Date", y = "Volatility")+ theme(text = element_text(size = 20))
+ggsave(paste0("Figure_3_Short_NonSpec", ".pdf"),p, width = 10, height = 14)
 
-grid.arrange(rbind(pDIS,pBBY,pPFE,pSP500))
+
+#grid.arrange(rbind(pDIS,pBBY,pBMY,pSP500))
 
 ############################################################
 #----LONG TIME SERIES ONLY---------------------------------
