@@ -102,16 +102,16 @@ get_qq_short <- function(keeps,data,i,threshold){## Function to make the QQ Plot
   
   QQdat = cbind(data,y)
   names(QQdat) = c("V1","V2","V3","V4")
-  # return(ks.test(QQdat$V1,QQdat$V3)$p.value)
+  return(ks.test(QQdat$V1,QQdat$V3)$p.value)
   
-  p1 <- ggplot() +
-    geom_point(aes(x=quantile(QQdat$V1,seq(0.01,0.99,0.01)),y=quantile(QQdat$V3,seq(0.01,0.99,0.01)))) +
-    geom_abline(slope=1,intercept=0) +
-    #xlim(c(-15,15)) + ylim(c(-15,15)) +
-    xlab("Actual Quantiles") + ylab("Simulated Quantiles") + theme_bw() + ggtitle(paste0("Threshold = ",round(threshold,2)))
-  #p1
-
-  return(p1 + theme(plot.title = element_text(hjust = 0.5,size = 20)))
+  # p1 <- ggplot() +
+  #   geom_point(aes(x=quantile(QQdat$V1,seq(0.01,0.99,0.01)),y=quantile(QQdat$V3,seq(0.01,0.99,0.01)))) +
+  #   geom_abline(slope=1,intercept=0) +
+  #   #xlim(c(-15,15)) + ylim(c(-15,15)) +
+  #   xlab("Actual Quantiles") + ylab("Simulated Quantiles") + theme_bw() + ggtitle(paste0("Threshold = ",round(threshold,2)))
+  # #p1
+  # 
+  # return(p1 + theme(plot.title = element_text(hjust = 0.5,size = 20)))
 }
 
 ############################################################

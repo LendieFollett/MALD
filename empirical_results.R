@@ -123,15 +123,16 @@ get_qq_short <- function(keeps,data,i,m){## Function to make the QQ Plots
   
   QQdat = cbind(data,y)
   names(QQdat) = c("V1","V2","V3","V4")
+  return(ks.test(QQdat$V1,QQdat$V3)$p.value)
   
-  p1 <- ggplot() +
-    geom_point(aes(x=quantile(QQdat$V1,seq(0.01,0.99,0.01)),y=quantile(QQdat$V3,seq(0.01,0.99,0.01)))) +
-    geom_abline(slope=1,intercept=0) +
-    #xlim(c(-15,15)) + ylim(c(-15,15)) +
-    xlab("Actual Quantiles") + ylab("Simulated Quantiles") + theme_bw() + ggtitle(paste0(substr(m,1,2),"-",substr(m,3,6)))
-  #p1
-  
-  return(p1 + theme(plot.title = element_text(hjust = 0.5,size = 20)))
+  # p1 <- ggplot() +
+  #   geom_point(aes(x=quantile(QQdat$V1,seq(0.01,0.99,0.01)),y=quantile(QQdat$V3,seq(0.01,0.99,0.01)))) +
+  #   geom_abline(slope=1,intercept=0) +
+  #   #xlim(c(-15,15)) + ylim(c(-15,15)) +
+  #   xlab("Actual Quantiles") + ylab("Simulated Quantiles") + theme_bw() + ggtitle(paste0(substr(m,1,2),"-",substr(m,3,6)))
+  # #p1
+  # 
+  # return(p1 + theme(plot.title = element_text(hjust = 0.5,size = 20)))
 }
 
 ############################################################
@@ -218,7 +219,7 @@ for (i in c("BTC", "DOGE", "AMC", "GME","MRNA")){
     keeps_summary[j,] <- paste0(round(as.numeric(keeps_medians[j,]),3)," (",
                                 round(as.numeric(keeps_creds_lower[j,]),3),",",
                                 round(as.numeric(keeps_creds_upper[j,]),3),")")
-    # plot <- get_qq_short(keeps,QQData,i,m)
+    get_qq_short(keeps,QQData,i,m)
     # assign(paste0("QQ_",m),plot)
     prob_rho_1 <- c(prob_rho_1,length(which(keeps$rho[,3] > 0))/20000)
     prob_rho_2 <- c(prob_rho_2,length(which(keeps$rho[,4] > 0))/20000)
@@ -226,16 +227,16 @@ for (i in c("BTC", "DOGE", "AMC", "GME","MRNA")){
   #plot5 <- grid.arrange(QQ_SVIND, QQ_SVLD, QQ_SVMVN,QQ_SVMALD, nrow = 2)
 
   #ggsave(paste0("Figures/QQ_Plots_Short_Time/QQ_", i, "_Short.pdf"),plot5, width = 12, height = 12)
- keeps_summary <- keeps_summary %>% as.data.frame()%>%
- mutate_all(round, digits = 2) %>%
- mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
- dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
-  mutate(model = model) %>%t()
+ # keeps_summary <- keeps_summary %>% as.data.frame()%>%
+ # mutate_all(round, digits = 2) %>%
+ # mutate(lambda = paste0("(",lambda1,", ", lambda2,", ", lambda3,", ", lambda4,")"))%>%
+ # dplyr::select(-c(lambda1, lambda2, lambda3, lambda4)) %>%
+ #  mutate(model = model) %>%t()
 
 #  TABLE XXX POSTERIOR MEANS OF PARAMETERS------
- keeps_summary%>%
- xtable() %>%
-  print()
+ # keeps_summary%>%
+ # xtable() %>%
+ #  print()
   # 
   #FIGURE XXX STOCHASTIC VOLATILITY--------
   #ALTERNATIVE CURRENCY
@@ -269,10 +270,15 @@ for (i in c("BTC", "DOGE", "AMC", "GME","MRNA")){
   #            theme_bw() +labs(x = "",y="S&P 500")+ theme(text = element_text(size = 20))
   #   pSP500 <- ggplotGrob(p)
   # }
-#  assign(paste0("keeps_",i,"_long"),keeps_v1_long)
+assign(paste0("keeps_",i,"_long"),keeps_v1_long)
 }
 
 V <- rbind(keeps_AMC_long,keeps_BTC_long,keeps_DOGE_long,keeps_GME_long,keeps_MRNA_long)
+V$model[V$model=="SVIND"] <- "SV-IND"
+V$model[V$model=="SVLD"] <- "SV-LD"
+V$model[V$model=="SVMALD"] <- "SV-MALD"
+V$model[V$model=="SVMVN"] <- "SV-MVN"
+V$model <- factor(V$model,levels=c("SV-IND","SV-LD","SV-MVN","SV-MALD"))
 p <- ggplot(V) +
   geom_line(aes(x = Date, y = sqrt(252*value), linetype = model)) +
   facet_grid(series~., scales = "free_y") +
@@ -281,13 +287,14 @@ p <- ggplot(V) +
   labs(x = "Date", y = "Volatility")+ theme(text = element_text(size = 20))
 ggsave(paste0("Volatility_", "all", ".pdf"),p, width = 10, height = 14)
 
-# p <- ggplot(V %>% filter(model=="SVMALD")) + 
-#   geom_line(aes(x = Date, y = sqrt(252*value), linetype = model)) +
-#   facet_grid(series~., scales = "free_y") +
-#   theme_bw() +
-#   scale_colour_grey() +
-#   labs(x = "Date", y = "Volatility")+ theme(text = element_text(size = 20))
-# ggsave(paste0("Volatility_", "MALD", ".pdf"),p, width = 10, height = 14)
+p <- ggplot(V %>% filter(model=="SV-MALD")) +
+  geom_line(aes(x = Date, y = sqrt(252*value))) +
+  facet_grid(series~., scales = "free_y") +
+  theme_bw() +
+  scale_colour_grey() +
+  labs(x = "Date", y = "Volatility")+ theme(text = element_text(size = 20))
+
+ggsave(paste0("Volatility_", "MALD", ".pdf"),p, width = 10, height = 14)
 
 
 grid.arrange(rbind(pAMC,pBTC,pDOGE,pGME,pMRNA,pSP500))
@@ -593,7 +600,7 @@ ggsave("leverage.pdf",p3, height = 10, width = 14)
   
   
   rbind(keeps_j1_long,keeps_j2_long) %>%
-    mutate(Model = factor(model, levels = c("MALD", "IND", "MVN", "LD"), labels = c("SV-MALD", "SV-IND", "SV-MVN", "SV-LD"))) %>%
+    mutate(Model = factor(model, levels = c("IND", "LD", "MVN", "MALD"), labels = c("SV-IND", "SV-LD", "SV-MVN", "SV-MALD"))) %>%
     ggplot() +
     geom_line(aes(x = Date, y = value, linetype = Model)) +
     facet_grid(series~Model, scales = "free_y") +
