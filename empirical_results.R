@@ -304,6 +304,7 @@ getSymbols("^GSPC",from = "2014-09-15",to = "2020-09-30")
 SP500 <- as.data.frame(`GSPC`)
 SP500$Date <- as.Date(rownames(SP500))
 S <- merge(BTC,SP500)
+S <- readRDS("S.rds")
 T <- nrow(S) - 1
 Date <- S$Date
 
@@ -325,27 +326,33 @@ j = 0
 for (m in c("MALD", "IND", "MVN", "LD")){# "SVMVN", "SVLD",
     j = j + 1
     keeps <- readRDS(paste0("keeps_long/keepsBTCSP_",m , ".rds"))
-    keeps_v1[j,] <- apply(keeps$v[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
-    keeps_v2[j,] <- apply(keeps$v[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
+    keeps_v1[j,] <- apply(keeps$v[1:20000,,1], 2, mean,na.rm=TRUE) #alternative sv
+    keeps_v2[j,] <- apply(keeps$v[1:20000,,2], 2, mean,na.rm=TRUE) #sp sv
     
-    keeps_j1[j,] <- apply(keeps$J[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
-    keeps_j2[j,] <- apply(keeps$J[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
-    keeps_delta[[j]] <- keeps$delta %>%melt %>%group_by(Var2) %>%
-      summarise(prop0 = mean(value == 0),prop1 = mean(value == 1),prop2 = mean(value == 2),prop3 = mean(value == 3)) %>%
-      ungroup()
-    temp <- rbind(lapply(keeps[c(4,6:17)], docreds,q=.025, total = 20000) %>%unlist,
-                              lapply(keeps[c(4,6:17)], docreds,q=.975, total = 20000) %>%unlist)%>% t() %>%
-      as.data.frame %>%
-      rownames_to_column(var = "parameter")%>%
-      mutate_if(is.numeric, round, 2)  %>%mutate(parameter = gsub(".2.5%", "", parameter))
-    keeps_summary0[[j]] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist %>%melt()%>%rownames_to_column(var = "parameter")%>%
-      merge(temp,  by = "parameter" ) %>%
-      mutate(parameter = paste0("$\\", parameter, "$"),
-             summary = paste0(round(value,3), ", (", V1, ", ", V2, ")"),
-             model = m) %>%
-      dplyr::select(model, parameter, summary)
+    keeps_j1[j,] <- apply(keeps$J[1:20000,,1], 2, mean,na.rm=TRUE) #alternative sv
+    keeps_j2[j,] <- apply(keeps$J[1:20000,,2], 2, mean,na.rm=TRUE) #sp sv
+    # keeps_delta[[j]] <- keeps$delta %>%melt %>%group_by(Var2) %>%
+    #   summarise(prop0 = mean(value == 0),prop1 = mean(value == 1),prop2 = mean(value == 2),prop3 = mean(value == 3)) %>%
+    #   ungroup()
+    # temp <- rbind(lapply(keeps[c(4,6:17)], docreds,q=.025, total = 20000) %>%unlist,
+    #                           lapply(keeps[c(4,6:17)], docreds,q=.975, total = 20000) %>%unlist)%>% t() %>%
+    #   as.data.frame %>%
+    #   rownames_to_column(var = "parameter")%>%
+    #   mutate_if(is.numeric, round, 2)  %>%mutate(parameter = gsub(".2.5%", "", parameter))
+    # keeps_summary0[[j]] <- lapply(keeps[c(4,6:17)], domean, total = 20000) %>%unlist %>%melt()%>%rownames_to_column(var = "parameter")%>%
+    #   merge(temp,  by = "parameter" ) %>%
+    #   mutate(parameter = paste0("$\\", parameter, "$"),
+    #          summary = paste0(round(value,3), ", (", V1, ", ", V2, ")"),
+    #          model = m) %>%
+    #   dplyr::select(model, parameter, summary)
     
+    resids <- (100*(S$`BTC-USD.Close`[-1] - S$`BTC-USD.Close`[-(T+1)]) - mean(keeps$mu[,1]) - keeps_j1[1,])/sqrt(keeps_v1[j,-(T+1)])
     rho_probs[[j]] <- keeps$rho[,c(3,4)] %>%apply(2, function(x){mean(x > 0)})
+    
+    bacf <- acf(abs(resids), plot = FALSE)
+    bacfdf <- with(bacf, data.frame(lag, acf))
+    bacfdf$model <- m
+    acf_abs_dt <- rbind(acf_abs_dt,bacfdf)
     
     model[j] <-m
 }
