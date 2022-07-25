@@ -158,9 +158,13 @@ for (i in c("BTC", "DOGE", "GME","MRNA")){
   keeps_creds_upper <- array(dim = c(4, length(names)))
   keeps_v1 <- array(dim = c(4,dim(keeps$v)[2]))
   keeps_v2 <- array(dim = c(4,dim(keeps$v)[2]))
+  keeps_j1 <- array(dim = c(4,dim(keeps$J)[2]))
+  keeps_j2 <- array(dim = c(4,dim(keeps$J)[2]))
   model <- rep(NA, 4)
   data <- rep(i, 4)
   colnames(keeps_summary) <- names
+  acf_dt <- NULL
+  acf_abs_dt <- NULL
   for (m in c("SVIND", "SVLD", "SVMVN", "SVMALD")){
   #for (m in "SVMALD"){
     j = j + 1
@@ -175,18 +179,45 @@ for (i in c("BTC", "DOGE", "GME","MRNA")){
     keeps_creds_lower[j,] <- tmp
     keeps_v1[j,] <- apply(keeps$v[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
     keeps_v2[j,] <- apply(keeps$v[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
+    keeps_j1[j,] <- apply(keeps$J[1:20000,,1], 2, function(x){(mean(x))}) #alternative sv
+    keeps_j2[j,] <- apply(keeps$J[1:20000,,2], 2, function(x){(mean(x))}) #sp sv
     model[j] <- m
     keeps_summary[j,] <- paste0(round(as.numeric(keeps_medians[j,]),3)," (",
                                 round(as.numeric(keeps_creds_lower[j,]),3),",",
                                 round(as.numeric(keeps_creds_upper[j,]),3),")")
     # plot <- get_qq_short(keeps,QQData,i,m)
     # assign(paste0("QQ_",m),plot)
-    p_vals <- c(p_vals,get_qq_short(keeps,QQData,i,m))
-    resids <- (QQData[,1] - mean(keeps$mu[,1]) - keeps_j1[1,])/sqrt(keeps_v1[j,])
+    # p_vals <- c(p_vals,get_qq_short(keeps,QQData,i,m))
+    resids <- (QQData[,1] - mean(keeps$mu[,1]) - keeps_j1[1,])/sqrt(keeps_v1[j,-(T+1)])
+    bacf <- acf(resids, plot = FALSE)
+    bacfdf <- with(bacf, data.frame(lag, acf))
+    bacfdf$model <- m
+    acf_dt <- rbind(acf_dt,bacfdf)
+    
+    bacf <- acf(abs(resids), plot = FALSE)
+    bacfdf <- with(bacf, data.frame(lag, acf))
+    bacfdf$model <- m
+    acf_abs_dt <- rbind(acf_abs_dt,bacfdf)
     
     prob_rho_1 <- c(prob_rho_1,length(which(keeps$rho[,3] > 0))/20000)
     prob_rho_2 <- c(prob_rho_2,length(which(keeps$rho[,4] > 0))/20000)
   }
+  
+  acf_dt %>% mutate(model=factor(model,
+                                 levels=c("SVIND","SVLD","SVMVN","SVMALD"),
+                                 labels=c("SV-IND","SV-LD","SV-MVN","SV-MALD"))) %>%
+    ggplot(mapping=aes(x=lag, y=acf)) +
+    geom_bar(stat = "identity", position = "identity") +
+    facet_wrap(.~model,scales="free")+theme_bw()
+  ggsave(paste0("ACF_", i, "_Short.pdf"), width = 12, height = 12)
+  
+  acf_abs_dt %>% mutate(model=factor(model,
+                                     levels=c("SVIND","SVLD","SVMVN","SVMALD"),
+                                     labels=c("SV-IND","SV-LD","SV-MVN","SV-MALD"))) %>%
+    ggplot(mapping=aes(x=lag, y=acf)) +
+    geom_bar(stat = "identity", position = "identity") +
+    facet_wrap(.~model,scales="free")+theme_bw()
+  ggsave(paste0("ACF_abs_", i, "_Short.pdf"), width = 12, height = 12)
  # plot5 <- grid.arrange(QQ_SVIND, QQ_SVLD, QQ_SVMVN,QQ_SVMALD, nrow = 2)
 
  # ggsave(paste0("Figures/QQ_Plots_Short_Time/QQ_", i, "_Short.pdf"),plot5, width = 12, height = 12)
